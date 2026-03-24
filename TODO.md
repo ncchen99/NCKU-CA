@@ -76,19 +76,19 @@
 - [x] Eyebrow + Hero 標題
 - [x] 組織介紹內容（核心業務、歷史沿革、聯繫方式）
 - [x] Markdown 排版
-- [ ] CMS 內容讀取（Firestore `site_content`）
+- [x] CMS 內容讀取（Firestore `site_content`）
 
 ### 2.3 組織章程 `/charter`
 - [x] Hero + 標題
 - [x] 兩欄版型：左側 sticky TOC + 右側章程內容
 - [x] 錨點導航（六章十八條）
-- [ ] CMS 內容讀取
+- [x] CMS 內容讀取
 
 ### 2.4 幹部成員 `/members`
 - [x] Hero + 標題
 - [x] 會長團 + 四部門卡片清單（mock data）
 - [x] 成員卡片：頭像首字、姓名、職稱、email
-- [ ] CMS 內容讀取
+- [x] CMS 內容讀取
 
 ### 2.5 最新消息 `/news`
 - [x] 消息列表頁（分類 tabs + 3 欄 grid + mock data 8 筆）
@@ -96,7 +96,7 @@
 - [x] 單篇消息頁 `/news/[slug]`（麵包屑 + 文章標頭 + 內容 + 側欄相關文章）
 - [x] SEO Metadata + OG 標籤
 - [x] generateStaticParams
-- [ ] 接入 Firestore 真實資料
+- [x] 接入 Firestore 真實資料
 
 ### 2.6 活動回顧 `/activities`
 - [x] 活動列表頁（分類 tabs + grid + mock data 7 筆）
@@ -104,7 +104,7 @@
 - [x] 單篇活動頁 `/activities/[slug]`（同 news 版型）
 - [x] SEO Metadata + OG 標籤
 - [x] generateStaticParams
-- [ ] 接入 Firestore 真實資料
+- [x] 接入 Firestore 真實資料
 
 ### 2.7 公開表單 `/forms/[form_id]`
 - [x] 表單頁面結構（標題 + 描述 + 欄位預覽 + mock data）
@@ -148,9 +148,9 @@
 ### 3.4 表單管理 `/admin/forms`
 - [x] 表單列表 UI（狀態 tabs + 搜尋 + mock data）
 - [x] 表單 CRUD（新增 / 編輯 / 刪除 Modal）
-- [ ] 表單欄位拖曳排序（JSON Schema 編輯器）
-- [ ] 條件邏輯設定 UI
-- [ ] 表單模板（社博 / 寒假場協 / 一般報名 / 出席調查）
+- [x] 表單欄位拖曳排序（JSON Schema 編輯器）
+- [x] 條件邏輯設定 UI
+- [x] 表單模板（社博 / 寒假場協 / 一般報名 / 出席調查）
 - [ ] 回覆管理頁面 `/admin/forms/[form_id]/responses`
 - [ ] 回覆匯出 CSV
 
@@ -194,7 +194,7 @@
 - [x] `/api/auth/session` — Session Cookie 管理（POST + DELETE）
 - [x] `/api/auth/claims` — Custom Claims RBAC
 - [ ] `/api/forms/[form_id]/submit` — 表單提交（含防重複 Transaction）
-- [ ] `/api/attendance/checkin` — 點名提交（含防重複 Transaction）
+- [x] `/api/attendance/checkin` — 點名提交（含防重複 Transaction）
 - [ ] `/api/clubs/import` — 社團 YAML/JSON 匯入
 - [ ] `/api/export/csv` — CSV 匯出通用接口
 

@@ -26,7 +26,11 @@ import {
   compareZh,
   type TabItem,
 } from "@/components/admin/shared";
+import { FormFieldEditor } from "@/components/admin/form-field-editor";
+import { FormTemplatePicker } from "@/components/admin/form-template-picker";
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
+import type { FormField as FormFieldType } from "@/types";
+import type { FormTemplate } from "@/lib/form-templates";
 
 type FormStatus = "all" | "open" | "closed" | "draft";
 
@@ -71,7 +75,9 @@ interface FormDraft {
   status: Form["status"];
   deposit_required: boolean;
   deposit_amount: string;
+  deposit_binding_mode: "linked_to_response" | "independent";
   closes_at: string;
+  fields: FormFieldType[];
 }
 
 const EMPTY_DRAFT: FormDraft = {
@@ -81,7 +87,9 @@ const EMPTY_DRAFT: FormDraft = {
   status: "draft",
   deposit_required: false,
   deposit_amount: "",
+  deposit_binding_mode: "independent",
   closes_at: "",
+  fields: [],
 };
 
 const formTypeLabels: Record<string, string> = {
@@ -126,14 +134,22 @@ export default function FormsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /* ── Modal State ── */
   const [modalOpen, setModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [editingForm, setEditingForm] = useState<Form | null>(null);
   const [draft, setDraft] = useState<FormDraft>(EMPTY_DRAFT);
 
+  /* ── Template Picker Step ── */
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+
+  /* ── Delete ── */
   const [deleteTarget, setDeleteTarget] = useState<Form | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  /* ── Active tab for form modal ── */
+  const [formModalTab, setFormModalTab] = useState<"basic" | "fields">("basic");
 
   const fetchForms = useCallback(async () => {
     setLoading(true);
@@ -175,20 +191,74 @@ export default function FormsPage() {
     return true;
   });
 
+  /* ── Template handler ── */
+  function handleTemplateSelect(template: FormTemplate) {
+    const fieldsWithOrder: FormFieldType[] = template.fields.map((f, idx) => ({
+      ...f,
+      order: idx,
+    }));
+
+    setDraft({
+      title: "",
+      description: template.description,
+      form_type: template.form_type as Form["form_type"],
+      status: "draft",
+      deposit_required: template.deposit_required,
+      deposit_amount: template.deposit_amount?.toString() ?? "",
+      deposit_binding_mode: template.binding_mode,
+      closes_at: "",
+      fields: fieldsWithOrder,
+    });
+
+    setShowTemplatePicker(false);
+    setModalOpen(true);
+    setFormModalTab("basic");
+  }
+
+  function handleTemplateSkip() {
+    setDraft(EMPTY_DRAFT);
+    setShowTemplatePicker(false);
+    setModalOpen(true);
+    setFormModalTab("basic");
+  }
+
+  /* ── Create modal ── */
   function openCreateModal() {
     setEditingForm(null);
     setDraft(EMPTY_DRAFT);
     setModalError(null);
-    setModalOpen(true);
+    setFormModalTab("basic");
+    // Show template picker for new forms
+    setShowTemplatePicker(true);
   }
 
   const openEditModal = useCallback(async (form: Form) => {
     setModalError(null);
+    setFormModalTab("basic");
+    setShowTemplatePicker(false);
     setModalOpen(true);
     setModalLoading(true);
     try {
       const full = await adminFetch<Form>(`/api/admin/forms/${form.id}`);
       setEditingForm(full);
+
+      const rawFields = (full.fields || []) as unknown as Record<string, unknown>[];
+      const typedFields: FormFieldType[] = rawFields.map(
+        (f: Record<string, unknown>, idx: number) => ({
+          id: (f.id as string) ?? `field_${idx}`,
+          type: (f.type as FormFieldType["type"]) ?? "text",
+          label: (f.label as string) ?? "",
+          placeholder: f.placeholder as string | undefined,
+          required: (f.required as boolean) ?? false,
+          options: f.options as string[] | undefined,
+          validation: f.validation as FormFieldType["validation"],
+          depends_on: f.depends_on as FormFieldType["depends_on"],
+          default_from_user: f.default_from_user as string | undefined,
+          read_only_if_prefilled: f.read_only_if_prefilled as boolean | undefined,
+          order: typeof f.order === "number" ? f.order : idx,
+        }),
+      );
+
       setDraft({
         title: full.title,
         description: full.description ?? "",
@@ -196,7 +266,9 @@ export default function FormsPage() {
         status: full.status,
         deposit_required: full.deposit_policy?.required ?? false,
         deposit_amount: full.deposit_policy?.amount?.toString() ?? "",
+        deposit_binding_mode: full.deposit_policy?.binding_mode ?? "independent",
         closes_at: closesAtToInput(full.closes_at),
+        fields: typedFields,
       });
     } catch (err) {
       setModalError(err instanceof Error ? err.message : "載入表單資料失敗");
@@ -226,10 +298,21 @@ export default function FormsPage() {
   }
 
   async function handleSubmit() {
-    if (!draft.title.trim()) return;
+    if (!draft.title.trim()) {
+      setModalError("請輸入表單名稱");
+      return;
+    }
     setModalLoading(true);
     setModalError(null);
     try {
+      // Sort and clean fields
+      const cleanFields = [...draft.fields]
+        .sort((a, b) => a.order - b.order)
+        .map((f, idx) => ({
+          ...f,
+          order: idx,
+        }));
+
       const body: Record<string, unknown> = {
         title: draft.title.trim(),
         description: draft.description.trim(),
@@ -240,8 +323,9 @@ export default function FormsPage() {
           ...(draft.deposit_required && draft.deposit_amount
             ? { amount: Number(draft.deposit_amount) }
             : {}),
-          binding_mode: editingForm?.deposit_policy?.binding_mode ?? "independent",
+          binding_mode: draft.deposit_binding_mode,
         },
+        fields: cleanFields,
         ...(draft.closes_at ? { closes_at: draft.closes_at } : {}),
       };
 
@@ -327,6 +411,17 @@ export default function FormsPage() {
           const badge = statusConfig[row.original.status];
           return <Badge variant={badge.variant}>{badge.label}</Badge>;
         },
+      },
+      {
+        id: "fieldCount",
+        header: ({ column }) => adminSortableHeader(column, "欄位數"),
+        accessorFn: (row) => row.fields?.length ?? 0,
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="font-mono text-neutral-600">
+            {row.original.fields?.length ?? 0}
+          </span>
+        ),
       },
       {
         accessorKey: "responseCount",
@@ -418,7 +513,7 @@ export default function FormsPage() {
 
         {loading ? (
           <div className="overflow-hidden">
-            <AdminTableSkeleton rows={5} columns={[192, 80, 56, 48, 80, 64]} />
+            <AdminTableSkeleton rows={5} columns={[192, 80, 56, 48, 48, 80, 64]} />
           </div>
         ) : error ? (
           <AdminErrorState message={error} onRetry={fetchForms} />
@@ -428,12 +523,27 @@ export default function FormsPage() {
             columns={formColumns}
             getRowId={(row) => row.id}
             emptyMessage="沒有找到符合條件的表單"
-            emptyColSpan={6}
+            emptyColSpan={7}
           />
         )}
       </Card>
 
-      {/* Create / Edit Modal */}
+      {/* ── Template Picker (shown before Create modal) ── */}
+      {showTemplatePicker && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/40" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10">
+            <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-[0_0_0_1px_rgba(10,10,10,0.10),0_8px_40px_rgba(10,10,10,0.12)]">
+              <FormTemplatePicker
+                onSelect={handleTemplateSelect}
+                onSkip={handleTemplateSkip}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Create / Edit Modal ── */}
       <FullPageFormModal
         open={modalOpen}
         onClose={() => {
@@ -444,108 +554,168 @@ export default function FormsPage() {
         title={editingForm ? "編輯表單" : "建立表單"}
         submitLabel={editingForm ? "更新" : "建立"}
         loading={modalLoading}
+        wide
       >
         {modalError && <AdminErrorBanner message={modalError} />}
 
-        <FormField
-          label="表單名稱"
-          required
-          value={draft.title}
-          onChange={(e) =>
-            updateDraft({
-              title: (e.target as HTMLInputElement).value,
-            })
-          }
-          placeholder="請輸入表單名稱"
-        />
-
-        <FormField
-          as="textarea"
-          label="描述"
-          value={draft.description}
-          onChange={(e) =>
-            updateDraft({
-              description: (e.target as HTMLTextAreaElement).value,
-            })
-          }
-          placeholder="表單說明（選填）"
-        />
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <FormField
-            as="select"
-            label="表單類型"
-            required
-            value={draft.form_type}
-            onChange={(e) =>
-              updateDraft({
-                form_type: (e.target as HTMLSelectElement)
-                  .value as Form["form_type"],
-              })
-            }
-            options={formTypeOptions}
-          />
-
-          <FormField
-            as="select"
-            label="狀態"
-            required
-            value={draft.status}
-            onChange={(e) =>
-              updateDraft({
-                status: (e.target as HTMLSelectElement)
-                  .value as Form["status"],
-              })
-            }
-            options={statusOptions}
-          />
+        {/* Inner tabs: basic / fields */}
+        <div className="mb-4 flex items-center gap-1 rounded-lg bg-neutral-100 p-1">
+          <button
+            type="button"
+            onClick={() => setFormModalTab("basic")}
+            className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+              formModalTab === "basic"
+                ? "bg-white text-neutral-950 shadow-sm"
+                : "text-neutral-500 hover:text-neutral-700"
+            }`}
+          >
+            基本設定
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormModalTab("fields")}
+            className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors ${
+              formModalTab === "fields"
+                ? "bg-white text-neutral-950 shadow-sm"
+                : "text-neutral-500 hover:text-neutral-700"
+            }`}
+          >
+            欄位編輯
+            {draft.fields.length > 0 && (
+              <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                {draft.fields.length}
+              </span>
+            )}
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <FormField
-            as="select"
-            label="需要保證金"
-            value={draft.deposit_required ? "yes" : "no"}
-            onChange={(e) =>
-              updateDraft({
-                deposit_required:
-                  (e.target as HTMLSelectElement).value === "yes",
-              })
-            }
-            options={[
-              { value: "no", label: "否" },
-              { value: "yes", label: "是" },
-            ]}
-          />
-
-          {draft.deposit_required && (
+        {formModalTab === "basic" ? (
+          <>
             <FormField
-              label="保證金金額"
-              type="number"
-              min={0}
-              value={draft.deposit_amount}
+              label="表單名稱"
+              required
+              value={draft.title}
               onChange={(e) =>
                 updateDraft({
-                  deposit_amount: (e.target as HTMLInputElement).value,
+                  title: (e.target as HTMLInputElement).value,
                 })
               }
-              placeholder="輸入金額"
-              hint="單位：新台幣"
+              placeholder="請輸入表單名稱"
             />
-          )}
-        </div>
 
-        <FormField
-          label="截止時間"
-          type="datetime-local"
-          value={draft.closes_at}
-          onChange={(e) =>
-            updateDraft({
-              closes_at: (e.target as HTMLInputElement).value,
-            })
-          }
-          hint="留空表示無截止日期"
-        />
+            <FormField
+              as="textarea"
+              label="描述"
+              value={draft.description}
+              onChange={(e) =>
+                updateDraft({
+                  description: (e.target as HTMLTextAreaElement).value,
+                })
+              }
+              placeholder="表單說明（選填）"
+            />
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormField
+                as="select"
+                label="表單類型"
+                required
+                value={draft.form_type}
+                onChange={(e) =>
+                  updateDraft({
+                    form_type: (e.target as HTMLSelectElement)
+                      .value as Form["form_type"],
+                  })
+                }
+                options={formTypeOptions}
+              />
+
+              <FormField
+                as="select"
+                label="狀態"
+                required
+                value={draft.status}
+                onChange={(e) =>
+                  updateDraft({
+                    status: (e.target as HTMLSelectElement)
+                      .value as Form["status"],
+                  })
+                }
+                options={statusOptions}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormField
+                as="select"
+                label="需要保證金"
+                value={draft.deposit_required ? "yes" : "no"}
+                onChange={(e) =>
+                  updateDraft({
+                    deposit_required:
+                      (e.target as HTMLSelectElement).value === "yes",
+                  })
+                }
+                options={[
+                  { value: "no", label: "否" },
+                  { value: "yes", label: "是" },
+                ]}
+              />
+
+              {draft.deposit_required && (
+                <FormField
+                  label="保證金金額"
+                  type="number"
+                  min={0}
+                  value={draft.deposit_amount}
+                  onChange={(e) =>
+                    updateDraft({
+                      deposit_amount: (e.target as HTMLInputElement).value,
+                    })
+                  }
+                  placeholder="輸入金額"
+                  hint="單位：新台幣"
+                />
+              )}
+            </div>
+
+            {draft.deposit_required && (
+              <FormField
+                as="select"
+                label="保證金綁定模式"
+                value={draft.deposit_binding_mode}
+                onChange={(e) =>
+                  updateDraft({
+                    deposit_binding_mode: (e.target as HTMLSelectElement)
+                      .value as "linked_to_response" | "independent",
+                  })
+                }
+                options={[
+                  { value: "linked_to_response", label: "綁定表單回覆（自動建立）" },
+                  { value: "independent", label: "獨立管理（手動建立）" },
+                ]}
+                hint="「綁定表單回覆」適合社博/場協；「獨立管理」適合其他情境"
+              />
+            )}
+
+            <FormField
+              label="截止時間"
+              type="datetime-local"
+              value={draft.closes_at}
+              onChange={(e) =>
+                updateDraft({
+                  closes_at: (e.target as HTMLInputElement).value,
+                })
+              }
+              hint="留空表示無截止日期"
+            />
+          </>
+        ) : (
+          <FormFieldEditor
+            fields={draft.fields}
+            onChange={(fields) => updateDraft({ fields })}
+          />
+        )}
       </FullPageFormModal>
 
       {/* Delete Confirmation */}

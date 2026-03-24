@@ -422,11 +422,11 @@ export default function PostsPage() {
           const displayDate =
             post.status === "published"
               ? formatTimestamp(
-                  post.published_at as Parameters<typeof formatTimestamp>[0],
-                )
+                post.published_at as Parameters<typeof formatTimestamp>[0],
+              )
               : formatTimestamp(
-                  post.updated_at as Parameters<typeof formatTimestamp>[0],
-                );
+                post.updated_at as Parameters<typeof formatTimestamp>[0],
+              );
           return (
             <span className="text-neutral-400">{displayDate}</span>
           );
@@ -593,11 +593,6 @@ export default function PostsPage() {
               {tagSuggestionsOpen && (
                 <div className="mt-2 border-t border-border/70 pt-2">
                   <div className="mb-1 flex items-center justify-between gap-2 text-xs text-neutral-400">
-                    <span>
-                      {tagStats.length > 0
-                        ? "依全站使用次數排序 · 點擊加入"
-                        : "點擊即可加入"}
-                    </span>
                     {tagStatsLoading && (
                       <span className="shrink-0 text-neutral-400">載入中…</span>
                     )}
