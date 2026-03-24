@@ -17,7 +17,7 @@ import {
   AdminTableSkeleton,
   AdminEmptyState,
   AdminErrorState,
-  FormModal,
+  FullPageFormModal,
   FormField,
   type TabItem,
 } from "@/components/admin/shared";
@@ -316,10 +316,10 @@ export default function ClubsPage() {
                     <td className="h-12 px-5 text-right">
                       <button
                         onClick={() => openEdit(club)}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        title="編輯"
+                        className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
                       >
-                        <PencilSquareIcon className="h-3.5 w-3.5" />
-                        編輯
+                        <PencilSquareIcon className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -331,7 +331,7 @@ export default function ClubsPage() {
       )}
 
       {/* ── Edit Club Modal ──────────────────────────────────────── */}
-      <FormModal
+      <FullPageFormModal
         open={editOpen}
         onClose={closeEdit}
         onSubmit={handleEditSubmit}
@@ -344,37 +344,41 @@ export default function ClubsPage() {
             {editError}
           </div>
         )}
-        <FormField
-          label="社團名稱"
-          required
-          value={editForm.name}
-          onChange={(e) =>
-            updateField("name", (e.target as HTMLInputElement).value)
-          }
-        />
-        <FormField
-          label="英文名稱"
-          value={editForm.name_en}
-          onChange={(e) =>
-            updateField("name_en", (e.target as HTMLInputElement).value)
-          }
-        />
-        <FormField
-          label="分類"
-          required
-          value={editForm.category}
-          onChange={(e) =>
-            updateField("category", (e.target as HTMLInputElement).value)
-          }
-        />
-        <FormField
-          label="Email"
-          type="email"
-          value={editForm.email}
-          onChange={(e) =>
-            updateField("email", (e.target as HTMLInputElement).value)
-          }
-        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="社團名稱"
+            required
+            value={editForm.name}
+            onChange={(e) =>
+              updateField("name", (e.target as HTMLInputElement).value)
+            }
+          />
+          <FormField
+            label="英文名稱"
+            value={editForm.name_en}
+            onChange={(e) =>
+              updateField("name_en", (e.target as HTMLInputElement).value)
+            }
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="分類"
+            required
+            value={editForm.category}
+            onChange={(e) =>
+              updateField("category", (e.target as HTMLInputElement).value)
+            }
+          />
+          <FormField
+            label="Email"
+            type="email"
+            value={editForm.email}
+            onChange={(e) =>
+              updateField("email", (e.target as HTMLInputElement).value)
+            }
+          />
+        </div>
         <FormField
           label="簡介"
           as="textarea"
@@ -386,28 +390,30 @@ export default function ClubsPage() {
             )
           }
         />
-        <FormField
-          label="網站"
-          type="url"
-          value={editForm.website_url}
-          placeholder="https://..."
-          onChange={(e) =>
-            updateField("website_url", (e.target as HTMLInputElement).value)
-          }
-        />
-        <FormField
-          label="狀態"
-          as="select"
-          value={editForm.is_active}
-          options={[
-            { value: "true", label: "啟用" },
-            { value: "false", label: "停用" },
-          ]}
-          onChange={(e) =>
-            updateField("is_active", (e.target as HTMLSelectElement).value)
-          }
-        />
-      </FormModal>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="網站"
+            type="url"
+            value={editForm.website_url}
+            placeholder="https://..."
+            onChange={(e) =>
+              updateField("website_url", (e.target as HTMLInputElement).value)
+            }
+          />
+          <FormField
+            label="狀態"
+            as="select"
+            value={editForm.is_active}
+            options={[
+              { value: "true", label: "啟用" },
+              { value: "false", label: "停用" },
+            ]}
+            onChange={(e) =>
+              updateField("is_active", (e.target as HTMLSelectElement).value)
+            }
+          />
+        </div>
+      </FullPageFormModal>
 
       {/* ── Import Modal ─────────────────────────────────────────── */}
       <Modal

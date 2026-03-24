@@ -8,19 +8,25 @@ import {
   CheckCircleIcon,
   ClockIcon,
   PencilSquareIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Modal } from "@/components/ui/modal";
 import {
   AdminPageHeader,
-  FormModal,
+  FullPageFormModal,
   FormField,
-  ConfirmDialog,
   AdminEmptyState,
   AdminErrorState,
 } from "@/components/admin/shared";
-import { formatTimestamp, formatTime, adminFetch } from "@/lib/admin-utils";
+import {
+  formatTimestamp,
+  formatTime,
+  formatDateTime,
+  adminFetch,
+} from "@/lib/admin-utils";
 
 type FilterStatus = "all" | "upcoming" | "open" | "closed";
 
@@ -30,8 +36,8 @@ interface AttendanceEvent {
   description?: string;
   status: "upcoming" | "open" | "closed";
   expected_clubs: string[];
-  opens_at: { _seconds: number } | string;
-  closes_at: { _seconds: number } | string;
+  opens_at: { _seconds: number; _nanoseconds: number } | string;
+  closes_at: { _seconds: number; _nanoseconds: number } | string;
   created_by: string;
 }
 
@@ -39,22 +45,45 @@ interface EventWithStats extends AttendanceEvent {
   checkedIn: number;
 }
 
+interface AttendanceClubStatus {
+  clubId: string;
+  clubName: string;
+  category: string;
+  checkedIn: boolean;
+  checkedInAt?: { _seconds: number; _nanoseconds: number } | string;
+}
+
+interface AttendanceEventDetailResponse {
+  event: AttendanceEvent;
+  stats: { total: number; checkedIn: number };
+  clubStatuses: AttendanceClubStatus[];
+}
+
+const CLUB_CATEGORIES = [
+  { code: "A", name: "系學會" },
+  { code: "B", name: "綜合性" },
+  { code: "C", name: "學藝性" },
+  { code: "D", name: "康樂性" },
+  { code: "E", name: "體能性" },
+  { code: "F", name: "服務性" },
+  { code: "G", name: "聯誼性" },
+  { code: "H", name: "自治組織" },
+] as const;
+
 interface EventFormData {
   title: string;
   description: string;
-  status: string;
   opens_at: string;
   closes_at: string;
-  expected_clubs: string;
+  expected_categories: string[];
 }
 
 const initialForm: EventFormData = {
   title: "",
   description: "",
-  status: "upcoming",
   opens_at: "",
   closes_at: "",
-  expected_clubs: "",
+  expected_categories: [],
 };
 
 const tabs: { key: FilterStatus; label: string }[] = [
@@ -73,26 +102,8 @@ const statusConfig: Record<
   closed: { variant: "neutral", label: "已結束" },
 };
 
-const nextStatusAction: Record<
-  string,
-  { next: string; label: string; confirmTitle: string; confirmDesc: string }
-> = {
-  upcoming: {
-    next: "open",
-    label: "開始點名",
-    confirmTitle: "開始點名",
-    confirmDesc: "確定要開放此點名活動？開放後社團即可進行簽到。",
-  },
-  open: {
-    next: "closed",
-    label: "結束點名",
-    confirmTitle: "結束點名",
-    confirmDesc: "確定要關閉此點名活動？關閉後社團將無法繼續簽到。",
-  },
-};
-
 function tsToDatetimeLocal(
-  ts: { _seconds: number } | string | undefined,
+  ts: { _seconds: number; _nanoseconds?: number } | string | undefined,
 ): string {
   if (!ts) return "";
   const date =
@@ -116,11 +127,12 @@ export default function AttendancePage() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const [statusConfirm, setStatusConfirm] = useState<{
-    event: EventWithStats;
-    action: (typeof nextStatusAction)[string];
-  } | null>(null);
-  const [statusLoading, setStatusLoading] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [detailData, setDetailData] =
+    useState<AttendanceEventDetailResponse | null>(null);
+  const [detailEvent, setDetailEvent] = useState<EventWithStats | null>(null);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -182,13 +194,17 @@ export default function AttendancePage() {
 
   function openEditModal(event: EventWithStats) {
     setEditingEvent(event);
+    const cats: string[] = [];
+    for (const c of event.expected_clubs) {
+      const found = CLUB_CATEGORIES.find((cat) => cat.name === c);
+      if (found) cats.push(found.code);
+    }
     setForm({
       title: event.title,
       description: event.description ?? "",
-      status: event.status,
       opens_at: tsToDatetimeLocal(event.opens_at),
       closes_at: tsToDatetimeLocal(event.closes_at),
-      expected_clubs: event.expected_clubs.join("\n"),
+      expected_categories: cats.length > 0 ? cats : [...event.expected_clubs],
     });
     setFormError(null);
     setModalOpen(true);
@@ -201,23 +217,35 @@ export default function AttendancePage() {
       setFormError("請輸入活動名稱");
       return;
     }
-    if (!form.opens_at || !form.closes_at) {
-      setFormError("請設定開始與結束時間");
+    if (!form.opens_at) {
+      setFormError("請設定開始時間");
       return;
     }
 
-    const clubs = form.expected_clubs
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const computedClosesAt = form.closes_at || (() => {
+      const opensAt = new Date(form.opens_at);
+      if (isNaN(opensAt.getTime())) return "";
+      opensAt.setHours(opensAt.getHours() + 2);
+      return opensAt.toISOString();
+    })();
+
+    if (!computedClosesAt) {
+      setFormError("請設定結束時間");
+      return;
+    }
+
+    const clubs = form.expected_categories.map((code) => {
+      const cat = CLUB_CATEGORIES.find((c) => c.code === code);
+      return cat ? cat.name : code;
+    });
 
     const body = {
       title: form.title.trim(),
       description: form.description.trim() || undefined,
-      status: form.status,
+      status: "upcoming" as const,
       expected_clubs: clubs,
       opens_at: new Date(form.opens_at).toISOString(),
-      closes_at: new Date(form.closes_at).toISOString(),
+      closes_at: new Date(computedClosesAt).toISOString(),
     };
 
     setFormLoading(true);
@@ -244,27 +272,55 @@ export default function AttendancePage() {
     }
   }
 
-  async function handleStatusToggle() {
-    if (!statusConfirm) return;
-    setStatusLoading(true);
+  async function openDetailModal(event: EventWithStats) {
+    setDetailEvent(event);
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    setDetailError(null);
+    setDetailData(null);
+
     try {
-      await adminFetch(`/api/admin/attendance/${statusConfirm.event.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: statusConfirm.action.next }),
-      });
-      setStatusConfirm(null);
-      await fetchEvents();
+      const detail = await adminFetch<AttendanceEventDetailResponse>(
+        `/api/admin/attendance/${event.id}?includeClubStatuses=true`,
+      );
+      setDetailData(detail);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "狀態變更失敗");
-      setStatusConfirm(null);
+      setDetailError(err instanceof Error ? err.message : "載入點名詳情失敗");
     } finally {
-      setStatusLoading(false);
+      setDetailLoading(false);
     }
   }
 
-  function updateForm(field: keyof EventFormData, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  function updateForm(field: keyof EventFormData, value: string | string[]) {
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (
+        field === "opens_at" &&
+        typeof value === "string" &&
+        value &&
+        !editingEvent
+      ) {
+        const dt = new Date(value);
+        if (!isNaN(dt.getTime())) {
+          dt.setHours(dt.getHours() + 2);
+          const p = (n: number) => n.toString().padStart(2, "0");
+          next.closes_at = `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}T${p(dt.getHours())}:${p(dt.getMinutes())}`;
+        }
+      }
+      return next;
+    });
+  }
+
+  function toggleCategory(code: string) {
+    setForm((prev) => {
+      const has = prev.expected_categories.includes(code);
+      return {
+        ...prev,
+        expected_categories: has
+          ? prev.expected_categories.filter((c) => c !== code)
+          : [...prev.expected_categories, code],
+      };
+    });
   }
 
   return (
@@ -324,10 +380,9 @@ export default function AttendancePage() {
             const total = event.expected_clubs.length;
             const rate =
               total > 0 ? Math.round((event.checkedIn / total) * 100) : 0;
-            const action = nextStatusAction[event.status];
 
             return (
-              <Card key={event.id} hoverable className="p-5">
+              <Card key={event.id} hoverable className="flex h-full flex-col p-5">
                 <div className="flex items-start justify-between">
                   <h3 className="text-sm font-semibold text-neutral-950">
                     {event.title}
@@ -351,48 +406,48 @@ export default function AttendancePage() {
                   </div>
                 </div>
 
-                {event.status !== "upcoming" && (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between text-[12px]">
-                      <span className="text-neutral-500">出席率</span>
-                      <span className="font-semibold text-neutral-950">
-                        {rate}%
-                      </span>
+                <div className="mt-4 min-h-[40px]">
+                  {event.status !== "upcoming" ? (
+                    <div>
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="text-neutral-500">出席率</span>
+                        <span className="font-semibold text-neutral-950">
+                          {rate}%
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{ width: `${rate}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-200">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${rate}%` }}
-                      />
+                  ) : (
+                    <div className="flex items-center gap-1.5 pt-1 text-[12px] text-neutral-400">
+                      <ClockIcon className="h-3.5 w-3.5" />
+                      尚未開始
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                {event.status === "upcoming" && (
-                  <div className="mt-4 flex items-center gap-1.5 text-[12px] text-neutral-400">
-                    <ClockIcon className="h-3.5 w-3.5" />
-                    尚未開始
-                  </div>
-                )}
-
-                <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                   <button
                     type="button"
                     onClick={() => openEditModal(event)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
+                    aria-label="編輯點名活動"
+                    title="編輯"
                   >
-                    <PencilSquareIcon className="h-3.5 w-3.5" />
-                    編輯
+                    <PencilSquareIcon className="h-4 w-4" />
                   </button>
-                  {action && (
-                    <button
-                      type="button"
-                      onClick={() => setStatusConfirm({ event, action })}
-                      className="ml-auto text-xs font-medium text-amber-600 hover:underline"
-                    >
-                      {action.label}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => openDetailModal(event)}
+                    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                  >
+                    <EyeIcon className="h-3.5 w-3.5" />
+                    檢視
+                  </button>
                 </div>
               </Card>
             );
@@ -405,7 +460,7 @@ export default function AttendancePage() {
         </div>
       )}
 
-      <FormModal
+      <FullPageFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
@@ -432,50 +487,157 @@ export default function AttendancePage() {
           onChange={(e) => updateForm("description", e.target.value)}
           placeholder="活動說明（選填）"
         />
-        <FormField
-          label="狀態"
-          as="select"
-          value={form.status}
-          onChange={(e) => updateForm("status", e.target.value)}
-          options={[
-            { value: "upcoming", label: "即將開始" },
-            { value: "open", label: "進行中" },
-            { value: "closed", label: "已結束" },
-          ]}
-        />
-        <FormField
-          label="開始時間"
-          required
-          type="datetime-local"
-          value={form.opens_at}
-          onChange={(e) => updateForm("opens_at", e.target.value)}
-        />
-        <FormField
-          label="結束時間"
-          required
-          type="datetime-local"
-          value={form.closes_at}
-          onChange={(e) => updateForm("closes_at", e.target.value)}
-        />
-        <FormField
-          label="預計參加社團"
-          as="textarea"
-          value={form.expected_clubs}
-          onChange={(e) => updateForm("expected_clubs", e.target.value)}
-          hint="輸入社團 ID，每行一個"
-          placeholder={"club_001\nclub_002\nclub_003"}
-        />
-      </FormModal>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="開始時間"
+            required
+            type="datetime-local"
+            value={form.opens_at}
+            onChange={(e) => updateForm("opens_at", e.target.value)}
+          />
+          <FormField
+            label="結束時間"
+            required
+            type="datetime-local"
+            value={form.closes_at}
+            onChange={(e) => updateForm("closes_at", e.target.value)}
+            hint="選擇開始時間後自動填入 +2 小時"
+          />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-neutral-700">
+            預計參加的社團類型
+          </label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {CLUB_CATEGORIES.map((cat) => (
+              <label
+                key={cat.code}
+                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors ${form.expected_categories.includes(cat.code)
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-border text-neutral-600 hover:bg-neutral-50"
+                  }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={form.expected_categories.includes(cat.code)}
+                  onChange={() => toggleCategory(cat.code)}
+                  className="sr-only"
+                />
+                <span
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${form.expected_categories.includes(cat.code)
+                    ? "border-primary bg-primary text-white"
+                    : "border-neutral-300"
+                    }`}
+                >
+                  {form.expected_categories.includes(cat.code) && (
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </span>
+                <span className="font-medium">{cat.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </FullPageFormModal>
 
-      <ConfirmDialog
-        open={!!statusConfirm}
-        onClose={() => setStatusConfirm(null)}
-        onConfirm={handleStatusToggle}
-        title={statusConfirm?.action.confirmTitle ?? ""}
-        description={statusConfirm?.action.confirmDesc}
-        confirmLabel="確認"
-        loading={statusLoading}
-      />
+      <Modal
+        open={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        title={detailData?.event.title ?? detailEvent?.title ?? "點名詳情"}
+        className="max-w-5xl"
+      >
+        <div className="max-h-[75vh] overflow-y-auto pt-2">
+          {detailLoading ? (
+            <div className="py-8 text-center text-sm text-neutral-500">
+              載入中...
+            </div>
+          ) : detailError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+              {detailError}
+            </div>
+          ) : detailData ? (
+            <div className="space-y-6">
+              <section className="rounded-xl border border-border bg-neutral-50/70 p-4">
+                <h4 className="text-sm font-semibold text-neutral-900">
+                  活動資訊
+                </h4>
+                <div className="mt-3 grid gap-2 text-sm text-neutral-600 md:grid-cols-2">
+                  <p>
+                    <span className="text-neutral-500">狀態：</span>
+                    {statusConfig[detailData.event.status]?.label ?? "未知"}
+                  </p>
+                  <p>
+                    <span className="text-neutral-500">預計簽到：</span>
+                    {detailData.stats.total} 社團
+                  </p>
+                  <p>
+                    <span className="text-neutral-500">已簽到：</span>
+                    {detailData.stats.checkedIn} 社團
+                  </p>
+                  <p>
+                    <span className="text-neutral-500">時間：</span>
+                    {formatTimestamp(detailData.event.opens_at)}{" "}
+                    {formatTime(detailData.event.opens_at)}–{formatTime(detailData.event.closes_at)}
+                  </p>
+                </div>
+                {detailData.event.description && (
+                  <p className="mt-3 text-sm text-neutral-600">
+                    {detailData.event.description}
+                  </p>
+                )}
+              </section>
+
+              <section>
+                <h4 className="text-sm font-semibold text-neutral-900">
+                  簽到狀態清單
+                </h4>
+                <div className="mt-3 overflow-hidden rounded-xl border border-border">
+                  <div className="grid grid-cols-[1fr_auto_auto] bg-neutral-50 px-4 py-2 text-xs font-medium text-neutral-500">
+                    <span>社團</span>
+                    <span>類型</span>
+                    <span>狀態</span>
+                  </div>
+                  <div className="max-h-[46vh] overflow-y-auto">
+                    {detailData.clubStatuses.length === 0 ? (
+                      <p className="px-4 py-6 text-sm text-neutral-500">
+                        尚未設定預計社團，或找不到對應社團資料。
+                      </p>
+                    ) : (
+                      detailData.clubStatuses.map((club) => (
+                        <div
+                          key={club.clubId}
+                          className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-t border-border px-4 py-3 text-sm"
+                        >
+                          <div>
+                            <p className="font-medium text-neutral-900">
+                              {club.clubName}
+                            </p>
+                            {club.checkedIn && club.checkedInAt && (
+                              <p className="mt-0.5 text-xs text-neutral-500">
+                                簽到時間：{formatDateTime(club.checkedInAt)}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-xs text-neutral-500">
+                            {club.category}
+                          </span>
+                          <Badge
+                            variant={club.checkedIn ? "success" : "neutral"}
+                          >
+                            {club.checkedIn ? "已簽到" : "未簽到"}
+                          </Badge>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </section>
+            </div>
+          ) : null}
+        </div>
+      </Modal>
     </>
   );
 }

@@ -16,8 +16,9 @@ import {
   AdminTableSkeleton,
   AdminEmptyState,
   AdminErrorBanner,
-  FormModal,
+  FullPageFormModal,
   FormField,
+  MarkdownEditor,
   ConfirmDialog,
   type TabItem,
 } from "@/components/admin/shared";
@@ -73,12 +74,31 @@ const statusBadge: Record<string, { variant: "success" | "neutral"; label: strin
   draft: { variant: "neutral", label: "草稿" },
 };
 
+const commonTagSuggestions = [
+  "公告",
+  "系學會",
+  "活動",
+  "講座",
+  "工作坊",
+  "競賽",
+  "招生",
+  "報名中",
+  "截止提醒",
+];
+
 function toSlug(title: string): string {
   return title
     .trim()
     .toLowerCase()
     .replace(/[^\w\s\u4e00-\u9fff-]/g, "")
     .replace(/\s+/g, "-");
+}
+
+function parseTags(tagsText: string): string[] {
+  return tagsText
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 }
 
 export default function PostsPage() {
@@ -95,6 +115,7 @@ export default function PostsPage() {
   const [form, setForm] = useState<PostForm>(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof PostForm, string>>>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [tagSuggestionsOpen, setTagSuggestionsOpen] = useState(false);
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
@@ -155,6 +176,7 @@ export default function PostsPage() {
     setForm(EMPTY_FORM);
     setFormErrors({});
     setSlugManuallyEdited(false);
+    setTagSuggestionsOpen(false);
     setModalOpen(true);
   }
 
@@ -164,6 +186,7 @@ export default function PostsPage() {
     setEditingId(post.id);
     setFormErrors({});
     setSlugManuallyEdited(true);
+    setTagSuggestionsOpen(false);
     setModalLoading(true);
     setModalOpen(true);
 
@@ -262,6 +285,16 @@ export default function PostsPage() {
     }
   }
 
+  const selectedTags = parseTags(form.tags);
+  const availableTagSuggestions = commonTagSuggestions.filter(
+    (tag) => !selectedTags.includes(tag),
+  );
+
+  function addTag(tag: string) {
+    const nextTags = [...selectedTags, tag];
+    updateForm({ tags: nextTags.join(", ") });
+  }
+
   return (
     <>
       <AdminPageHeader
@@ -330,35 +363,31 @@ export default function PostsPage() {
                       </td>
                       <td className="h-12 px-3 text-neutral-400">{displayDate}</td>
                       <td className="h-12 px-5 text-right">
-                        <div className="inline-flex items-center gap-3">
+                        <div className="inline-flex items-center gap-1">
                           <button
                             type="button"
                             disabled={togglingId === post.id}
                             onClick={() => handleToggleStatus(post)}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-neutral-500 hover:text-neutral-700 hover:underline disabled:opacity-50"
+                            title={post.status === "published" ? "轉為草稿" : "發布"}
+                            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50"
                           >
-                            <ArrowPathIcon className="h-3.5 w-3.5" />
-                            {togglingId === post.id
-                              ? "更新中…"
-                              : post.status === "published"
-                                ? "轉為草稿"
-                                : "發布"}
+                            <ArrowPathIcon className={`h-4 w-4 ${togglingId === post.id ? "animate-spin" : ""}`} />
                           </button>
                           <button
                             type="button"
                             onClick={() => openEdit(post)}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                            title="編輯"
+                            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
                           >
-                            <PencilSquareIcon className="h-3.5 w-3.5" />
-                            編輯
+                            <PencilSquareIcon className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => setDeleteTarget(post)}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-700 hover:underline"
+                            title="刪除"
+                            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
                           >
-                            <TrashIcon className="h-3.5 w-3.5" />
-                            刪除
+                            <TrashIcon className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -372,69 +401,114 @@ export default function PostsPage() {
       </Card>
 
       {/* Create / Edit Modal */}
-      <FormModal
+      <FullPageFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
         title={editingId ? "編輯文章" : "新增文章"}
         submitLabel={editingId ? "更新" : "建立"}
         loading={modalLoading}
+        wide
       >
-        <FormField
-          label="標題"
-          required
-          value={form.title}
-          onChange={(e) => updateForm({ title: (e.target as HTMLInputElement).value })}
-          error={formErrors.title}
-          placeholder="輸入文章標題"
-        />
-        <FormField
-          label="Slug"
-          required
-          value={form.slug}
-          onChange={(e) => {
-            setSlugManuallyEdited(true);
-            setForm((prev) => ({ ...prev, slug: (e.target as HTMLInputElement).value }));
-          }}
-          error={formErrors.slug}
-          hint="URL 路徑，自動根據標題產生"
-        />
-        <FormField
-          label="分類"
-          as="select"
-          value={form.category}
-          onChange={(e) => updateForm({ category: (e.target as HTMLSelectElement).value as PostForm["category"] })}
-          options={[
-            { value: "news", label: "最新消息" },
-            { value: "activity_review", label: "活動回顧" },
-          ]}
-        />
-        <FormField
-          label="狀態"
-          as="select"
-          value={form.status}
-          onChange={(e) => updateForm({ status: (e.target as HTMLSelectElement).value as PostForm["status"] })}
-          options={[
-            { value: "draft", label: "草稿" },
-            { value: "published", label: "已發布" },
-          ]}
-        />
-        <FormField
-          label="內容 (Markdown)"
-          as="textarea"
-          rows={6}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="標題"
+            required
+            value={form.title}
+            onChange={(e) => updateForm({ title: (e.target as HTMLInputElement).value })}
+            error={formErrors.title}
+            placeholder="輸入文章標題"
+          />
+          <FormField
+            label="Slug"
+            required
+            value={form.slug}
+            onChange={(e) => {
+              setSlugManuallyEdited(true);
+              setForm((prev) => ({ ...prev, slug: (e.target as HTMLInputElement).value }));
+            }}
+            error={formErrors.slug}
+            hint="URL 路徑，自動根據標題產生"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <FormField
+            label="分類"
+            as="select"
+            value={form.category}
+            onChange={(e) => updateForm({ category: (e.target as HTMLSelectElement).value as PostForm["category"] })}
+            options={[
+              { value: "news", label: "最新消息" },
+              { value: "activity_review", label: "活動回顧" },
+            ]}
+          />
+          <FormField
+            label="狀態"
+            as="select"
+            value={form.status}
+            onChange={(e) => updateForm({ status: (e.target as HTMLSelectElement).value as PostForm["status"] })}
+            options={[
+              { value: "draft", label: "草稿" },
+              { value: "published", label: "已發布" },
+            ]}
+          />
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+              標籤
+            </label>
+            <div className="rounded-lg border border-border bg-white px-2 py-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/30">
+              <div className="flex items-center gap-2">
+                <input
+                  value={form.tags}
+                  onChange={(e) => updateForm({ tags: (e.target as HTMLInputElement).value })}
+                  onFocus={() => setTagSuggestionsOpen(true)}
+                  placeholder="以逗號分隔，可自行輸入"
+                  className="w-full bg-transparent px-1 text-sm text-neutral-950 outline-none placeholder:text-neutral-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setTagSuggestionsOpen((prev) => !prev)}
+                  className="shrink-0 rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-200"
+                >
+                  推薦標籤
+                </button>
+              </div>
+              {tagSuggestionsOpen && (
+                <div className="mt-2 border-t border-border/70 pt-2">
+                  <div className="mb-1 text-xs text-neutral-400">
+                    點擊即可加入
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {availableTagSuggestions.length === 0 ? (
+                      <span className="text-xs text-neutral-400">
+                        已加入所有推薦標籤
+                      </span>
+                    ) : (
+                      availableTagSuggestions.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => addTag(tag)}
+                          className="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                        >
+                          {tag}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-neutral-400">
+              多個標籤請用逗號分隔，也可點上方推薦快速加入
+            </p>
+          </div>
+        </div>
+        <MarkdownEditor
           value={form.content_markdown}
-          onChange={(e) => updateForm({ content_markdown: (e.target as HTMLTextAreaElement).value })}
-          placeholder="使用 Markdown 撰寫文章內容…"
+          onChange={(v) => updateForm({ content_markdown: v })}
         />
-        <FormField
-          label="標籤"
-          value={form.tags}
-          onChange={(e) => updateForm({ tags: (e.target as HTMLInputElement).value })}
-          placeholder="以逗號分隔，例如：活動, 社團, 公告"
-          hint="多個標籤請用逗號分隔"
-        />
-      </FormModal>
+      </FullPageFormModal>
 
       {/* Delete Confirmation */}
       <ConfirmDialog

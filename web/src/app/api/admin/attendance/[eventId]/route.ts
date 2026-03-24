@@ -5,10 +5,11 @@ import {
   updateAttendanceEvent,
   getAttendanceRecords,
   getAttendanceStats,
+  getAllClubs,
 } from "@/lib/firestore";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   const admin = await verifyAdmin();
@@ -29,7 +30,45 @@ export async function GET(
       );
     }
 
-    return Response.json({ event, records, stats });
+    const includeClubStatuses =
+      req.nextUrl.searchParams.get("includeClubStatuses") === "true";
+    let clubStatuses: Array<{
+      clubId: string;
+      clubName: string;
+      category: string;
+      checkedIn: boolean;
+      checkedInAt?: unknown;
+    }> = [];
+
+    if (includeClubStatuses) {
+      const categories = Array.from(new Set(event.expected_clubs));
+      const clubsByCategory = await Promise.all(
+        categories.map((category) => getAllClubs({ category, isActive: true })),
+      );
+      const expectedClubs = clubsByCategory
+        .flat()
+        .filter(
+          (club, index, list) => list.findIndex((c) => c.id === club.id) === index,
+        );
+
+      const nonDuplicateRecords = records.filter(
+        (record) => !record.is_duplicate_attempt,
+      );
+      const checkedAtMap = new Map(
+        nonDuplicateRecords.map((record) => [record.club_id, record.checked_in_at]),
+      );
+      const checkedSet = new Set(nonDuplicateRecords.map((record) => record.club_id));
+
+      clubStatuses = expectedClubs.map((club) => ({
+        clubId: club.id,
+        clubName: club.name,
+        category: club.category,
+        checkedIn: checkedSet.has(club.id),
+        checkedInAt: checkedAtMap.get(club.id),
+      }));
+    }
+
+    return Response.json({ event, records, stats, clubStatuses });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得點名活動詳情失敗" },

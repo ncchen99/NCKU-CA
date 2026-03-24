@@ -16,16 +16,17 @@ interface ModalProps {
   title?: string;
   children: ReactNode;
   className?: string;
+  preventClose?: boolean;
 }
 
-function Modal({ open, onClose, title, children, className = "" }: ModalProps) {
+function Modal({ open, onClose, title, children, className = "", preventClose = false }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !preventClose) onClose();
     },
-    [onClose],
+    [onClose, preventClose],
   );
 
   useEffect(() => {
@@ -39,7 +40,7 @@ function Modal({ open, onClose, title, children, className = "" }: ModalProps) {
   }, [open, handleKeyDown]);
 
   const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.target === overlayRef.current) onClose();
+    if (e.target === overlayRef.current && !preventClose) onClose();
   };
 
   if (!open) return null;
@@ -60,17 +61,19 @@ function Modal({ open, onClose, title, children, className = "" }: ModalProps) {
             <h3 className="text-lg font-[600] tracking-tight text-neutral-950">
               {title}
             </h3>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full p-1 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer"
-              aria-label="關閉"
-            >
-              <XMarkIcon className="size-5" />
-            </button>
+            {!preventClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full p-1 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors cursor-pointer"
+                aria-label="關閉"
+              >
+                <XMarkIcon className="size-5" />
+              </button>
+            )}
           </div>
         )}
-        {!title && (
+        {!title && !preventClose && (
           <button
             type="button"
             onClick={onClose}

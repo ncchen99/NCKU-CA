@@ -26,8 +26,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    const opensAt = typeof body.opens_at === "string" ? new Date(body.opens_at) : null;
+    const hasValidOpensAt = opensAt !== null && !isNaN(opensAt.getTime());
+
+    let closesAt = body.closes_at;
+    if ((!closesAt || typeof closesAt !== "string") && hasValidOpensAt) {
+      const autoClose = new Date(opensAt.getTime());
+      autoClose.setHours(autoClose.getHours() + 2);
+      closesAt = autoClose.toISOString();
+    }
+
     const eventId = await createAttendanceEvent({
       ...body,
+      closes_at: closesAt,
       created_by: admin.uid,
     });
     return Response.json({ id: eventId }, { status: 201 });

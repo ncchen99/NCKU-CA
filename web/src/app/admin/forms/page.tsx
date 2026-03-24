@@ -18,7 +18,7 @@ import {
   AdminErrorState,
   AdminEmptyState,
   AdminErrorBanner,
-  FormModal,
+  FullPageFormModal,
   FormField,
   ConfirmDialog,
   type TabItem,
@@ -355,29 +355,29 @@ export default function FormsPage() {
                       )}
                     </td>
                     <td className="h-12 px-5 text-right">
-                      <div className="inline-flex items-center gap-3">
+                      <div className="inline-flex items-center gap-1">
                         <Link
                           href={`/admin/forms/${form.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                          title="檢視"
+                          className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
                         >
-                          <EyeIcon className="h-3.5 w-3.5" />
-                          檢視
+                          <EyeIcon className="h-4 w-4" />
                         </Link>
                         <button
                           type="button"
                           onClick={() => openEditModal(form)}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                          title="編輯"
+                          className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
                         >
-                          <PencilSquareIcon className="h-3.5 w-3.5" />
-                          編輯
+                          <PencilSquareIcon className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeleteTarget(form)}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-700 hover:underline"
+                          title="刪除"
+                          className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
                         >
-                          <TrashIcon className="h-3.5 w-3.5" />
-                          刪除
+                          <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -396,7 +396,7 @@ export default function FormsPage() {
       </Card>
 
       {/* Create / Edit Modal */}
-      <FormModal
+      <FullPageFormModal
         open={modalOpen}
         onClose={() => {
           setModalOpen(false);
@@ -433,65 +433,69 @@ export default function FormsPage() {
           placeholder="表單說明（選填）"
         />
 
-        <FormField
-          as="select"
-          label="表單類型"
-          required
-          value={draft.form_type}
-          onChange={(e) =>
-            updateDraft({
-              form_type: (e.target as HTMLSelectElement)
-                .value as Form["form_type"],
-            })
-          }
-          options={formTypeOptions}
-        />
-
-        <FormField
-          as="select"
-          label="狀態"
-          required
-          value={draft.status}
-          onChange={(e) =>
-            updateDraft({
-              status: (e.target as HTMLSelectElement)
-                .value as Form["status"],
-            })
-          }
-          options={statusOptions}
-        />
-
-        <FormField
-          as="select"
-          label="需要保證金"
-          value={draft.deposit_required ? "yes" : "no"}
-          onChange={(e) =>
-            updateDraft({
-              deposit_required:
-                (e.target as HTMLSelectElement).value === "yes",
-            })
-          }
-          options={[
-            { value: "no", label: "否" },
-            { value: "yes", label: "是" },
-          ]}
-        />
-
-        {draft.deposit_required && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="保證金金額"
-            type="number"
-            min={0}
-            value={draft.deposit_amount}
+            as="select"
+            label="表單類型"
+            required
+            value={draft.form_type}
             onChange={(e) =>
               updateDraft({
-                deposit_amount: (e.target as HTMLInputElement).value,
+                form_type: (e.target as HTMLSelectElement)
+                  .value as Form["form_type"],
               })
             }
-            placeholder="輸入金額"
-            hint="單位：新台幣"
+            options={formTypeOptions}
           />
-        )}
+
+          <FormField
+            as="select"
+            label="狀態"
+            required
+            value={draft.status}
+            onChange={(e) =>
+              updateDraft({
+                status: (e.target as HTMLSelectElement)
+                  .value as Form["status"],
+              })
+            }
+            options={statusOptions}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            as="select"
+            label="需要保證金"
+            value={draft.deposit_required ? "yes" : "no"}
+            onChange={(e) =>
+              updateDraft({
+                deposit_required:
+                  (e.target as HTMLSelectElement).value === "yes",
+              })
+            }
+            options={[
+              { value: "no", label: "否" },
+              { value: "yes", label: "是" },
+            ]}
+          />
+
+          {draft.deposit_required && (
+            <FormField
+              label="保證金金額"
+              type="number"
+              min={0}
+              value={draft.deposit_amount}
+              onChange={(e) =>
+                updateDraft({
+                  deposit_amount: (e.target as HTMLInputElement).value,
+                })
+              }
+              placeholder="輸入金額"
+              hint="單位：新台幣"
+            />
+          )}
+        </div>
 
         <FormField
           label="截止時間"
@@ -504,7 +508,7 @@ export default function FormsPage() {
           }
           hint="留空表示無截止日期"
         />
-      </FormModal>
+      </FullPageFormModal>
 
       {/* Delete Confirmation */}
       <ConfirmDialog

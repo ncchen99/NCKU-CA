@@ -8,8 +8,9 @@ import {
   AdminSpinnerLoading,
   AdminErrorState,
   AdminEmptyState,
-  FormModal,
+  FullPageFormModal,
   FormField,
+  MarkdownEditor,
   AdminErrorBanner,
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
@@ -179,14 +180,14 @@ export default function ContentPage() {
       )}
 
       {/* edit content modal */}
-      <FormModal
+      <FullPageFormModal
         open={!!editTarget}
         onClose={() => setEditTarget(null)}
         onSubmit={handleEditSave}
         title="編輯頁面內容"
         submitLabel="儲存變更"
         loading={editLoading}
-        className="sm:max-w-2xl"
+        wide
       >
         {editError && <AdminErrorBanner message={editError} />}
         <FormField
@@ -200,21 +201,15 @@ export default function ContentPage() {
           }
           placeholder="頁面標題"
         />
-        <FormField
-          as="textarea"
-          label="內容"
-          required
+        <MarkdownEditor
           value={editTarget?.content_markdown ?? ""}
-          onChange={(e) =>
+          onChange={(v) =>
             setEditTarget((prev) =>
-              prev ? { ...prev, content_markdown: e.target.value } : null,
+              prev ? { ...prev, content_markdown: v } : null,
             )
           }
-          placeholder="輸入 Markdown 內容..."
-          hint="支援 Markdown 語法"
-          className="min-h-[300px] font-mono text-[13px]"
         />
-      </FormModal>
+      </FullPageFormModal>
     </>
   );
 }

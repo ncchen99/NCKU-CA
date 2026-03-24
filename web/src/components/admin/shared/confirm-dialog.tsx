@@ -43,12 +43,12 @@ export function ConfirmDialog({
             {description}
           </p>
         )}
-        <div className="mt-6 flex w-full gap-3">
+        <div className="mt-6 flex justify-center gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 rounded-full border border-border px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+            className="rounded-full border border-border px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -57,8 +57,8 @@ export function ConfirmDialog({
             disabled={loading}
             className={
               variant === "danger"
-                ? "flex-1 !bg-red-600 hover:!bg-red-700 active:!bg-red-800"
-                : "flex-1"
+                ? "!bg-red-600 hover:!bg-red-700 active:!bg-red-800"
+                : ""
             }
           >
             {loading ? "處理中…" : confirmLabel}
