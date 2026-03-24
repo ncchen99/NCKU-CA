@@ -5,6 +5,9 @@
 
 ---
 
+#社團之所在#社聯之所在國立成功大學社團聯合會
+Club Association of National Cheng Kung University
+
 ## 0. 登入限制與安全性
 
 ### 0.1 登入方式
@@ -51,13 +54,13 @@
 
 ### 1.3 視覺規範
 
-| 項目 | 值 |
-|---|---|
-| 主色（Primary） | `#510110`（酒紅色） |
-| 背景色（Background） | `#FFFFFF`（白色） |
-| 邊界 / 分隔線 | 淡灰色，建議 `#E5E7EB` |
-| 字體 | 系統字體堆疊（`-apple-system`, `BlinkMacSystemFont`, `Noto Sans TC`） |
-| 設計風格 | 扁平化，無陰影或低陰影，圓角適中（`rounded-md`） |
+| 項目                 | 值                                                                    |
+| -------------------- | --------------------------------------------------------------------- |
+| 主色（Primary）      | `#510110`（酒紅色）                                                   |
+| 背景色（Background） | `#FFFFFF`（白色）                                                     |
+| 邊界 / 分隔線        | 淡灰色，建議 `#E5E7EB`                                                |
+| 字體                 | 系統字體堆疊（`-apple-system`, `BlinkMacSystemFont`, `Noto Sans TC`） |
+| 設計風格             | 扁平化，無陰影或低陰影，圓角適中（`rounded-md`）                      |
 
 **Tailwind CSS 主題配置（`tailwind.config.ts` 節錄）：**
 
@@ -82,20 +85,20 @@ theme: {
 
 ### 2.1 技術選型總覽
 
-| 層次 / 功能 | 技術選型 / 說明 |
-|---|---|
-| 前端框架 | Next.js 14+（App Router） |
-| 渲染策略 | ISR（Incremental Static Regeneration）+ On-demand Revalidation |
-| 後端服務 | Firebase（Firestore、Authentication、Storage、Cloud Functions） |
-| **部署平台** | **Vercel**（原生支援 Next.js ISR；Firebase Hosting 不支援 ISR，不採用） |
-| Markdown 解析 | unified / remark / rehype 生態系 |
-| 後台 Markdown 編輯器 | Milkdown 或 TipTap（支援 Markdown 語法及富文本切換） |
-| CSS 框架 | Tailwind CSS 4.x |
-| 狀態管理 | Zustand（輕量全域狀態） |
-| 表單驗證 | React Hook Form + Zod |
-| 認證方式 | Firebase Auth — Google OAuth（唯一，限 @gs.ncku.edu.tw） |
-| 圖片處理 | next/image + Firebase Storage 存放 Uploaded Media |
-| TypeScript | 全專案採用 TypeScript，強型別保障 |
+| 層次 / 功能          | 技術選型 / 說明                                                         |
+| -------------------- | ----------------------------------------------------------------------- |
+| 前端框架             | Next.js 14+（App Router）                                               |
+| 渲染策略             | ISR（Incremental Static Regeneration）+ On-demand Revalidation          |
+| 後端服務             | Firebase（Firestore、Authentication、Storage、Cloud Functions）         |
+| **部署平台**         | **Vercel**（原生支援 Next.js ISR；Firebase Hosting 不支援 ISR，不採用） |
+| Markdown 解析        | unified / remark / rehype 生態系                                        |
+| 後台 Markdown 編輯器 | Milkdown 或 TipTap（支援 Markdown 語法及富文本切換）                    |
+| CSS 框架             | Tailwind CSS 4.x                                                        |
+| 狀態管理             | Zustand（輕量全域狀態）                                                 |
+| 表單驗證             | React Hook Form + Zod                                                   |
+| 認證方式             | Firebase Auth — Google OAuth（唯一，限 @gs.ncku.edu.tw）                |
+| 圖片處理             | next/image + Firebase Storage 存放 Uploaded Media                       |
+| TypeScript           | 全專案採用 TypeScript，強型別保障                                       |
 
 ### 2.2 ISR 更新機制
 
@@ -110,13 +113,13 @@ theme: {
 
 ### 2.3 Firebase 服務配置
 
-| Firebase 服務 | 用途 |
-|---|---|
-| Firestore | 主要資料庫，儲存所有結構化資料（文章、表單、點名、社團、用戶） |
-| Firebase Auth | 身份驗證，僅限 Google OAuth，並驗證 `@gs.ncku.edu.tw` 後綴，自訂 Custom Claims 實作角色權限 |
-| Firebase Storage | 儲存 Markdown 文章內嵌圖片、附件、社團資料匯入的原始檔案 |
-| Cloud Functions | 處理 Firestore Triggers（如表單提交後自動更新統計）及 ISR 觸發 Webhook |
-| Firebase Emulator | 本地開發時完整模擬 Firestore / Auth / Storage，無需連線正式環境 |
+| Firebase 服務     | 用途                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| Firestore         | 主要資料庫，儲存所有結構化資料（文章、表單、點名、社團、用戶）                              |
+| Firebase Auth     | 身份驗證，僅限 Google OAuth，並驗證 `@gs.ncku.edu.tw` 後綴，自訂 Custom Claims 實作角色權限 |
+| Firebase Storage  | 儲存 Markdown 文章內嵌圖片、附件、社團資料匯入的原始檔案                                    |
+| Cloud Functions   | 處理 Firestore Triggers（如表單提交後自動更新統計）及 ISR 觸發 Webhook                      |
+| Firebase Emulator | 本地開發時完整模擬 Firestore / Auth / Storage，無需連線正式環境                             |
 
 ### 2.4 安全性架構
 
@@ -124,11 +127,11 @@ theme: {
 
 以 Firebase Auth Custom Claims 儲存用戶角色，並在 Firestore Security Rules 中驗證。
 
-| 角色 | 權限範圍 |
-|---|---|
-| `admin` | 可存取所有後台功能：CMS、表單管理、點名管理、社團管理、用戶管理 |
-| `club_member` | 可填寫表單、進行點名、查看自己的填寫紀錄；不可進入後台 |
-| `anonymous` | 僅可瀏覽公開前台頁面 |
+| 角色          | 權限範圍                                                        |
+| ------------- | --------------------------------------------------------------- |
+| `admin`       | 可存取所有後台功能：CMS、表單管理、點名管理、社團管理、用戶管理 |
+| `club_member` | 可填寫表單、進行點名、查看自己的填寫紀錄；不可進入後台          |
+| `anonymous`   | 僅可瀏覽公開前台頁面                                            |
 
 #### 2.4.2 Firestore Security Rules 設計原則
 
@@ -145,33 +148,33 @@ theme: {
 
 ### 3.1 Collection 總覽
 
-| Collection 路徑 | 說明 |
-|---|---|
-| `site_content/{page_id}` | 前台各頁面的 Markdown 內容及 Metadata（首頁、章程、成員等） |
-| `posts/{post_id}` | 最新消息 / 活動回顧文章，含 Markdown 正文、封面圖、標籤、狀態 |
-| `clubs/{club_id}` | 社團名單，含社團詳細資料（見 §3.3） |
-| `users/{uid}` | 平台用戶資料，含角色、關聯社團、姓名 |
-| `forms/{form_id}` | 表單模板（Schema），定義欄位結構與依賴關係 |
-| `forms/{form_id}/responses/{response_id}` | 用戶填寫的表單回覆 |
-| `deposit_records/{record_id}` | 保證金繳交 / 領取紀錄，含狀態機欄位 |
-| `attendance_events/{event_id}` | 點名事件定義 |
-| `attendance_events/{event_id}/records/{record_id}` | 各社團的點名紀錄 |
+| Collection 路徑                                    | 說明                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------- |
+| `site_content/{page_id}`                           | 前台各頁面的 Markdown 內容及 Metadata（首頁、章程、成員等）   |
+| `posts/{post_id}`                                  | 最新消息 / 活動回顧文章，含 Markdown 正文、封面圖、標籤、狀態 |
+| `clubs/{club_id}`                                  | 社團名單，含社團詳細資料（見 §3.3）                           |
+| `users/{uid}`                                      | 平台用戶資料，含角色、關聯社團、姓名                          |
+| `forms/{form_id}`                                  | 表單模板（Schema），定義欄位結構與依賴關係                    |
+| `forms/{form_id}/responses/{response_id}`          | 用戶填寫的表單回覆                                            |
+| `deposit_records/{record_id}`                      | 保證金繳交 / 領取紀錄，含狀態機欄位                           |
+| `attendance_events/{event_id}`                     | 點名事件定義                                                  |
+| `attendance_events/{event_id}/records/{record_id}` | 各社團的點名紀錄                                              |
 
 ### 3.2 posts（最新消息 / 活動回顧）
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | Auto ID |
-| `title` | `string` — 文章標題 |
-| `slug` | `string` — URL 友好識別碼（唯一） |
-| `category` | `string` — `'news'` \| `'activity_review'` |
-| `cover_image_url` | `string` — Firebase Storage 圖片 URL |
-| `content_markdown` | `string` — Markdown 全文 |
-| `tags` | `string[]` — 標籤陣列 |
-| `status` | `string` — `'draft'` \| `'published'` |
-| `published_at` | `Timestamp` |
-| `updated_at` | `Timestamp` |
-| `author_uid` | `string` — 發布者 UID |
+| 欄位               | 型別 / 說明                                |
+| ------------------ | ------------------------------------------ |
+| `id`               | Auto ID                                    |
+| `title`            | `string` — 文章標題                        |
+| `slug`             | `string` — URL 友好識別碼（唯一）          |
+| `category`         | `string` — `'news'` \| `'activity_review'` |
+| `cover_image_url`  | `string` — Firebase Storage 圖片 URL       |
+| `content_markdown` | `string` — Markdown 全文                   |
+| `tags`             | `string[]` — 標籤陣列                      |
+| `status`           | `string` — `'draft'` \| `'published'`      |
+| `published_at`     | `Timestamp`                                |
+| `updated_at`       | `Timestamp`                                |
+| `author_uid`       | `string` — 發布者 UID                      |
 
 > **注意**：Firestore document 上限為 1 MiB。一般 Markdown 文章通常在 50–200 KB 以內，可直接存於 Firestore。若日後有長篇文章超過 512 KB，建議改存 Firebase Storage，Firestore 只存 `storage_path` 參考路徑。
 
@@ -179,90 +182,102 @@ theme: {
 
 社團資料來源為學校平台爬取腳本，以 YAML / JSON 格式整理後匯入，詳細匯入規範見 §6.4。
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | `string` — 社團代碼（由匯入腳本標準化，建議使用學校平台 ID） |
-| `name` | `string` — 社團全名 |
-| `short_name` | `string` — 簡稱 |
-| `category` | `string` — 社團類別（學術、藝文、體育、服務等） |
-| `contact_person` | `string` — 聯絡幹部姓名 |
-| `contact_email` | `string` |
-| `contact_phone` | `string?` |
-| `description` | `string?` — 社團簡介 |
-| `established_year` | `number?` — 創立年份 |
-| `is_active` | `boolean` — 本學期是否活躍 |
-| `import_source` | `string` — `'manual'` \| `'yaml_import'` \| `'json_import'` |
-| `raw_data` | `object` — 原始匯入資料（保留所有欄位，供未來 re-mapping） |
-| `imported_at` | `Timestamp` — 最後匯入時間 |
+| 欄位               | 型別 / 說明                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| `id`               | `string` — 社團代碼（由匯入腳本標準化，建議使用學校平台 ID） |
+| `name`             | `string` — 社團全名                                          |
+| `short_name`       | `string` — 簡稱                                              |
+| `category`         | `string` — 社團類別（學術、藝文、體育、服務等）              |
+| `contact_person`   | `string` — 聯絡幹部姓名                                      |
+| `contact_email`    | `string`                                                     |
+| `contact_phone`    | `string?`                                                    |
+| `description`      | `string?` — 社團簡介                                         |
+| `established_year` | `number?` — 創立年份                                         |
+| `is_active`        | `boolean` — 本學期是否活躍                                   |
+| `import_source`    | `string` — `'manual'` \| `'yaml_import'` \| `'json_import'`  |
+| `raw_data`         | `object` — 原始匯入資料（保留所有欄位，供未來 re-mapping）   |
+| `imported_at`      | `Timestamp` — 最後匯入時間                                   |
 
 ### 3.4 users（平台用戶）
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `uid` | `string` — Firebase Auth UID（同 document ID） |
-| `display_name` | `string` — 姓名 |
-| `email` | `string` |
-| `role` | `string` — `'admin'` \| `'club_member'` |
-| `club_id` | `string?` — 預設關聯社團 ID（填表時自動預填，仍可修改） |
-| `created_at` | `Timestamp` |
+| 欄位           | 型別 / 說明                                             |
+| -------------- | ------------------------------------------------------- |
+| `uid`          | `string` — Firebase Auth UID（同 document ID）          |
+| `display_name` | `string` — 姓名                                         |
+| `email`        | `string`                                                |
+| `role`         | `string` — `'admin'` \| `'club_member'`                 |
+| `club_id`      | `string?` — 預設關聯社團 ID（填表時自動預填，仍可修改） |
+| `created_at`   | `Timestamp`                                             |
 
 > **設計決策**：`club_id` 為「建議值」而非「鎖定值」。填寫表單時自動預填社團資訊，但幹部仍可手動更改（因可能換社團）。
 
 ### 3.5 forms（表單模板 Schema）
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | Auto ID |
-| `title` | `string` — 表單名稱 |
-| `description` | `string` — 說明文字（支援 Markdown） |
-| `status` | `string` — `'draft'` \| `'open'` \| `'closed'` |
-| `settings` | `object` — 表單全域設定（每社團限填一次、截止日期等） |
-| `fields` | `FormField[]` — 欄位定義陣列（見 §5.1） |
-| `created_by` | `string` — admin UID |
-| `created_at` | `Timestamp` |
-| `closes_at` | `Timestamp?` — 截止時間 |
-| `revalidate_path` | `string` — ISR 重新生成路徑 |
+| 欄位              | 型別 / 說明                                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`              | Auto ID                                                                                                                                    |
+| `title`           | `string` — 表單名稱                                                                                                                        |
+| `description`     | `string` — 說明文字（支援 Markdown）                                                                                                       |
+| `form_type`       | `string` — `'expo_registration'` \| `'winter_association_registration'` \| `'general_registration'` \| `'attendance_survey'` \| `'custom'` |
+| `status`          | `string` — `'draft'` \| `'open'` \| `'closed'`                                                                                             |
+| `settings`        | `object` — 表單全域設定（每社團限填一次、截止日期、預填策略等）                                                                            |
+| `deposit_policy`  | `object` — 保證金設定（見下方說明）                                                                                                        |
+| `fields`          | `FormField[]` — 欄位定義陣列（見 §5.1）                                                                                                    |
+| `created_by`      | `string` — admin UID                                                                                                                       |
+| `created_at`      | `Timestamp`                                                                                                                                |
+| `closes_at`       | `Timestamp?` — 截止時間                                                                                                                    |
+| `revalidate_path` | `string` — ISR 重新生成路徑                                                                                                                |
+
+`deposit_policy` 建議結構：
+
+- `required: boolean` — 是否需要保證金（`true` 則需建立保證金流程，`false` 則完全不啟用）。
+- `amount: number?` — 保證金金額，`required=true` 時必填。
+- `binding_mode: 'linked_to_response' | 'independent'` — 是否與表單回覆綁定運作。
+- `refund_rule: string?` — 退還規則描述（可顯示於前台說明）。
 
 ### 3.6 deposit_records（保證金紀錄）
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | Auto ID |
-| `club_id` | `string` — 關聯社團 |
-| `form_response_id` | `string` — 來源表單回覆 ID（報名後自動建立） |
-| `status` | `string` — `'pending_payment'` \| `'paid'` \| `'returned'`（狀態機） |
-| `amount` | `number` — 保證金金額 |
-| `paid_at` | `Timestamp?` — 繳交時間（由 admin 標記） |
-| `returned_at` | `Timestamp?` — 領回時間（由 admin 標記） |
-| `notes` | `string?` — 備註 |
-| `updated_by` | `string` — 最後操作的 admin UID |
+| 欄位               | 型別 / 說明                                                               |
+| ------------------ | ------------------------------------------------------------------------- |
+| `id`               | Auto ID                                                                   |
+| `club_id`          | `string` — 關聯社團                                                       |
+| `form_response_id` | `string?` — 來源表單回覆 ID（`binding_mode='linked_to_response'` 時必填） |
+| `status`           | `string` — `'pending_payment'` \| `'paid'` \| `'returned'`（狀態機）      |
+| `amount`           | `number` — 保證金金額                                                     |
+| `paid_at`          | `Timestamp?` — 繳交時間（由 admin 標記）                                  |
+| `returned_at`      | `Timestamp?` — 領回時間（由 admin 標記）                                  |
+| `notes`            | `string?` — 備註                                                          |
+| `updated_by`       | `string` — 最後操作的 admin UID                                           |
 
 > **狀態機**：`pending_payment → paid → returned`，僅允許 admin 向前推進，不可逆（確保審計追蹤）。
+
+> **建立時機**：僅當該表單 `deposit_policy.required=true` 才建立 `deposit_records`。  
+> **綁定規則**：`binding_mode='linked_to_response'` 時由送出表單自動建立；`binding_mode='independent'` 時由管理員手動建立與維護。
 
 ### 3.7 attendance_events / records（點名）
 
 #### attendance_events
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | Auto ID |
-| `title` | `string` — 點名事件名稱（如「113-2 第一次代表大會」） |
-| `description` | `string?` |
-| `status` | `string` — `'upcoming'` \| `'open'` \| `'closed'` |
-| `expected_clubs` | `string[]` — 預計出席社團 ID 陣列 |
-| `opens_at` | `Timestamp` — 點名開放時間 |
-| `closes_at` | `Timestamp` — 點名截止時間 |
-| `created_by` | `string` — admin UID |
+| 欄位             | 型別 / 說明                                           |
+| ---------------- | ----------------------------------------------------- |
+| `id`             | Auto ID                                               |
+| `title`          | `string` — 點名事件名稱（如「113-2 第一次代表大會」） |
+| `description`    | `string?`                                             |
+| `status`         | `string` — `'upcoming'` \| `'open'` \| `'closed'`     |
+| `expected_clubs` | `string[]` — 預計出席社團 ID 陣列                     |
+| `opens_at`       | `Timestamp` — 點名開放時間                            |
+| `closes_at`      | `Timestamp` — 點名截止時間                            |
+| `created_by`     | `string` — admin UID                                  |
 
 #### attendance_records（Sub-Collection）
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | Auto ID |
-| `club_id` | `string` |
-| `user_uid` | `string` — 點名者 UID |
-| `checked_in_at` | `Timestamp` |
-| `device_info` | `string?` — UA string，輔助異常偵測 |
+| 欄位                   | 型別 / 說明                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| `id`                   | Auto ID                                                      |
+| `club_id`              | `string`                                                     |
+| `user_uid`             | `string` — 點名者 UID                                        |
+| `checked_in_at`        | `Timestamp`                                                  |
+| `device_info`          | `string?` — UA string，輔助異常偵測                          |
 | `is_duplicate_attempt` | `boolean` — 若重複點名，標記 `true` 並拒絕，仍留下紀錄供稽核 |
 
 > **防重複機制**：以 `club_id + event_id` 複合唯一性做 Firestore Transaction 保護，寫入前先 query 同社團同事件的 records，確認無記錄才允許寫入。此操作必須包在 Firestore Transaction 中，避免競態條件（Race Condition）。
@@ -275,17 +290,17 @@ theme: {
 
 #### 4.1.1 頁面清單
 
-| 路徑 | 說明 |
-|---|---|
-| `/` | 英雄區塊、組織簡介、最新消息預覽、活動回顧預覽、聯絡資訊 |
-| `/about` | 組織詳細介紹（Markdown 渲染） |
-| `/charter` | 組織章程（Markdown 渲染，支援錨點導航） |
-| `/members` | 成員架構（可視化組織架構或卡片清單） |
-| `/news` | 最新消息列表（分頁） |
-| `/news/[slug]` | 單篇消息（Markdown 全文、OG 標籤） |
-| `/activities` | 活動回顧列表（分頁） |
-| `/activities/[slug]` | 單篇活動回顧 |
-| `/forms/[form_id]` | 公開表單頁面（ISR 生成） |
+| 路徑                 | 說明                                                     |
+| -------------------- | -------------------------------------------------------- |
+| `/`                  | 英雄區塊、組織簡介、最新消息預覽、活動回顧預覽、聯絡資訊 |
+| `/about`             | 組織詳細介紹（Markdown 渲染）                            |
+| `/charter`           | 組織章程（Markdown 渲染，支援錨點導航）                  |
+| `/members`           | 成員架構（可視化組織架構或卡片清單）                     |
+| `/news`              | 最新消息列表（分頁）                                     |
+| `/news/[slug]`       | 單篇消息（Markdown 全文、OG 標籤）                       |
+| `/activities`        | 活動回顧列表（分頁）                                     |
+| `/activities/[slug]` | 單篇活動回顧                                             |
+| `/forms/[form_id]`   | 公開表單頁面（ISR 生成）                                 |
 
 #### 4.1.2 SEO 需求
 
@@ -298,17 +313,17 @@ theme: {
 
 #### 4.2.1 後台路由架構
 
-| 路由 | 功能 |
-|---|---|
-| `/admin` | 後台首頁 Dashboard（統計卡片） |
-| `/admin/content` | 網站內容管理（各頁面 Markdown 編輯） |
-| `/admin/posts` | 文章管理（新增、編輯、刪除、切換狀態） |
-| `/admin/forms` | 表單管理（新增、編輯表單） |
-| `/admin/forms/[form_id]/responses` | 表單回覆管理 |
-| `/admin/deposit` | 保證金管理 Dashboard |
-| `/admin/attendance` | 點名事件管理 |
-| `/admin/clubs` | 社團名單管理（含 YAML / JSON 匯入） |
-| `/admin/users` | 用戶管理（指派角色） |
+| 路由                               | 功能                                   |
+| ---------------------------------- | -------------------------------------- |
+| `/admin`                           | 後台首頁 Dashboard（統計卡片）         |
+| `/admin/content`                   | 網站內容管理（各頁面 Markdown 編輯）   |
+| `/admin/posts`                     | 文章管理（新增、編輯、刪除、切換狀態） |
+| `/admin/forms`                     | 表單管理（新增、編輯表單）             |
+| `/admin/forms/[form_id]/responses` | 表單回覆管理                           |
+| `/admin/deposit`                   | 保證金管理 Dashboard                   |
+| `/admin/attendance`                | 點名事件管理                           |
+| `/admin/clubs`                     | 社團名單管理（含 YAML / JSON 匯入）    |
+| `/admin/users`                     | 用戶管理（指派角色）                   |
 
 #### 4.2.2 後台認證保護
 
@@ -326,71 +341,126 @@ theme: {
 
 `FormField` 物件定義如下：
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | `string` — 欄位唯一識別碼（用於依賴關係引用） |
-| `type` | `string` — 欄位類型（見 §5.2） |
-| `label` | `string` — 顯示標籤 |
-| `placeholder` | `string?` — 輸入提示 |
-| `required` | `boolean` — 是否必填 |
-| `options` | `string[]?` — 用於 `select` / `radio` / `checkbox` 類型 |
-| `validation` | `object?` — 驗證規則（`min` / `max` / `pattern` / `custom message`） |
-| `depends_on` | `DependsOn?` — 條件顯示規則（見 §5.3） |
-| `default_from_user` | `string?` — 若值為 `'club_name'` 等，從用戶 Profile 預填 |
-| `read_only_if_prefilled` | `boolean?` — 預填後是否鎖定（預設 `false`，允許修改） |
-| `order` | `number` — 排列順序 |
+| 欄位                     | 型別 / 說明                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `id`                     | `string` — 欄位唯一識別碼（用於依賴關係引用）                                                      |
+| `type`                   | `string` — 欄位類型（見 §5.2）                                                                     |
+| `label`                  | `string` — 顯示標籤                                                                                |
+| `placeholder`            | `string?` — 輸入提示                                                                               |
+| `required`               | `boolean` — 是否必填                                                                               |
+| `options`                | `string[]?` — 用於 `select` / `radio` / `checkbox` 類型                                            |
+| `validation`             | `object?` — 驗證規則（`min` / `max` / `pattern` / `custom message`）                               |
+| `depends_on`             | `DependsOn?` — 條件顯示規則（見 §5.3）                                                             |
+| `default_from_user`      | `string?` — 若值為 `'club_name'` / `'email'` / `'club_category'` 等，從用戶 Profile 或社團資料預填 |
+| `read_only_if_prefilled` | `boolean?` — 預填後是否鎖定（預設 `false`，允許修改）                                              |
+| `order`                  | `number` — 排列順序                                                                                |
+
+> **期初社大 / 代表會類型建議**：`default_from_user` 預設開啟，並將 `read_only_if_prefilled` 預設為 `false`，確保「可快速填寫」與「仍可修正」兩者兼顧。
 
 ### 5.2 支援欄位類型
 
-| `type` 值 | 說明 |
-|---|---|
-| `text` | 單行文字 |
-| `textarea` | 多行文字 |
-| `number` | 數字 |
-| `email` | Email（含格式驗證） |
-| `phone` | 電話號碼 |
-| `select` | 下拉選單（單選） |
-| `radio` | 單選按鈕 |
-| `checkbox` | 多選方塊 |
-| `date` | 日期選擇器 |
-| `file` | 檔案上傳（存 Firebase Storage） |
-| `club_picker` | 社團選擇器（從 Firestore `clubs` 動態載入） |
-| `section_header` | 區段標題（非輸入欄位，純排版用） |
+| `type` 值        | 說明                                        |
+| ---------------- | ------------------------------------------- |
+| `text`           | 單行文字                                    |
+| `textarea`       | 多行文字                                    |
+| `number`         | 數字                                        |
+| `email`          | Email（含格式驗證）                         |
+| `phone`          | 電話號碼                                    |
+| `select`         | 下拉選單（單選）                            |
+| `radio`          | 單選按鈕                                    |
+| `checkbox`       | 多選方塊                                    |
+| `date`           | 日期選擇器                                  |
+| `file`           | 檔案上傳（存 Firebase Storage）             |
+| `club_picker`    | 社團選擇器（從 Firestore `clubs` 動態載入） |
+| `section_header` | 區段標題（非輸入欄位，純排版用）            |
 
 ### 5.3 依賴關係（Conditional Logic）
 
 `depends_on` 物件允許在後台以視覺化方式設定欄位的顯示條件：
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `field_id` | `string` — 被依賴的欄位 ID |
+| 欄位       | 型別 / 說明                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| `field_id` | `string` — 被依賴的欄位 ID                                                                  |
 | `operator` | `string` — `'equals'` \| `'not_equals'` \| `'contains'` \| `'is_empty'` \| `'is_not_empty'` |
-| `value` | `any` — 比對值 |
-| `action` | `string` — `'show'` \| `'hide'`（條件成立時的動作） |
+| `value`    | `any` — 比對值                                                                              |
+| `action`   | `string` — `'show'` \| `'hide'`（條件成立時的動作）                                         |
 
 **範例**：若「是否攜帶設備」選「是」，則顯示「設備清單」欄位。依賴關係可多層套疊，前端動態計算每個欄位的可見性後再渲染。
 
 ### 5.4 表單回覆 Schema
 
-| 欄位 | 型別 / 說明 |
-|---|---|
-| `id` | Auto ID |
-| `form_id` | `string` — 關聯表單 ID |
-| `club_id` | `string` — 填寫社團 |
-| `submitted_by_uid` | `string` — 填寫者 UID |
-| `answers` | `Record<field_id, any>` — 欄位 ID 對應填寫值的 Map |
-| `submitted_at` | `Timestamp` |
-| `is_duplicate_attempt` | `boolean` — 若同社團重複送出，標記並拒絕 |
+| 欄位                   | 型別 / 說明                                        |
+| ---------------------- | -------------------------------------------------- |
+| `id`                   | Auto ID                                            |
+| `form_id`              | `string` — 關聯表單 ID                             |
+| `club_id`              | `string` — 填寫社團                                |
+| `submitted_by_uid`     | `string` — 填寫者 UID                              |
+| `answers`              | `Record<field_id, any>` — 欄位 ID 對應填寫值的 Map |
+| `submitted_at`         | `Timestamp`                                        |
+| `is_duplicate_attempt` | `boolean` — 若同社團重複送出，標記並拒絕           |
 
 > **重複提交保護**：以 `form_id + club_id` 複合索引做 Firestore Transaction 保護，確保每個社團每份表單只能提交一份回覆。
 
 ### 5.5 保證金管理儀表板
 
+- **適用範圍**：僅對 `deposit_policy.required=true` 的表單顯示保證金管理功能。
 - **列表視圖**：以社團為行，顯示「報名狀態」、「保證金狀態」、「繳交時間」、「領回時間」。
 - **狀態篩選**：可依 `pending_payment` / `paid` / `returned` 篩選。
 - **批次操作**：管理員可選取多個社團，批次更新保證金狀態。
 - **匯出功能**：可匯出 CSV 供對帳使用。
 - **視覺指示**：用顏色標示狀態（紅：未繳、綠：已繳、灰：已領回），主色系採 `#510110`。
+
+### 5.6 常見表單模板（管理員可直接建立）
+
+#### A. 社博 / 寒假場協（同模板）
+
+> **需求結論**：新增「寒假場協」模板，欄位與社團博覽會報名相同，並支援保證金收退流程。
+
+- `form_type`: `winter_association_registration`（社博可用 `expo_registration`；兩者共用欄位模板）。
+- `deposit_policy.required`: `true`
+- `deposit_policy.binding_mode`: 建議 `linked_to_response`
+- 典型欄位（可依活動微調）：
+  - 社團名稱
+  - 電話（聯絡方式可選填）
+  - Email（聯絡方式可選填）
+  - 活動名稱
+  - 臉書網址（可選填）
+  - 活動區間（如營前訓 / 營期日期區間）
+  - 備註
+
+#### B. 普通報名問卷
+
+> **需求結論**：此類問卷不需要保證金，系統必須可關閉保證金流程。
+
+- `form_type`: `general_registration`
+- `deposit_policy.required`: `false`
+- `deposit_policy.binding_mode`: `independent`（保證金模組不啟用）
+
+#### C. 期初社代會出席調查（快速填寫型）
+
+> **需求結論**：可從使用者註冊資料與社團資料自動帶入預設值，且填寫者可自行調整。
+
+- `form_type`: `attendance_survey`
+- `deposit_policy.required`: `false`
+- 建議預填欄位：
+  - 社團名稱（`default_from_user='club_name'`）
+  - 聯絡 Email（`default_from_user='email'`）
+  - 社團性質（`default_from_user='club_category'`）
+  - 代表姓名（`default_from_user='display_name'`）
+- 其餘欄位依活動需求（代表職稱、是否出席、補充說明）配置。
+
+### 5.7 保證金彈性與資料綁定規則
+
+本系統以表單層級設定達成彈性，管理員建立每份問卷時都必須明確設定以下兩項：
+
+1. 是否需要繳交保證金：`deposit_policy.required`
+2. 保證金資料是否綁定表單回覆：`deposit_policy.binding_mode`
+
+運作規則如下：
+
+- 當 `required=false`：不建立 `deposit_records`，前後台皆不顯示保證金流程。
+- 當 `required=true` 且 `binding_mode='linked_to_response'`：送出表單後自動建立對應保證金紀錄，適合社博 / 寒假場協。
+- 當 `required=true` 且 `binding_mode='independent'`：保證金與表單分開維護，由管理員後台建立與更新紀錄。
 
 ---
 
@@ -596,30 +666,30 @@ clubs:
 
 ## 8. 開發里程碑建議
 
-| 階段 | 工作項目 |
-|---|---|
+| 階段    | 工作項目                                                                                  |
+| ------- | ----------------------------------------------------------------------------------------- |
 | Phase 1 | 基礎設施建立：Next.js 專案骨架、Firebase 設定、Tailwind 主題（`#510110`）、認證系統、RBAC |
-| Phase 2 | 前台公開頁面：首頁、關於、章程、成員、最新消息（含 CMS 後台） |
-| Phase 3 | 表單系統：表單 Schema 設計、後台表單建立介面、前台填寫頁面、回覆管理 |
-| Phase 4 | 保證金儀表板：狀態機實作、Dashboard UI、CSV 匯出 |
-| Phase 5 | 點名系統：點名事件管理、手機點名介面、即時統計、社團 YAML/JSON 匯入 |
-| Phase 6 | SEO 優化、效能調校、安全性審查、正式上線 |
+| Phase 2 | 前台公開頁面：首頁、關於、章程、成員、最新消息（含 CMS 後台）                             |
+| Phase 3 | 表單系統：表單 Schema 設計、後台表單建立介面、前台填寫頁面、回覆管理                      |
+| Phase 4 | 保證金儀表板：狀態機實作、Dashboard UI、CSV 匯出                                          |
+| Phase 5 | 點名系統：點名事件管理、手機點名介面、即時統計、社團 YAML/JSON 匯入                       |
+| Phase 6 | SEO 優化、效能調校、安全性審查、正式上線                                                  |
 
 ---
 
 ## 9. 待確認事項（Open Questions）
 
-| 項目 | 狀態 | 說明 |
-|---|---|---|
-| Q1 部署平台 | ✅ 確認 | **Vercel** |
-| Q2 社團名單格式 | ✅ 確認 | **爬取腳本 → YAML / JSON 標準格式**（規範見 §6.4） |
-| Q3 品牌主色 | ✅ 確認 | 主色 `#510110`（酒紅色）、背景白色、邊界淡灰色（見 §1.3） |
-| Q4 保證金金額 | ⏳ 待確認 | 是否為固定金額，或需在表單 / 後台設定？ |
-| Q5 社博報名表單 | ⏳ 待確認 | 每年重新建立，或需支援複製 / 範本功能？ |
-| Q6 多事件點名 | ⏳ 待確認 | 是否可能同日有多個點名事件同時開放？ |
-| Q7 表單填寫權限 | ⏳ 待確認 | 是否所有登入用戶皆可填，或僅限特定社團？ |
-| Q8 通知功能 | ⏳ 待確認 | 是否需要 Email 通知，Phase 幾納入？ |
-| Q9 網域名稱 | ⏳ 待確認 | 已有網域，或需申請？ |
+| 項目            | 狀態     | 說明                                                          |
+| --------------- | -------- | ------------------------------------------------------------- |
+| Q1 部署平台     | ✅ 確認   | **Vercel**                                                    |
+| Q2 社團名單格式 | ✅ 確認   | **爬取腳本 → YAML / JSON 標準格式**（規範見 §6.4）            |
+| Q3 品牌主色     | ✅ 確認   | 主色 `#510110`（酒紅色）、背景白色、邊界淡灰色（見 §1.3）     |
+| Q4 保證金金額   | ✅ 已確認 | 由 `deposit_policy.amount` 於每份表單設定，可依活動類型調整。 |
+| Q5 社博報名表單 | ✅ 已確認 | 支援範本化建立；「社博 / 寒假場協」可共用同一欄位模板。       |
+| Q6 多事件點名   | ⏳ 待確認 | 是否可能同日有多個點名事件同時開放？                          |
+| Q7 表單填寫權限 | ⏳ 待確認 | 是否所有登入用戶皆可填，或僅限特定社團？                      |
+| Q8 通知功能     | ⏳ 待確認 | 是否需要 Email 通知，Phase 幾納入？                           |
+| Q9 網域名稱     | ⏳ 待確認 | 已有網域，或需申請？                                          |
 
 ---
 
