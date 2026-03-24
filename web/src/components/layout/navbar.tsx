@@ -9,12 +9,13 @@ import {
   ChevronDownIcon,
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/lib/auth-context";
+import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
 
 const NAV_LINKS = [
   { label: "關於我們", href: "/about" },
-  { label: "組織章程", href: "/charter" },
   { label: "幹部成員", href: "/members" },
   { label: "最新消息", href: "/news" },
   { label: "活動回顧", href: "/activities" },
@@ -25,7 +26,10 @@ export function Navbar() {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [charterOpen, setCharterOpen] = useState(false);
+  const [mobileCharterOpen, setMobileCharterOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const charterRef = useRef<HTMLDivElement>(null);
 
   const isLoggedIn = !loading && !!firebaseUser;
   const isAdmin = user?.role === "admin";
@@ -40,6 +44,12 @@ export function Navbar() {
         !userMenuRef.current.contains(e.target as Node)
       ) {
         setUserMenuOpen(false);
+      }
+      if (
+        charterRef.current &&
+        !charterRef.current.contains(e.target as Node)
+      ) {
+        setCharterOpen(false);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
@@ -71,7 +81,40 @@ export function Navbar() {
 
         {/* Desktop nav links */}
         <div className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.map((link) => (
+          <Link
+            href={NAV_LINKS[0].href}
+            className="rounded-full px-3 py-1.5 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950"
+          >
+            {NAV_LINKS[0].label}
+          </Link>
+
+          <div ref={charterRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setCharterOpen((v) => !v)}
+              className="flex items-center gap-0.5 rounded-full px-3 py-1.5 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950"
+              aria-expanded={charterOpen}
+              aria-haspopup="true"
+            >
+              組織章程
+            </button>
+            {charterOpen && (
+              <div className="absolute left-0 top-full z-50 mt-1 w-max min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-neutral-950/8">
+                {CHARTER_DOCUMENTS.map((doc) => (
+                  <Link
+                    key={doc.slug}
+                    href={`/charter/${doc.slug}`}
+                    className="block whitespace-nowrap px-4 py-2.5 text-[13px] text-neutral-700 transition-colors hover:bg-neutral-50"
+                    onClick={() => setCharterOpen(false)}
+                  >
+                    {doc.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {NAV_LINKS.slice(1).map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -121,16 +164,14 @@ export function Navbar() {
                         {firebaseUser?.email}
                       </p>
                     </div>
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-neutral-700 transition-colors hover:bg-neutral-50"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Cog6ToothIcon className="h-4 w-4 text-neutral-400" />
-                        後台管理
-                      </Link>
-                    )}
+                    <Link
+                      href="/profile"
+                      className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-neutral-700 transition-colors hover:bg-neutral-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <UserCircleIcon className="h-4 w-4 text-neutral-400" />
+                      個人資料
+                    </Link>
                     <button
                       onClick={handleSignOut}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-red-600 transition-colors hover:bg-red-50"
@@ -170,7 +211,38 @@ export function Navbar() {
       {mobileOpen && (
         <div className="border-t border-border bg-white px-4 pb-4 pt-2 lg:hidden">
           <div className="flex flex-col gap-0.5">
-            {NAV_LINKS.map((link) => (
+            <Link
+              key={NAV_LINKS[0].href}
+              href={NAV_LINKS[0].href}
+              className="rounded-lg px-3 py-2.5 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50"
+              onClick={() => setMobileOpen(false)}
+            >
+              {NAV_LINKS[0].label}
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setMobileCharterOpen((v) => !v)}
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-[13px] font-[450] text-neutral-600"
+            >
+              組織章程
+            </button>
+            {mobileCharterOpen && (
+              <div className="ml-2 flex flex-col border-l border-border pl-3">
+                {CHARTER_DOCUMENTS.map((doc) => (
+                  <Link
+                    key={doc.slug}
+                    href={`/charter/${doc.slug}`}
+                    className="rounded-lg py-2 text-[13px] text-neutral-600 hover:text-neutral-950"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {doc.title}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {NAV_LINKS.slice(1).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -199,6 +271,14 @@ export function Navbar() {
                     後台管理
                   </Link>
                 )}
+                <Link
+                  href="/profile"
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium text-neutral-700 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <UserCircleIcon className="h-4 w-4" />
+                  個人資料
+                </Link>
                 <div className="flex items-center gap-3 rounded-lg bg-neutral-50 px-3 py-2.5">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white">
                     {avatarInitial}

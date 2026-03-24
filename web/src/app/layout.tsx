@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
+import { ProfileCompletionGate } from "@/components/layout/profile-completion-gate";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,7 +40,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ProfileCompletionGate>{children}</ProfileCompletionGate>
+        </AuthProvider>
       </body>
     </html>
   );

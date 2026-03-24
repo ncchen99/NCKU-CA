@@ -25,3 +25,115 @@ body {
   color: var(--color-foreground);
   font-feature-settings: 'ss01' 1;
 }
+
+/* 公開頁 Markdown（章程、CMS） */
+.cms-markdown h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-neutral-950);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+.cms-markdown h1:first-child {
+  margin-top: 0;
+}
+.cms-markdown h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-neutral-950);
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+  scroll-margin-top: 5rem;
+}
+.cms-markdown h3 {
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--color-neutral-950);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 5rem;
+}
+.cms-markdown p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.cms-markdown ul,
+.cms-markdown ol {
+  margin: 0.75rem 0;
+  padding-left: 1.35rem;
+}
+.cms-markdown li {
+  margin: 0.35rem 0;
+}
+.cms-markdown a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.cms-markdown .anchor-link {
+  color: inherit;
+}
+.cms-markdown a:hover {
+  color: var(--color-primary-light);
+}
+.cms-markdown a:not(.anchor-link):hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.cms-markdown blockquote {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-600);
+}
+.cms-markdown pre {
+  margin: 1rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: var(--color-neutral-100);
+  font-size: 0.85rem;
+}
+.cms-markdown code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.cms-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.cms-markdown th,
+.cms-markdown td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.cms-markdown th {
+  background: var(--color-neutral-50);
+  font-weight: 600;
+}
+.cms-markdown hr {
+  margin: 4.5rem auto;
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-neutral-200), transparent);
+  width: 100%;
+  position: relative;
+}
+.cms-markdown hr::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 2px;
+  background: var(--color-primary-light);
+  opacity: 0.6;
+}

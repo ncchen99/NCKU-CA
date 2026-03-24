@@ -46,7 +46,7 @@ function OrgBriefSection() {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="primary" href="/about">閱讀更多</Button>
-              <Button variant="ghost" href="/charter">組織章程</Button>
+              <Button variant="ghost" href="/charter/charter">組織章程</Button>
             </div>
           </div>
 

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { PublicLayout } from "@/components/layout/public-layout";
+import { CmsMarkdownWithToc } from "@/components/public/cms-markdown-with-toc";
+import { getSiteContent } from "@/lib/firestore/site-content";
 
 export const metadata: Metadata = {
   title: "幹部成員",
@@ -125,7 +127,48 @@ function MemberCard({ member }: { member: Member }) {
   );
 }
 
-export default function MembersPage() {
+function StaticMembersContent() {
+  return (
+    <>
+      {/* Leadership */}
+      <div className="mb-14">
+        <h2 className="text-[20px] font-[700] tracking-tight text-neutral-950">
+          會長團
+        </h2>
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {leadership.map((m) => (
+            <MemberCard key={m.email} member={m} />
+          ))}
+        </div>
+      </div>
+
+      {/* Departments */}
+      {departments.map((dept) => (
+        <div key={dept.name} className="mb-14">
+          <h2 className="text-[20px] font-[700] tracking-tight text-neutral-950">
+            {dept.name}
+          </h2>
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {dept.members.map((m) => (
+              <MemberCard key={m.email} member={m} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+export default async function MembersPage() {
+  let cmsContent: { title?: string; content_markdown?: string } | null = null;
+  try {
+    cmsContent = await getSiteContent("members");
+  } catch {
+    // CMS 未設定時使用靜態 fallback
+  }
+
+  const hasCms = Boolean(cmsContent?.content_markdown?.trim());
+
   return (
     <PublicLayout>
       <section className="w-full">
@@ -142,38 +185,19 @@ export default function MembersPage() {
               </span>
             </div>
             <h1 className="mt-4 text-[40px] font-bold leading-[1.1] tracking-tight text-neutral-950">
-              幹部成員
+              {cmsContent?.title?.trim() || "幹部成員"}
             </h1>
             <p className="mt-3 max-w-[52ch] text-[15px] leading-[28px] text-neutral-600 text-pretty">
               114 學年度社團聯合會現任幹部團隊，負責推動各項社團事務及服務。
             </p>
           </div>
 
-          {/* Leadership */}
-          <div className="mb-14">
-            <h2 className="text-[20px] font-[700] tracking-tight text-neutral-950">
-              會長團
-            </h2>
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {leadership.map((m) => (
-                <MemberCard key={m.email} member={m} />
-              ))}
-            </div>
-          </div>
-
-          {/* Departments */}
-          {departments.map((dept) => (
-            <div key={dept.name} className="mb-14">
-              <h2 className="text-[20px] font-[700] tracking-tight text-neutral-950">
-                {dept.name}
-              </h2>
-              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {dept.members.map((m) => (
-                  <MemberCard key={m.email} member={m} />
-                ))}
-              </div>
-            </div>
-          ))}
+          {/* Content */}
+          {hasCms ? (
+            <CmsMarkdownWithToc markdown={cmsContent!.content_markdown!} />
+          ) : (
+            <StaticMembersContent />
+          )}
         </div>
       </section>
     </PublicLayout>

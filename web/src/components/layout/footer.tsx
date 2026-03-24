@@ -3,7 +3,7 @@ import { ArrowLongRightIcon } from "@heroicons/react/20/solid";
 
 const QUICK_NAV = [
   { label: "關於我們", href: "/about" },
-  { label: "組織章程", href: "/charter" },
+  { label: "組織章程", href: "/charter/charter" },
   { label: "幹部成員", href: "/members" },
   { label: "最新消息", href: "/news" },
   { label: "活動回顧", href: "/activities" },

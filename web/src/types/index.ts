@@ -9,6 +9,14 @@ export interface User {
   club_id?: string;
   /** 由管理 API 依 club_id 解析，僅供顯示 */
   club_name?: string;
+  /** 社團類別，僅供顯示或預填 */
+  club_category?: string;
+  /** 幹部／職稱，自由填寫 */
+  position_title?: string;
+  /** 系級（如：大二、碩一） */
+  department_grade?: string;
+  /** 是否已完成初次個人資料填寫 */
+  profile_completed?: boolean;
   created_at: Timestamp;
 }
 
@@ -164,6 +172,7 @@ export interface AttendanceEvent {
   opens_at: Timestamp;
   closes_at: Timestamp;
   created_by: string;
+  passcode?: string;
 }
 
 export interface AttendanceRecord {

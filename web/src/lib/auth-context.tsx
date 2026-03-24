@@ -19,6 +19,8 @@ interface AuthContextValue {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** 從 Firestore 重新載入使用者文件（例如更新個人資料後） */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -137,8 +139,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const { getClientAuth } = await import("@/lib/firebase");
+    const clientAuth = await getClientAuth();
+    const fbUser = clientAuth.currentUser;
+    if (!fbUser) return;
+    const userData = await fetchUserData(fbUser.uid);
+    setUser(userData);
+  }, []);
+
   return (
-    <AuthContext value={{ user, firebaseUser, loading, signInWithGoogle, signOut }}>
+    <AuthContext
+      value={{
+        user,
+        firebaseUser,
+        loading,
+        signInWithGoogle,
+        signOut,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext>
   );

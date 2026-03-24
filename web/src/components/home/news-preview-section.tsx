@@ -1,33 +1,58 @@
+import Link from "next/link";
 import { SectionHeading, ViewAllLink } from "@/components/ui/section-heading";
+import { getPublishedPosts } from "@/lib/firestore/posts";
+import { anyTimestampToDate } from "@/lib/datetime";
 
-const mockNews = [
-  {
-    id: 1,
-    category: "公告",
-    date: "2026-03-20",
-    title: "114 學年度第二學期社團評鑑公告",
-    excerpt:
-      "各社團請於期限內繳交相關資料，以利評鑑作業順利進行。詳細辦法請參閱附件。",
-  },
-  {
-    id: 2,
-    category: "活動",
-    date: "2026-03-15",
-    title: "第 28 屆社團博覽會報名開始",
-    excerpt:
-      "本學期社博將於四月中旬舉辦，歡迎各社團踴躍報名參加。報名截止日期為三月底。",
-  },
-  {
-    id: 3,
-    category: "會議",
-    date: "2026-03-10",
-    title: "第三次代表大會會議紀錄公告",
-    excerpt:
-      "本次大會通過多項重要議案，請各社團代表詳閱會議紀錄並轉達社團成員。",
-  },
-];
+async function NewsPreviewSection() {
+  let news: {
+    slug: string;
+    category: string;
+    date: string;
+    title: string;
+    excerpt: string;
+    cover_image_url: string | null;
+  }[] = [];
 
-function NewsPreviewSection() {
+  try {
+    const { posts } = await getPublishedPosts({ category: "news", limit: 3 });
+    news = posts.map((p) => {
+      const d = anyTimestampToDate(p.published_at);
+      return {
+        slug: p.slug,
+        category: p.tags?.[0] ?? "公告",
+        date: d
+          ? d.toLocaleDateString("zh-TW", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          : "—",
+        title: p.title,
+        excerpt:
+          p.content_markdown
+            ?.substring(0, 120)
+            ?.replace(/[#*_>\-\[\]`]/g, "") ?? "",
+        cover_image_url: p.cover_image_url || null,
+      };
+    });
+  } catch {
+    /* Firestore 未連線或無資料時使用空列表 */
+  }
+
+  if (news.length === 0) {
+    // Fallback mock data
+    news = [
+      {
+        slug: "#",
+        category: "公告",
+        date: "—",
+        title: "尚無已發布消息",
+        excerpt: "管理員可在後台新增最新消息文章。",
+        cover_image_url: null,
+      },
+    ];
+  }
+
   return (
     <section className="w-full">
       <div className="mx-auto max-w-6xl px-6 py-12">
@@ -36,15 +61,23 @@ function NewsPreviewSection() {
           <ViewAllLink href="/news" />
         </div>
 
-        <div className="grid grid-cols-3 gap-5">
-          {mockNews.map((item) => (
-            <a
-              key={item.id}
-              href={`/news/${item.id}`}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {news.map((item) => (
+            <Link
+              key={item.slug}
+              href={item.slug === "#" ? "/news" : `/news/${item.slug}`}
               className="group relative block overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
             >
               <article>
                 <div className="relative aspect-[16/9] bg-neutral-200">
+                  {item.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.cover_image_url}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
                   <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 font-mono text-[10px] font-medium text-white">
                     {item.category}
                   </span>
@@ -61,7 +94,7 @@ function NewsPreviewSection() {
                   </p>
                 </div>
               </article>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

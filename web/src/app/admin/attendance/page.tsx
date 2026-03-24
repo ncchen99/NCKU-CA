@@ -12,6 +12,7 @@ import {
   EyeIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
+import { KeyIcon } from "@heroicons/react/24/outline";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
@@ -45,6 +46,7 @@ interface AttendanceEvent {
   opens_at: { _seconds: number; _nanoseconds: number } | string;
   closes_at: { _seconds: number; _nanoseconds: number } | string;
   created_by: string;
+  passcode?: string;
 }
 
 interface EventWithStats extends AttendanceEvent {
@@ -84,6 +86,7 @@ interface EventFormData {
   opens_at: string;
   closes_at: string;
   expected_categories: string[];
+  passcode: string;
 }
 
 const initialForm: EventFormData = {
@@ -92,6 +95,7 @@ const initialForm: EventFormData = {
   opens_at: "",
   closes_at: "",
   expected_categories: [],
+  passcode: "",
 };
 
 const tabs: { key: FilterStatus; label: string }[] = [
@@ -221,6 +225,7 @@ export default function AttendancePage() {
       opens_at: tsToDatetimeLocal(event.opens_at),
       closes_at: tsToDatetimeLocal(event.closes_at),
       expected_categories: cats.length > 0 ? cats : [...event.expected_clubs],
+      passcode: event.passcode ?? "",
     });
     setFormError(null);
     setModalOpen(true);
@@ -250,6 +255,11 @@ export default function AttendancePage() {
       return;
     }
 
+    if (!form.passcode.trim()) {
+      setFormError("請設定點名密碼");
+      return;
+    }
+
     const clubs = form.expected_categories.map((code) => {
       const cat = CLUB_CATEGORIES.find((c) => c.code === code);
       return cat ? cat.name : code;
@@ -262,6 +272,7 @@ export default function AttendancePage() {
       expected_clubs: clubs,
       opens_at: new Date(form.opens_at).toISOString(),
       closes_at: new Date(computedClosesAt).toISOString(),
+      passcode: form.passcode.trim(),
     };
 
     setFormLoading(true);
@@ -495,6 +506,12 @@ export default function AttendancePage() {
                     <CheckCircleIcon className="h-4 w-4 text-neutral-400" />
                     已簽到 {event.checkedIn} / {total}
                   </div>
+                  {event.passcode && (
+                    <div className="flex items-center gap-2 text-neutral-600">
+                      <KeyIcon className="h-4 w-4 text-neutral-400" />
+                      密碼：<span className="font-mono font-medium text-neutral-900">{event.passcode}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 min-h-[40px]">
@@ -578,6 +595,25 @@ export default function AttendancePage() {
           onChange={(e) => updateForm("description", e.target.value)}
           placeholder="活動說明（選填）"
         />
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <FormField
+              label="點名密碼"
+              required
+              value={form.passcode || ""}
+              onChange={(e) => updateForm("passcode", e.target.value)}
+              placeholder="請輸入或產生密碼"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="mb-[2px] h-[38px] px-3"
+            onClick={() => updateForm("passcode", Math.random().toString(36).slice(-6).toUpperCase())}
+          >
+            隨機產生
+          </Button>
+        </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             label="開始時間"
@@ -693,7 +729,7 @@ export default function AttendancePage() {
                   <CalendarDaysIcon className="h-4 w-4 text-neutral-400" />
                   活動時間與說明
                 </div>
-                <div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
+                <div className="mt-4 grid gap-4 text-sm md:grid-cols-3">
                   <div className="space-y-1.5">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">開始時間</p>
                     <p className="font-medium text-neutral-700">{formatDateTime(detailData.event.opens_at)}</p>
@@ -702,6 +738,12 @@ export default function AttendancePage() {
                     <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">結束時間</p>
                     <p className="font-medium text-neutral-700">{formatDateTime(detailData.event.closes_at)}</p>
                   </div>
+                  {detailData.event.passcode && (
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">點名密碼</p>
+                      <p className="font-medium text-neutral-700 font-mono">{detailData.event.passcode}</p>
+                    </div>
+                  )}
                 </div>
                 {detailData.event.description && (
                   <div className="mt-4 border-t border-border/50 pt-4">

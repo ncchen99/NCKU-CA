@@ -11,16 +11,17 @@ import {
 import { createPortal } from "react-dom";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
-export interface AdminSelectOption {
+export interface AppSelectOption {
   value: string;
   label: string;
 }
 
-export type AdminSelectProps = {
+export type AppSelectProps = {
   value: string | number | readonly string[] | undefined;
   onChange: (value: string) => void;
-  options: AdminSelectOption[];
+  options: AppSelectOption[];
   disabled?: boolean;
+  placeholder?: string;
   className?: string;
   invalid?: boolean;
   id?: string;
@@ -32,7 +33,7 @@ export type AdminSelectProps = {
 const triggerBase =
   "flex w-full min-h-[2.5rem] items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-2 text-left text-sm text-neutral-950 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-500";
 
-function coerceValue(v: AdminSelectProps["value"]): string {
+function coerceValue(v: AppSelectProps["value"]): string {
   if (v === undefined || v === null) return "";
   if (typeof v === "string") return v;
   if (typeof v === "number") return String(v);
@@ -40,29 +41,29 @@ function coerceValue(v: AdminSelectProps["value"]): string {
   return String(v);
 }
 
-export function AdminSelect({
+export function AppSelect({
   value,
   onChange,
   options,
   disabled,
+  placeholder = "請選擇",
   className = "",
   invalid,
   id,
   name,
   autoFocus,
   "aria-invalid": ariaInvalid,
-}: AdminSelectProps) {
+}: AppSelectProps) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
   const generatedId = useId();
-  const controlId = id ?? `admin-select-${generatedId}`;
+  const controlId = id ?? `app-select-${generatedId}`;
   const listboxId = `${controlId}-listbox`;
 
   const stringValue = coerceValue(value);
-  const selected =
-    options.find((o) => o.value === stringValue) ?? options[0];
-  const displayLabel = selected?.label ?? "—";
+  const selected = options.find((o) => o.value === stringValue);
+  const displayLabel = selected?.label ?? placeholder;
 
   const [menuPos, setMenuPos] = useState<{
     top: number;

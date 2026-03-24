@@ -38,6 +38,62 @@ export async function getOpenAttendanceEvents(): Promise<AttendanceEvent[]> {
   }
 }
 
+function toDate(val: unknown): Date | null {
+  if (val == null) return null;
+  if (typeof val === "object" && val !== null && "toDate" in val) {
+    try {
+      const d = (val as { toDate: () => Date }).toDate();
+      return isNaN(d.getTime()) ? null : d;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof val === "string") {
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof val === "object" && val !== null) {
+    const o = val as Record<string, unknown>;
+    const sec =
+      typeof o._seconds === "number"
+        ? o._seconds
+        : typeof o.seconds === "number"
+          ? o.seconds
+          : null;
+    if (sec != null) {
+      const d = new Date(sec * 1000);
+      return isNaN(d.getTime()) ? null : d;
+    }
+  }
+  return null;
+}
+
+/**
+ * 公開用：以實際時間區間判斷是否開放點名，不依賴快取的 status 欄位。
+ */
+export async function getAttendanceEventsOpenNow(): Promise<AttendanceEvent[]> {
+  try {
+    const db = getAdminDb();
+    const snapshot = await db.collection(COLLECTION).get();
+    const now = new Date();
+    const out: AttendanceEvent[] = [];
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      const opensAt = toDate(data.opens_at);
+      const closesAt = toDate(data.closes_at);
+      if (!opensAt || !closesAt) continue;
+      if (now >= opensAt && now <= closesAt) {
+        out.push({ id: doc.id, ...data } as AttendanceEvent);
+      }
+    }
+    return out;
+  } catch (error) {
+    throw new Error(
+      `Failed to get open-now attendance events: ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
 function computeStatus(
   data: Record<string, unknown>
 ): "upcoming" | "open" | "closed" {

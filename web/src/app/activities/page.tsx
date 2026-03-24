@@ -1,80 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 type Category = "全部" | "社博" | "大會" | "講座" | "其他";
 
-interface ActivityItem {
+interface PostItem {
+  id: string;
   slug: string;
-  category: "社博" | "大會" | "講座" | "其他";
-  date: string;
   title: string;
+  category: string;
+  tags: string[];
   excerpt: string;
+  cover_image_url: string | null;
+  published_at_display: string;
 }
 
-const mockActivities: ActivityItem[] = [
-  {
-    slug: "expo-27-review",
-    category: "社博",
-    date: "2025-11-20",
-    title: "113 學年第一學期社團博覽會圓滿落幕",
-    excerpt:
-      "本次社博共有超過 200 個社團參與，吸引近萬名新生到場。活動期間舉辦了多場精彩表演。",
-  },
-  {
-    slug: "assembly-2-review",
-    category: "大會",
-    date: "2025-12-15",
-    title: "第二次代表大會順利召開",
-    excerpt:
-      "本次大會審議通過年度預算案及多項社團管理辦法修正案。出席率達 87%。",
-  },
-  {
-    slug: "leadership-workshop",
-    category: "講座",
-    date: "2025-10-08",
-    title: "社團經營分享座談會",
-    excerpt:
-      "邀請資深社團幹部分享經營心得，提供新任幹部實用建議。共計 60 位幹部參加。",
-  },
-  {
-    slug: "expo-26-review",
-    category: "社博",
-    date: "2025-04-18",
-    title: "112 學年第二學期社團博覽會回顧",
-    excerpt:
-      "本次社博以「無限延伸」為主題，180 個社團聯合展出，展現成大社團的多元風貌。",
-  },
-  {
-    slug: "assembly-1-review",
-    category: "大會",
-    date: "2025-10-01",
-    title: "第一次代表大會紀實",
-    excerpt:
-      "新學期首次代表大會順利召開，完成幹部改選及新年度工作計畫審議。",
-  },
-  {
-    slug: "community-service",
-    category: "其他",
-    date: "2025-09-15",
-    title: "社團聯合志工服務活動",
-    excerpt:
-      "聯合二十餘個社團共同參與社區清潔與關懷服務，發揮大學社會責任。",
-  },
-  {
-    slug: "handover-ceremony",
-    category: "其他",
-    date: "2025-08-20",
-    title: "113 學年幹部交接典禮",
-    excerpt:
-      "新舊任幹部正式交接，傳承社聯會的服務精神與運營經驗。",
-  },
+const TAG_CATEGORIES: { label: Category; tag?: string }[] = [
+  { label: "全部" },
+  { label: "社博", tag: "社博" },
+  { label: "大會", tag: "大會" },
+  { label: "講座", tag: "講座" },
+  { label: "其他", tag: "其他" },
 ];
-
-const categories: Category[] = ["全部", "社博", "大會", "講座", "其他"];
 
 const categoryBadgeColor: Record<string, string> = {
   社博: "bg-primary",
@@ -83,18 +33,48 @@ const categoryBadgeColor: Record<string, string> = {
   其他: "bg-neutral-600",
 };
 
+function getBadgeLabel(tags: string[]): string {
+  for (const t of ["社博", "大會", "講座", "其他"]) {
+    if (tags.includes(t)) return t;
+  }
+  return tags[0] ?? "其他";
+}
+
 export default function ActivitiesPage() {
   const [activeCategory, setActiveCategory] = useState<Category>("全部");
   const [page, setPage] = useState(1);
+  const [posts, setPosts] = useState<PostItem[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+
   const perPage = 6;
 
-  const filtered =
-    activeCategory === "全部"
-      ? mockActivities
-      : mockActivities.filter((a) => a.category === activeCategory);
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const tagParam = TAG_CATEGORIES.find((c) => c.label === activeCategory);
+      const params = new URLSearchParams({
+        category: "activity_review",
+        page: String(page),
+        per_page: String(perPage),
+      });
+      if (tagParam?.tag) params.set("tag", tagParam.tag);
 
-  const totalPages = Math.ceil(filtered.length / perPage);
-  const paginated = filtered.slice((page - 1) * perPage, page * perPage);
+      const res = await fetch(`/api/public/posts?${params}`);
+      const data = await res.json();
+      setPosts(data.posts ?? []);
+      setTotalPages(data.total_pages ?? 1);
+    } catch {
+      setPosts([]);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeCategory, page]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   return (
     <PublicLayout>
@@ -118,52 +98,82 @@ export default function ActivitiesPage() {
 
           {/* Category tabs */}
           <div className="mb-8 flex items-center gap-2">
-            {categories.map((cat) => (
+            {TAG_CATEGORIES.map((cat) => (
               <button
-                key={cat}
+                key={cat.label}
                 onClick={() => {
-                  setActiveCategory(cat);
+                  setActiveCategory(cat.label);
                   setPage(1);
                 }}
-                className={`inline-flex h-[32px] items-center rounded-full px-3 text-xs font-[500] transition-colors ${activeCategory === cat
+                className={`inline-flex h-[32px] items-center rounded-full px-3 text-xs font-[500] transition-colors ${activeCategory === cat.label
                     ? "bg-primary text-white"
                     : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                   }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {paginated.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/activities/${item.slug}`}
-                className="group overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-shadow duration-150 hover:shadow-[0_0_0_1px_rgba(10,10,10,0.12),0_2px_8px_rgba(10,10,10,0.06)]"
-              >
-                <div className="relative aspect-[16/9] bg-neutral-200">
-                  <span
-                    className={`absolute left-3 top-3 rounded-full px-2.5 py-1 font-mono text-[10px] font-medium text-white ${categoryBadgeColor[item.category]}`}
+          {loading ? (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)]">
+                  <div className="aspect-[16/9] animate-pulse bg-neutral-100" />
+                  <div className="bg-white p-4">
+                    <div className="h-3 w-20 animate-pulse rounded bg-neutral-100" />
+                    <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-neutral-100" />
+                    <div className="mt-2 h-3 w-full animate-pulse rounded bg-neutral-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="rounded-xl border border-border bg-neutral-50 py-12 text-center text-[14px] text-neutral-500">
+              目前沒有已發布的活動回顧。
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {posts.map((item) => {
+                const badge = getBadgeLabel(item.tags);
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/activities/${item.slug}`}
+                    className="group overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-shadow duration-150 hover:shadow-[0_0_0_1px_rgba(10,10,10,0.12),0_2px_8px_rgba(10,10,10,0.06)]"
                   >
-                    {item.category}
-                  </span>
-                </div>
-                <div className="bg-white p-4">
-                  <time className="font-mono text-[11px] text-neutral-400">
-                    {item.date}
-                  </time>
-                  <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1.5 line-clamp-2 text-[12px] text-neutral-600">
-                    {item.excerpt}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+                    <div className="relative aspect-[16/9] bg-neutral-200">
+                      {item.cover_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.cover_image_url}
+                          alt={item.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : null}
+                      <span
+                        className={`absolute left-3 top-3 rounded-full px-2.5 py-1 font-mono text-[10px] font-medium text-white ${categoryBadgeColor[badge] ?? "bg-neutral-600"}`}
+                      >
+                        {badge}
+                      </span>
+                    </div>
+                    <div className="bg-white p-4">
+                      <time className="font-mono text-[11px] text-neutral-400">
+                        {item.published_at_display}
+                      </time>
+                      <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1.5 line-clamp-2 text-[12px] text-neutral-600">
+                        {item.excerpt}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (

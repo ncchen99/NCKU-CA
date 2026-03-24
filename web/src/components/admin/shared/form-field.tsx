@@ -6,7 +6,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
-import { AdminSelect } from "@/components/ui/admin-select";
+import { AppSelect } from "@/components/ui/app-select";
 
 interface BaseFieldProps {
   label: string;
@@ -47,7 +47,7 @@ function SelectFieldInner({
     fieldProps;
 
   return (
-    <AdminSelect
+    <AppSelect
       options={options}
       value={value}
       onChange={(newValue) => {
