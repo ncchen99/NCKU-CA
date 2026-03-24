@@ -61,10 +61,22 @@ body {
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
 }
-.cms-markdown ul,
-.cms-markdown ol {
+.cms-markdown ul {
+  list-style-type: disc;
   margin: 0.75rem 0;
   padding-left: 1.35rem;
+}
+.cms-markdown ol {
+  list-style-type: decimal;
+  margin: 0.75rem 0;
+  padding-left: 1.35rem;
+}
+.cms-markdown ul ul,
+.cms-markdown ol ul,
+.cms-markdown ul ol,
+.cms-markdown ol ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 .cms-markdown li {
   margin: 0.35rem 0;
