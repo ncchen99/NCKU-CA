@@ -1,17 +1,31 @@
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
+import {
+  BuildingLibraryIcon,
+  TicketIcon,
+  ClipboardDocumentCheckIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
 
 const areas = [
-  { icon: "🏛", title: "組織治理", desc: "代表大會與委員會運作管理" },
-  { icon: "🎪", title: "社博管理", desc: "每學期社團博覽會策劃執行" },
-  { icon: "📋", title: "表單系統", desc: "線上報名與資料收集平台" },
-  { icon: "✅", title: "數位點名", desc: "代表大會出席紀錄管理" },
+  {
+    icon: BuildingLibraryIcon,
+    title: "組織治理",
+    desc: "代表大會與委員會運作管理",
+  },
+  { icon: TicketIcon, title: "社博管理", desc: "每學期社團博覽會策劃執行" },
+  {
+    icon: ClipboardDocumentCheckIcon,
+    title: "表單系統",
+    desc: "線上報名與資料收集平台",
+  },
+  { icon: UserGroupIcon, title: "數位點名", desc: "代表大會出席紀錄管理" },
 ];
 
 function OrgBriefSection() {
   return (
     <section className="w-full bg-neutral-50">
-      <div className="mx-auto max-w-6xl px-6 py-20">
+      <div className="mx-auto max-w-6xl px-6 py-12">
         <SectionHeading
           title="關於組織"
           subtitle="About Club Association of NCKU"
@@ -37,24 +51,21 @@ function OrgBriefSection() {
           </div>
 
           {/* Right — Focus areas */}
-          <div className="flex flex-col gap-5">
-            <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-600">
-              我們負責的四大領域
-            </span>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col">
+            <div className="grid grid-cols-2 gap-4">
               {areas.map((area) => (
                 <div
                   key={area.title}
-                  className="flex flex-col gap-3 rounded-lg bg-white p-4 shadow-[0_0_0_1px_rgba(10,10,10,0.08)]"
+                  className="flex flex-col gap-4 rounded-xl bg-white p-5 shadow-[0_0_0_1px_rgba(10,10,10,0.08)]"
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-sm">
-                    {area.icon}
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <area.icon className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-[13px] font-semibold text-neutral-950">
+                    <h4 className="text-[14px] font-bold text-neutral-950">
                       {area.title}
-                    </h3>
-                    <p className="mt-1 text-[12px] text-neutral-600">
+                    </h4>
+                    <p className="mt-1.5 text-[12px] leading-relaxed text-neutral-500">
                       {area.desc}
                     </p>
                   </div>

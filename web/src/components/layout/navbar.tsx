@@ -49,12 +49,16 @@ export function Navbar({
     <header className="sticky top-0 z-50 h-14 bg-white ring-1 ring-neutral-950/8">
       <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="NCKU NCA Logo" className="h-7 w-7 shrink-0" />
-          <span className="text-[13px] font-[650] tracking-tight text-neutral-950">
-            成大社聯會{" "}
-            <span className="text-neutral-400">NCKU NCA</span>
-          </span>
+        <Link href="/" className="flex items-center gap-3">
+          <img src="/logo.svg" alt="NCA Logo" className="h-7 w-7 shrink-0" />
+          <div className="flex items-baseline gap-2">
+            <span className="text-[13px] font-[650] tracking-tight text-neutral-950">
+              成大社聯會
+            </span>
+            <span className="font-mono text-[13px] font-[700] uppercase tracking-wider text-neutral-400">
+              NCKU NCA
+            </span>
+          </div>
         </Link>
 
         {/* Desktop nav links */}
@@ -76,11 +80,10 @@ export function Navbar({
             <>
               <Link
                 href="/attendance"
-                className={`flex h-8 items-center gap-1 rounded-full px-3 text-[13px] font-medium transition-colors ${
-                  hasActiveEvent
-                    ? "bg-primary text-white hover:bg-primary-dark"
-                    : "text-neutral-600 ring-1 ring-neutral-950/8 hover:bg-neutral-50"
-                }`}
+                className={`flex h-8 items-center gap-1 rounded-full px-3 text-[13px] font-medium transition-colors ${hasActiveEvent
+                  ? "bg-primary text-white hover:bg-primary-dark"
+                  : "text-neutral-600 ring-1 ring-neutral-950/8 hover:bg-neutral-50"
+                  }`}
               >
                 ✓ 今日點名
               </Link>
@@ -169,11 +172,10 @@ export function Navbar({
               <div className="flex flex-col gap-2">
                 <Link
                   href="/attendance"
-                  className={`flex h-10 items-center justify-center rounded-full text-[13px] font-medium transition-colors ${
-                    hasActiveEvent
-                      ? "bg-primary text-white"
-                      : "text-neutral-600 ring-1 ring-neutral-950/8"
-                  }`}
+                  className={`flex h-10 items-center justify-center rounded-full text-[13px] font-medium transition-colors ${hasActiveEvent
+                    ? "bg-primary text-white"
+                    : "text-neutral-600 ring-1 ring-neutral-950/8"
+                    }`}
                   onClick={() => setMobileOpen(false)}
                 >
                   ✓ 今日點名

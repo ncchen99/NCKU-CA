@@ -36,6 +36,7 @@ export default function RootLayout({
     <html
       lang="zh-TW"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans">
         <AuthProvider>{children}</AuthProvider>

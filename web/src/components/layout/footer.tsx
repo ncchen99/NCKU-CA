@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLongRightIcon } from "@heroicons/react/20/solid";
 
 const QUICK_NAV = [
   { label: "關於我們", href: "/about" },
@@ -40,16 +41,16 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           {/* Brand column — 2/4 */}
           <div className="md:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary">
-                <span className="text-[10px] font-bold leading-none text-white">
-                  社
+            <Link href="/" className="flex items-center gap-3">
+              <img src="/logo.svg" alt="NCA Logo" className="h-7 w-7 shrink-0" />
+              <div className="flex items-baseline gap-2">
+                <span className="text-[13px] font-[650] tracking-tight text-neutral-950">
+                  成大社聯會
+                </span>
+                <span className="font-mono text-[13px] font-[700] uppercase tracking-wider text-neutral-400">
+                  NCKU NCA
                 </span>
               </div>
-              <span className="text-[13px] font-[650] tracking-tight text-neutral-950">
-                成大社聯會{" "}
-                <span className="text-neutral-400">NCKU NCA</span>
-              </span>
             </Link>
 
             <p className="mt-4 max-w-[40ch] text-[13px] leading-6 text-neutral-600">
@@ -68,7 +69,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex h-[30px] w-[30px] items-center justify-center rounded-md ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
+                  className="flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
                 >
                   <Icon className="h-3.5 w-3.5 text-neutral-600" />
                 </a>
@@ -117,9 +118,10 @@ export function Footer() {
               <li className="mt-1">
                 <Link
                   href="/login"
-                  className="text-[13px] font-medium text-primary transition-colors hover:text-primary-dark"
+                  className="group inline-flex items-center gap-1 text-[13px] font-medium text-primary transition-colors hover:text-primary-dark"
                 >
-                  登入系統 →
+                  登入系統
+                  <ArrowLongRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
               </li>
             </ul>

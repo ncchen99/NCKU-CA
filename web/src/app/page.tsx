@@ -9,13 +9,25 @@ export default function Home() {
   return (
     <PublicLayout>
       <HeroSection />
-      <CanvasGrid />
+      <CanvasGrid
+        topFadeClassName="bg-gradient-to-b from-white to-transparent"
+        bottomFadeClassName="bg-gradient-to-t from-neutral-50 to-transparent"
+      />
       <OrgBriefSection />
-      <CanvasGrid />
+      <CanvasGrid
+        topFadeClassName="bg-gradient-to-b from-neutral-50 to-transparent"
+        bottomFadeClassName="bg-gradient-to-t from-white to-transparent"
+      />
       <NewsPreviewSection />
-      <CanvasGrid />
+      <CanvasGrid
+        topFadeClassName="bg-gradient-to-b from-white to-transparent"
+        bottomFadeClassName="bg-gradient-to-t from-neutral-50 to-transparent"
+      />
       <ActivityPreviewSection />
-      <CanvasGrid />
+      <CanvasGrid
+        topFadeClassName="bg-gradient-to-b from-neutral-50 to-transparent"
+        bottomFadeClassName="bg-gradient-to-t from-white to-transparent"
+      />
     </PublicLayout>
   );
 }

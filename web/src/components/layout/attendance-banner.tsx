@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowLongRightIcon } from "@heroicons/react/20/solid";
 
 interface AttendanceBannerProps {
   eventName: string;
@@ -29,9 +30,10 @@ export function AttendanceBanner({
 
         <Link
           href="/attendance"
-          className="flex h-7 shrink-0 items-center rounded-full border border-white/30 px-3 text-[12px] font-medium text-white transition-colors hover:border-white/50 hover:bg-white/10"
+          className="group flex h-7 shrink-0 items-center gap-1 rounded-full border border-white/30 px-3 text-[12px] font-medium text-white transition-colors hover:border-white/50 hover:bg-white/10"
         >
-          立即前往點名 →
+          立即前往點名
+          <ArrowLongRightIcon className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
         </Link>
       </div>
     </div>

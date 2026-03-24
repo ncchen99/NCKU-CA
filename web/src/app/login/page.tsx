@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 
 export const metadata: Metadata = {
   title: "登入",
@@ -49,13 +50,13 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Back link */}
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-[13px] text-neutral-500 transition-colors hover:text-neutral-950"
+            className="group inline-flex items-center gap-1 text-[13px] text-neutral-500 transition-colors hover:text-neutral-950"
           >
-            ← 返回首頁
+            <ArrowLongLeftIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+            返回首頁
           </Link>
         </div>
       </div>

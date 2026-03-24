@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicLayout } from "@/components/layout/public-layout";
+import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 
 interface NewsArticle {
   slug: string;
@@ -138,9 +139,10 @@ export default async function NewsArticlePage({
             </p>
             <Link
               href="/news"
-              className="mt-6 inline-block text-sm font-medium text-primary hover:underline"
+              className="group mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
             >
-              ← 返回最新消息
+              <ArrowLongLeftIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+              返回最新消息
             </Link>
           </div>
         </section>
@@ -205,9 +207,10 @@ export default async function NewsArticlePage({
 
               <Link
                 href="/news"
-                className="mt-12 inline-block text-sm font-[450] text-primary hover:underline"
+                className="group mt-12 inline-flex items-center gap-1 text-sm font-[450] text-primary hover:underline"
               >
-                ← 返回最新消息
+                <ArrowLongLeftIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                返回最新消息
               </Link>
             </article>
 

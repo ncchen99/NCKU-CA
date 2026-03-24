@@ -2,6 +2,7 @@
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import Link from "next/link";
+import { ArrowLongRightIcon } from "@heroicons/react/20/solid";
 
 type ButtonVariant = "primary" | "ghost" | "outline" | "pill";
 type ButtonSize = "sm" | "md" | "lg";
@@ -58,36 +59,38 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const combinedClassName =
       [base, variantCls, sizeCls, activeCls, className].filter(Boolean).join(" ");
 
+    const content = children;
+
     if (href) {
       if (variant === "primary") {
         return (
-          <span className="inline-flex p-px">
+          <span className="inline-flex p-px group">
             <Link href={href} className={combinedClassName}>
-              {children}
+              {content}
             </Link>
           </span>
         );
       }
       return (
-        <Link href={href} className={combinedClassName}>
-          {children}
+        <Link href={href} className={`${combinedClassName} group`}>
+          {content}
         </Link>
       );
     }
 
     if (variant === "primary") {
       return (
-        <span className="inline-flex p-px">
+        <span className="inline-flex p-px group">
           <button ref={ref} className={combinedClassName} {...props}>
-            {children}
+            {content}
           </button>
         </span>
       );
     }
 
     return (
-      <button ref={ref} className={combinedClassName} {...props}>
-        {children}
+      <button ref={ref} className={`${combinedClassName} group`} {...props}>
+        {content}
       </button>
     );
   },

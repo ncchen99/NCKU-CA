@@ -1,4 +1,4 @@
-import { SectionHeading } from "@/components/ui/section-heading";
+import { SectionHeading, ViewAllLink } from "@/components/ui/section-heading";
 
 const mockNews = [
   {
@@ -30,40 +30,38 @@ const mockNews = [
 function NewsPreviewSection() {
   return (
     <section className="w-full">
-      <div className="mx-auto max-w-6xl px-6 py-20">
+      <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="mb-10 flex items-baseline justify-between">
           <SectionHeading title="最新消息" subtitle="Latest News" />
-          <a
-            href="/news"
-            className="text-sm font-[450] text-primary hover:underline"
-          >
-            查看全部 →
-          </a>
+          <ViewAllLink href="/news" />
         </div>
 
         <div className="grid grid-cols-3 gap-5">
           {mockNews.map((item) => (
-            <article
+            <a
               key={item.id}
-              className="group relative overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)]"
+              href={`/news/${item.id}`}
+              className="group relative block overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
             >
-              <div className="relative aspect-[16/9] bg-neutral-200">
-                <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 font-mono text-[10px] font-medium text-white">
-                  {item.category}
-                </span>
-              </div>
-              <div className="bg-white p-4">
-                <time className="font-mono text-[11px] text-neutral-400">
-                  {item.date}
-                </time>
-                <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950">
-                  {item.title}
-                </h3>
-                <p className="mt-1.5 line-clamp-2 text-[12px] text-neutral-600">
-                  {item.excerpt}
-                </p>
-              </div>
-            </article>
+              <article>
+                <div className="relative aspect-[16/9] bg-neutral-200">
+                  <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 font-mono text-[10px] font-medium text-white">
+                    {item.category}
+                  </span>
+                </div>
+                <div className="bg-white p-4">
+                  <time className="font-mono text-[11px] text-neutral-400">
+                    {item.date}
+                  </time>
+                  <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1.5 line-clamp-2 text-[12px] text-neutral-600">
+                    {item.excerpt}
+                  </p>
+                </div>
+              </article>
+            </a>
           ))}
         </div>
       </div>

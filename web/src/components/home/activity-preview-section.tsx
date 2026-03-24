@@ -1,4 +1,5 @@
-import { SectionHeading } from "@/components/ui/section-heading";
+import { SectionHeading, ViewAllLink } from "@/components/ui/section-heading";
+import { ArrowLongRightIcon } from "@heroicons/react/20/solid";
 
 const featured = {
   id: 1,
@@ -37,65 +38,66 @@ function GhostTag({ children }: { children: React.ReactNode }) {
 function ActivityPreviewSection() {
   return (
     <section className="w-full bg-neutral-50">
-      <div className="mx-auto max-w-6xl px-6 py-20">
+      <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="mb-10 flex items-baseline justify-between">
           <SectionHeading title="活動回顧" subtitle="Activity Review" />
-          <a
-            href="/activities"
-            className="text-sm font-[450] text-primary hover:underline"
-          >
-            查看全部 →
-          </a>
+          <ViewAllLink href="/activities" />
         </div>
 
         <div className="grid grid-cols-2 gap-5">
           {/* Featured card — spans full left column */}
-          <article className="row-span-2 overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)]">
-            <div className="h-[260px] bg-neutral-200" />
-            <div className="p-5">
-              <div className="flex items-center gap-2">
-                <GhostTag>{featured.tag}</GhostTag>
-                <time className="font-mono text-[11px] text-neutral-400">
-                  {featured.date}
-                </time>
+          <a
+            href={`/activities/${featured.id}`}
+            className="group row-span-2 block overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
+          >
+            <article>
+              <div className="h-[260px] bg-neutral-200" />
+              <div className="p-5">
+                <div className="flex items-center gap-2">
+                  <GhostTag>{featured.tag}</GhostTag>
+                  <time className="font-mono text-[11px] text-neutral-400">
+                    {featured.date}
+                  </time>
+                </div>
+                <h3 className="mt-3 text-[16px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary transition-colors">
+                  {featured.title}
+                </h3>
+                <p className="mt-2 text-[13px] leading-[22px] text-neutral-600 text-pretty">
+                  {featured.excerpt}
+                </p>
+                <div className="group mt-4 inline-flex items-center gap-1 text-sm font-[450] text-primary transition-colors hover:text-primary-dark">
+                  閱讀全文
+                  <ArrowLongRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </div>
               </div>
-              <h3 className="mt-3 text-[16px] font-semibold tracking-tight text-neutral-950">
-                {featured.title}
-              </h3>
-              <p className="mt-2 text-[13px] leading-[22px] text-neutral-600 text-pretty">
-                {featured.excerpt}
-              </p>
-              <a
-                href={`/activities/${featured.id}`}
-                className="mt-4 inline-block text-sm font-[450] text-primary hover:underline"
-              >
-                閱讀全文 →
-              </a>
-            </div>
-          </article>
+            </article>
+          </a>
 
           {/* Side cards */}
           {sideCards.map((item) => (
-            <article
+            <a
               key={item.id}
-              className="flex overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)]"
+              href={`/activities/${item.id}`}
+              className="group flex overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
             >
-              <div className="w-[120px] shrink-0 bg-neutral-200" />
-              <div className="flex flex-col justify-center p-4">
-                <div className="flex items-center gap-2">
-                  <GhostTag>{item.tag}</GhostTag>
-                  <time className="font-mono text-[11px] text-neutral-400">
-                    {item.date}
-                  </time>
+              <article className="flex w-full">
+                <div className="w-[120px] shrink-0 bg-neutral-200" />
+                <div className="flex flex-col justify-center p-4">
+                  <div className="flex items-center gap-2">
+                    <GhostTag>{item.tag}</GhostTag>
+                    <time className="font-mono text-[11px] text-neutral-400">
+                      {item.date}
+                    </time>
+                  </div>
+                  <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 text-[12px] text-neutral-600">
+                    {item.excerpt}
+                  </p>
                 </div>
-                <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950">
-                  {item.title}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-[12px] text-neutral-600">
-                  {item.excerpt}
-                </p>
-              </div>
-            </article>
+              </article>
+            </a>
           ))}
         </div>
       </div>

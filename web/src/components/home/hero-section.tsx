@@ -9,7 +9,7 @@ const stats = [
 function HeroSection() {
   return (
     <section className="w-full">
-      <div className="mx-auto max-w-6xl px-6 pt-24 pb-16">
+      <div className="mx-auto max-w-6xl px-6 pt-28 pb-16">
         <div className="flex items-end gap-16">
           {/* Left 3/5 */}
           <div className="flex w-3/5 flex-col gap-6">
