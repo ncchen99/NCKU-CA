@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
-import { getDepositRecords, updateDepositStatus } from "@/lib/firestore";
+import {
+  getClubsByIds,
+  getDepositRecords,
+  updateDepositStatus,
+} from "@/lib/firestore";
 
 export async function GET(request: NextRequest) {
   const session = await verifyAdmin();
@@ -12,7 +16,14 @@ export async function GET(request: NextRequest) {
     const clubId = searchParams.get("clubId") ?? undefined;
 
     const records = await getDepositRecords({ status, clubId });
-    return NextResponse.json(records);
+    const clubIds = [...new Set(records.map((r) => r.club_id).filter(Boolean))];
+    const clubs = await getClubsByIds(clubIds);
+    const nameByClubId = new Map(clubs.map((c) => [c.id, c.name]));
+    const withNames = records.map((r) => ({
+      ...r,
+      club_name: r.club_id ? nameByClubId.get(r.club_id) : undefined,
+    }));
+    return NextResponse.json(withNames);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "取得保證金紀錄失敗" },

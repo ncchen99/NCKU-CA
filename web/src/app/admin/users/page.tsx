@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -8,13 +9,15 @@ import {
   AdminFilterBar,
   AdminTableSkeleton,
   AdminErrorState,
-  AdminEmptyState,
   ConfirmDialog,
   FormModal,
   FormField,
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
   type TabItem,
 } from "@/components/admin/shared";
-import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
+import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 
 type RoleTab = "all" | "admin" | "club_member";
 
@@ -24,6 +27,7 @@ interface User {
   email: string;
   role: "admin" | "club_member";
   club_id?: string;
+  club_name?: string;
   created_at: unknown;
 }
 
@@ -84,7 +88,7 @@ export default function UsersPage() {
   }, [fetchUsers]);
 
   // --- role change ---
-  const openRoleConfirm = (user: User) => {
+  const openRoleConfirm = useCallback((user: User) => {
     const newRole = user.role === "admin" ? "club_member" : "admin";
     const newRoleLabel = newRole === "admin" ? "管理員" : "社團成員";
     setRoleTarget({
@@ -94,7 +98,7 @@ export default function UsersPage() {
       newRole,
       newRoleLabel,
     });
-  };
+  }, []);
 
   const handleRoleConfirm = async () => {
     if (!roleTarget) return;
@@ -115,13 +119,13 @@ export default function UsersPage() {
   };
 
   // --- club association ---
-  const openClubModal = (user: User) => {
+  const openClubModal = useCallback((user: User) => {
     setClubTarget({
       uid: user.uid,
       displayName: user.display_name,
       clubId: user.club_id ?? "",
     });
-  };
+  }, []);
 
   const handleClubSave = async () => {
     if (!clubTarget) return;
@@ -150,12 +154,115 @@ export default function UsersPage() {
       const q = search.toLowerCase();
       const name = (u.display_name ?? "").toLowerCase();
       const email = (u.email ?? "").toLowerCase();
-      const club = (u.club_id ?? "").toLowerCase();
+      const club = (u.club_name ?? u.club_id ?? "").toLowerCase();
       if (!name.includes(q) && !email.includes(q) && !club.includes(q))
         return false;
     }
     return true;
   });
+
+  const userColumns = useMemo<ColumnDef<User>[]>(
+    () => [
+      {
+        accessorKey: "display_name",
+        header: ({ column }) => adminSortableHeader(column, "姓名"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.display_name ?? ""),
+            String(rowB.original.display_name ?? ""),
+          ),
+        cell: ({ row }) => {
+          const user = row.original;
+          return (
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-200 text-[11px] font-semibold text-neutral-600">
+                {(user.display_name ?? "?")[0]}
+              </div>
+              <span className="font-medium text-neutral-950">
+                {user.display_name}
+              </span>
+            </div>
+          );
+        },
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        accessorKey: "email",
+        header: ({ column }) => adminSortableHeader(column, "Email"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.email ?? ""),
+            String(rowB.original.email ?? ""),
+          ),
+        cell: ({ row }) => (
+          <span className="font-mono text-[12px] text-neutral-400">
+            {row.original.email}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "role",
+        header: ({ column }) => adminSortableHeader(column, "角色"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(rowA.original.role, rowB.original.role),
+        cell: ({ row }) => {
+          const badge = roleConfig[row.original.role];
+          return <Badge variant={badge.variant}>{badge.label}</Badge>;
+        },
+      },
+      {
+        id: "club",
+        accessorFn: (row) => row.club_name ?? row.club_id ?? "",
+        header: ({ column }) => adminSortableHeader(column, "所屬社團"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("club")),
+            String(rowB.getValue("club")),
+          ),
+        cell: ({ row }) => (
+          <button
+            type="button"
+            className="text-[12px] text-neutral-600 underline decoration-dashed underline-offset-2 hover:text-neutral-800"
+            onClick={() => openClubModal(row.original)}
+            title="點擊設定社團"
+          >
+            {row.original.club_name ?? row.original.club_id ?? "—"}
+          </button>
+        ),
+      },
+      {
+        id: "created_at",
+        accessorFn: (row) => timestampToMs(row.created_at),
+        header: ({ column }) => adminSortableHeader(column, "建立日期"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-400">
+            {formatTimestamp(
+              row.original.created_at as Parameters<typeof formatTimestamp>[0],
+            )}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "操作",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <button
+            type="button"
+            onClick={() => openRoleConfirm(row.original)}
+            className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+          >
+            {row.original.role === "club_member"
+              ? "設為管理員"
+              : "設為社團成員"}
+          </button>
+        ),
+        meta: { thClassName: "px-3", tdClassName: "px-3" },
+      },
+    ],
+    [openClubModal, openRoleConfirm],
+  );
 
   return (
     <>
@@ -178,74 +285,13 @@ export default function UsersPage() {
         ) : error ? (
           <AdminErrorState message={error} onRetry={fetchUsers} />
         ) : (
-          <table className="w-full text-left text-[13px]">
-            <thead>
-              <tr className="bg-neutral-100 text-neutral-500">
-                <th className="h-10 px-5 font-medium">姓名</th>
-                <th className="h-10 px-3 font-medium">Email</th>
-                <th className="h-10 px-3 font-medium">角色</th>
-                <th className="h-10 px-3 font-medium">所屬社團</th>
-                <th className="h-10 px-3 font-medium">建立日期</th>
-                <th className="h-10 px-3 font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((user) => {
-                const badge = roleConfig[user.role];
-                return (
-                  <tr
-                    key={user.uid}
-                    className="border-b border-border/50 last:border-0 hover:bg-primary/5"
-                  >
-                    <td className="h-12 px-5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-200 text-[11px] font-semibold text-neutral-600">
-                          {(user.display_name ?? "?")[0]}
-                        </div>
-                        <span className="font-medium text-neutral-950">
-                          {user.display_name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="h-12 px-3 font-mono text-[12px] text-neutral-400">
-                      {user.email}
-                    </td>
-                    <td className="h-12 px-3">
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                    </td>
-                    <td className="h-12 px-3">
-                      <button
-                        className="text-[12px] text-neutral-600 underline decoration-dashed underline-offset-2 hover:text-neutral-800"
-                        onClick={() => openClubModal(user)}
-                        title="點擊設定社團"
-                      >
-                        {user.club_id || "—"}
-                      </button>
-                    </td>
-                    <td className="h-12 px-3 text-neutral-400">
-                      {formatTimestamp(user.created_at as Parameters<typeof formatTimestamp>[0])}
-                    </td>
-                    <td className="h-12 px-3">
-                      <button
-                        onClick={() => openRoleConfirm(user)}
-                        className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
-                      >
-                        {user.role === "club_member"
-                          ? "設為管理員"
-                          : "設為社團成員"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <AdminEmptyState
-                  message="沒有找到符合條件的用戶"
-                  colSpan={6}
-                />
-              )}
-            </tbody>
-          </table>
+          <AdminDataTable
+            data={filtered}
+            columns={userColumns}
+            getRowId={(row) => row.uid}
+            emptyMessage="沒有找到符合條件的用戶"
+            emptyColSpan={6}
+          />
         )}
       </Card>
 

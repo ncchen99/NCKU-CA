@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import {
   PlusIcon,
@@ -16,14 +17,16 @@ import {
   AdminFilterBar,
   AdminTableSkeleton,
   AdminErrorState,
-  AdminEmptyState,
   AdminErrorBanner,
   FullPageFormModal,
   FormField,
   ConfirmDialog,
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
   type TabItem,
 } from "@/components/admin/shared";
-import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
+import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 
 type FormStatus = "all" | "open" | "closed" | "draft";
 
@@ -179,7 +182,7 @@ export default function FormsPage() {
     setModalOpen(true);
   }
 
-  async function openEditModal(form: Form) {
+  const openEditModal = useCallback(async (form: Form) => {
     setModalError(null);
     setModalOpen(true);
     setModalLoading(true);
@@ -200,7 +203,7 @@ export default function FormsPage() {
     } finally {
       setModalLoading(false);
     }
-  }
+  }, []);
 
   function closesAtToInput(ts: unknown): string {
     if (!ts) return "";
@@ -286,6 +289,108 @@ export default function FormsPage() {
     setDraft((prev) => ({ ...prev, ...patch }));
   }
 
+  const formColumns = useMemo<ColumnDef<Form>[]>(
+    () => [
+      {
+        accessorKey: "title",
+        header: ({ column }) => adminSortableHeader(column, "表單名稱"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.title),
+            String(rowB.original.title),
+          ),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-950">{row.original.title}</span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        accessorKey: "form_type",
+        header: ({ column }) => adminSortableHeader(column, "類型"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            formTypeLabels[rowA.original.form_type] ?? rowA.original.form_type,
+            formTypeLabels[rowB.original.form_type] ?? rowB.original.form_type,
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-600">
+            {formTypeLabels[row.original.form_type] ?? row.original.form_type}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(rowA.original.status, rowB.original.status),
+        cell: ({ row }) => {
+          const badge = statusConfig[row.original.status];
+          return <Badge variant={badge.variant}>{badge.label}</Badge>;
+        },
+      },
+      {
+        accessorKey: "responseCount",
+        header: ({ column }) => adminSortableHeader(column, "回覆數"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="font-mono text-neutral-600">
+            {row.original.responseCount ?? 0}
+          </span>
+        ),
+      },
+      {
+        id: "closes_at",
+        accessorFn: (row) => timestampToMs(row.closes_at),
+        header: ({ column }) => adminSortableHeader(column, "截止日期"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-400">
+            {formatTimestamp(
+              row.original.closes_at as Parameters<typeof formatTimestamp>[0],
+            )}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const form = row.original;
+          return (
+            <div className="inline-flex items-center gap-1">
+              <Link
+                href={`/admin/forms/${form.id}`}
+                title="檢視"
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
+              >
+                <EyeIcon className="h-4 w-4" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => openEditModal(form)}
+                title="編輯"
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
+              >
+                <PencilSquareIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(form)}
+                title="刪除"
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        },
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+    ],
+    [openEditModal],
+  );
+
   return (
     <>
       <AdminPageHeader
@@ -318,80 +423,13 @@ export default function FormsPage() {
         ) : error ? (
           <AdminErrorState message={error} onRetry={fetchForms} />
         ) : (
-          <table className="w-full text-left text-[13px]">
-            <thead>
-              <tr className="bg-neutral-100 text-neutral-500">
-                <th className="h-10 px-5 font-medium">表單名稱</th>
-                <th className="h-10 px-3 font-medium">類型</th>
-                <th className="h-10 px-3 font-medium">狀態</th>
-                <th className="h-10 px-3 font-medium">回覆數</th>
-                <th className="h-10 px-3 font-medium">截止日期</th>
-                <th className="h-10 px-5 text-right font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((form) => {
-                const badge = statusConfig[form.status];
-                return (
-                  <tr
-                    key={form.id}
-                    className="border-b border-border/50 last:border-0 hover:bg-primary/5"
-                  >
-                    <td className="h-12 px-5 font-medium text-neutral-950">
-                      {form.title}
-                    </td>
-                    <td className="h-12 px-3 text-neutral-600">
-                      {formTypeLabels[form.form_type] ?? form.form_type}
-                    </td>
-                    <td className="h-12 px-3">
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                    </td>
-                    <td className="h-12 px-3 font-mono text-neutral-600">
-                      {form.responseCount ?? 0}
-                    </td>
-                    <td className="h-12 px-3 text-neutral-400">
-                      {formatTimestamp(
-                        form.closes_at as Parameters<typeof formatTimestamp>[0],
-                      )}
-                    </td>
-                    <td className="h-12 px-5 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <Link
-                          href={`/admin/forms/${form.id}`}
-                          title="檢視"
-                          className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(form)}
-                          title="編輯"
-                          className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
-                        >
-                          <PencilSquareIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTarget(form)}
-                          title="刪除"
-                          className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <AdminEmptyState
-                  message="沒有找到符合條件的表單"
-                  colSpan={6}
-                />
-              )}
-            </tbody>
-          </table>
+          <AdminDataTable
+            data={filtered}
+            columns={formColumns}
+            getRowId={(row) => row.id}
+            emptyMessage="沒有找到符合條件的表單"
+            emptyColSpan={6}
+          />
         )}
       </Card>
 

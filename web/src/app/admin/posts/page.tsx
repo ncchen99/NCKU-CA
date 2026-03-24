@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -14,15 +15,17 @@ import {
   AdminPageHeader,
   AdminFilterBar,
   AdminTableSkeleton,
-  AdminEmptyState,
   AdminErrorBanner,
   FullPageFormModal,
   FormField,
   MarkdownEditor,
   ConfirmDialog,
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
   type TabItem,
 } from "@/components/admin/shared";
-import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
+import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 
 type PostStatus = "all" | "published" | "draft";
 
@@ -38,6 +41,7 @@ interface Post {
   published_at: unknown;
   updated_at: unknown;
   author_uid: string;
+  author_display_name?: string;
 }
 
 interface PostForm {
@@ -74,7 +78,8 @@ const statusBadge: Record<string, { variant: "success" | "neutral"; label: strin
   draft: { variant: "neutral", label: "草稿" },
 };
 
-const commonTagSuggestions = [
+/** API 失敗或尚無任何標籤時的後備清單 */
+const fallbackTagSuggestions = [
   "公告",
   "系學會",
   "活動",
@@ -116,6 +121,10 @@ export default function PostsPage() {
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof PostForm, string>>>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [tagSuggestionsOpen, setTagSuggestionsOpen] = useState(false);
+  const [tagStats, setTagStats] = useState<{ tag: string; count: number }[]>(
+    [],
+  );
+  const [tagStatsLoading, setTagStatsLoading] = useState(false);
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
@@ -182,7 +191,7 @@ export default function PostsPage() {
 
   // --- Edit ---
 
-  async function openEdit(post: Post) {
+  const openEdit = useCallback(async (post: Post) => {
     setEditingId(post.id);
     setFormErrors({});
     setSlugManuallyEdited(true);
@@ -206,7 +215,7 @@ export default function PostsPage() {
     } finally {
       setModalLoading(false);
     }
-  }
+  }, []);
 
   // --- Submit (create or edit) ---
 
@@ -268,32 +277,173 @@ export default function PostsPage() {
 
   // --- Toggle status ---
 
-  async function handleToggleStatus(post: Post) {
-    const newStatus = post.status === "published" ? "draft" : "published";
-    setTogglingId(post.id);
-    try {
-      await adminFetch(`/api/admin/posts/${post.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      await fetchPosts();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "更新狀態失敗");
-    } finally {
-      setTogglingId(null);
-    }
-  }
+  const handleToggleStatus = useCallback(
+    async (post: Post) => {
+      const newStatus = post.status === "published" ? "draft" : "published";
+      setTogglingId(post.id);
+      try {
+        await adminFetch(`/api/admin/posts/${post.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        });
+        await fetchPosts();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "更新狀態失敗");
+      } finally {
+        setTogglingId(null);
+      }
+    },
+    [fetchPosts],
+  );
 
   const selectedTags = parseTags(form.tags);
-  const availableTagSuggestions = commonTagSuggestions.filter(
-    (tag) => !selectedTags.includes(tag),
+
+  const tagCountByName = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const row of tagStats) m.set(row.tag, row.count);
+    return m;
+  }, [tagStats]);
+
+  const popularTagPool = useMemo(() => {
+    if (tagStats.length > 0) return tagStats.map((t) => t.tag);
+    return fallbackTagSuggestions;
+  }, [tagStats]);
+
+  const availableTagSuggestions = useMemo(
+    () =>
+      popularTagPool
+        .filter((tag) => !selectedTags.includes(tag))
+        .slice(0, 24),
+    [popularTagPool, selectedTags],
   );
 
   function addTag(tag: string) {
     const nextTags = [...selectedTags, tag];
     updateForm({ tags: nextTags.join(", ") });
   }
+
+  const postColumns = useMemo<ColumnDef<Post>[]>(
+    () => [
+      {
+        accessorKey: "title",
+        header: ({ column }) => adminSortableHeader(column, "標題"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.title),
+            String(rowB.original.title),
+          ),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-950">{row.original.title}</span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => adminSortableHeader(column, "分類"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            categoryMap[rowA.original.category] ?? rowA.original.category,
+            categoryMap[rowB.original.category] ?? rowB.original.category,
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-600">
+            {categoryMap[row.original.category] ?? row.original.category}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(rowA.original.status, rowB.original.status),
+        cell: ({ row }) => {
+          const badge = statusBadge[row.original.status] ?? statusBadge.draft;
+          return <Badge variant={badge.variant}>{badge.label}</Badge>;
+        },
+      },
+      {
+        id: "author",
+        accessorFn: (row) =>
+          row.author_display_name ?? row.author_uid ?? "",
+        header: ({ column }) => adminSortableHeader(column, "作者"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("author")),
+            String(rowB.getValue("author")),
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-600">
+            {row.original.author_display_name ?? row.original.author_uid ?? "—"}
+          </span>
+        ),
+      },
+      {
+        id: "displayDate",
+        accessorFn: (row) =>
+          timestampToMs(
+            row.status === "published" ? row.published_at : row.updated_at,
+          ),
+        header: ({ column }) => adminSortableHeader(column, "日期"),
+        sortingFn: "basic",
+        cell: ({ row }) => {
+          const post = row.original;
+          const displayDate =
+            post.status === "published"
+              ? formatTimestamp(
+                  post.published_at as Parameters<typeof formatTimestamp>[0],
+                )
+              : formatTimestamp(
+                  post.updated_at as Parameters<typeof formatTimestamp>[0],
+                );
+          return (
+            <span className="text-neutral-400">{displayDate}</span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const post = row.original;
+          return (
+            <div className="inline-flex items-center gap-1">
+              <button
+                type="button"
+                disabled={togglingId === post.id}
+                onClick={() => handleToggleStatus(post)}
+                title={post.status === "published" ? "轉為草稿" : "發布"}
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50"
+              >
+                <ArrowPathIcon
+                  className={`h-4 w-4 ${togglingId === post.id ? "animate-spin" : ""}`}
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => openEdit(post)}
+                title="編輯"
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
+              >
+                <PencilSquareIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(post)}
+                title="刪除"
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        },
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+    ],
+    [handleToggleStatus, openEdit, togglingId],
+  );
 
   return (
     <>
@@ -323,80 +473,13 @@ export default function PostsPage() {
         {loading ? (
           <AdminTableSkeleton rows={5} columns={[192, 64, 56, 80, 80]} />
         ) : (
-          <table className="w-full text-left text-[13px]">
-            <thead>
-              <tr className="bg-neutral-100 text-neutral-500">
-                <th className="h-10 px-5 font-medium">標題</th>
-                <th className="h-10 px-3 font-medium">分類</th>
-                <th className="h-10 px-3 font-medium">狀態</th>
-                <th className="h-10 px-3 font-medium">作者</th>
-                <th className="h-10 px-3 font-medium">日期</th>
-                <th className="h-10 px-5 text-right font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <AdminEmptyState message="沒有找到符合條件的文章" colSpan={6} />
-              ) : (
-                filtered.map((post) => {
-                  const badge = statusBadge[post.status] ?? statusBadge.draft;
-                  const displayDate =
-                    post.status === "published"
-                      ? formatTimestamp(post.published_at as Parameters<typeof formatTimestamp>[0])
-                      : formatTimestamp(post.updated_at as Parameters<typeof formatTimestamp>[0]);
-                  return (
-                    <tr
-                      key={post.id}
-                      className="border-b border-border/50 last:border-0 hover:bg-primary/5"
-                    >
-                      <td className="h-12 px-5 font-medium text-neutral-950">
-                        {post.title}
-                      </td>
-                      <td className="h-12 px-3 text-neutral-600">
-                        {categoryMap[post.category] ?? post.category}
-                      </td>
-                      <td className="h-12 px-3">
-                        <Badge variant={badge.variant}>{badge.label}</Badge>
-                      </td>
-                      <td className="h-12 px-3 text-neutral-600">
-                        {post.author_uid ?? "—"}
-                      </td>
-                      <td className="h-12 px-3 text-neutral-400">{displayDate}</td>
-                      <td className="h-12 px-5 text-right">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            disabled={togglingId === post.id}
-                            onClick={() => handleToggleStatus(post)}
-                            title={post.status === "published" ? "轉為草稿" : "發布"}
-                            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50"
-                          >
-                            <ArrowPathIcon className={`h-4 w-4 ${togglingId === post.id ? "animate-spin" : ""}`} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openEdit(post)}
-                            title="編輯"
-                            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
-                          >
-                            <PencilSquareIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteTarget(post)}
-                            title="刪除"
-                            className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+          <AdminDataTable
+            data={filtered}
+            columns={postColumns}
+            getRowId={(row) => row.id}
+            emptyMessage="沒有找到符合條件的文章"
+            emptyColSpan={6}
+          />
         )}
       </Card>
 
@@ -475,25 +558,42 @@ export default function PostsPage() {
               </div>
               {tagSuggestionsOpen && (
                 <div className="mt-2 border-t border-border/70 pt-2">
-                  <div className="mb-1 text-xs text-neutral-400">
-                    點擊即可加入
+                  <div className="mb-1 flex items-center justify-between gap-2 text-xs text-neutral-400">
+                    <span>
+                      {tagStats.length > 0
+                        ? "依全站使用次數排序 · 點擊加入"
+                        : "點擊即可加入"}
+                    </span>
+                    {tagStatsLoading && (
+                      <span className="shrink-0 text-neutral-400">載入中…</span>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {availableTagSuggestions.length === 0 ? (
                       <span className="text-xs text-neutral-400">
-                        已加入所有推薦標籤
+                        {tagStatsLoading
+                          ? "正在載入熱門標籤…"
+                          : "已加入所有推薦標籤"}
                       </span>
                     ) : (
-                      availableTagSuggestions.map((tag) => (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => addTag(tag)}
-                          className="rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
-                        >
-                          {tag}
-                        </button>
-                      ))
+                      availableTagSuggestions.map((tag) => {
+                        const c = tagCountByName.get(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => addTag(tag)}
+                            className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                          >
+                            {tag}
+                            {c != null && c > 0 && (
+                              <span className="font-normal text-primary/70">
+                                ×{c}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })
                     )}
                   </div>
                 </div>

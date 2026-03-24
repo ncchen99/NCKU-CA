@@ -1,6 +1,12 @@
 "use client";
 
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type {
+  ChangeEvent,
+  InputHTMLAttributes,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
+import { AdminSelect } from "@/components/ui/admin-select";
 
 interface BaseFieldProps {
   label: string;
@@ -30,6 +36,37 @@ type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps;
 const inputBase =
   "block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-neutral-950 outline-none transition-colors placeholder:text-neutral-400 focus:border-primary focus:ring-1 focus:ring-primary/30 disabled:bg-neutral-50 disabled:text-neutral-500";
 
+function SelectFieldInner({
+  fieldProps,
+  error: hasError,
+}: {
+  fieldProps: SelectFieldProps;
+  error: boolean;
+}) {
+  const { options, onChange, className, value, disabled, id, name, autoFocus } =
+    fieldProps;
+
+  return (
+    <AdminSelect
+      options={options}
+      value={value}
+      onChange={(newValue) => {
+        onChange?.({
+          target: { value: newValue },
+          currentTarget: { value: newValue },
+        } as ChangeEvent<HTMLSelectElement>);
+      }}
+      disabled={disabled}
+      id={id}
+      name={name}
+      autoFocus={autoFocus}
+      invalid={hasError}
+      aria-invalid={hasError || undefined}
+      className={className}
+    />
+  );
+}
+
 export function FormField(props: FormFieldProps) {
   const { label, error, required, hint, as = "input", ...rest } = props;
 
@@ -45,16 +82,7 @@ export function FormField(props: FormFieldProps) {
           {...(rest as TextareaHTMLAttributes<HTMLTextAreaElement>)}
         />
       ) : as === "select" ? (
-        <select
-          className={`${inputBase} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}
-          {...(rest as SelectHTMLAttributes<HTMLSelectElement>)}
-        >
-          {(props as SelectFieldProps).options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <SelectFieldInner fieldProps={props as SelectFieldProps} error={!!error} />
       ) : (
         <input
           className={`${inputBase} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}

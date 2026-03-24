@@ -3,6 +3,19 @@ export interface FirestoreTimestamp {
   _nanoseconds: number;
 }
 
+/** 供表格排序：將 Firestore Timestamp、ISO 字串等轉成毫秒；無效則為 0 */
+export function timestampToMs(ts: unknown): number {
+  if (ts == null || ts === "") return 0;
+  if (typeof ts === "string") {
+    const d = new Date(ts);
+    return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+  if (typeof ts === "object" && ts !== null && "_seconds" in ts) {
+    return (ts as FirestoreTimestamp)._seconds * 1000;
+  }
+  return 0;
+}
+
 export function formatTimestamp(ts: FirestoreTimestamp | string | null | undefined): string {
   if (!ts) return "—";
   let date: Date;

@@ -1,6 +1,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
-import type { AttendanceEvent, AttendanceRecord } from "@/types";
+import type { AttendanceEvent, AttendanceRecord, Club } from "@/types";
+import { getAllClubs } from "./clubs";
 
 const COLLECTION = "attendance_events";
 const RECORDS_SUB = "records";
@@ -37,6 +38,25 @@ export async function getOpenAttendanceEvents(): Promise<AttendanceEvent[]> {
   }
 }
 
+function computeStatus(
+  data: Record<string, unknown>
+): "upcoming" | "open" | "closed" {
+  const toDate = (val: unknown): Date | null => {
+    if (!val) return null;
+    if (typeof val === "string") return new Date(val);
+    if (typeof val === "object" && val !== null && "_seconds" in val)
+      return new Date((val as { _seconds: number })._seconds * 1000);
+    return null;
+  };
+  const now = new Date();
+  const opensAt = toDate(data.opens_at);
+  const closesAt = toDate(data.closes_at);
+  if (!opensAt || !closesAt) return (data.status as "upcoming" | "open" | "closed") ?? "upcoming";
+  if (now < opensAt) return "upcoming";
+  if (now >= opensAt && now <= closesAt) return "open";
+  return "closed";
+}
+
 export async function getAllAttendanceEvents(): Promise<AttendanceEvent[]> {
   try {
     const db = getAdminDb();
@@ -44,9 +64,28 @@ export async function getAllAttendanceEvents(): Promise<AttendanceEvent[]> {
       .collection(COLLECTION)
       .orderBy("opens_at", "desc")
       .get();
-    return snapshot.docs.map(
-      (doc) => ({ id: doc.id, ...doc.data() }) as AttendanceEvent
-    );
+
+    const events: AttendanceEvent[] = [];
+    const batch = db.batch();
+    let hasUpdates = false;
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      const correctStatus = computeStatus(data);
+      if (data.status !== correctStatus) {
+        batch.update(doc.ref, { status: correctStatus });
+        hasUpdates = true;
+        events.push({ id: doc.id, ...data, status: correctStatus } as AttendanceEvent);
+      } else {
+        events.push({ id: doc.id, ...data } as AttendanceEvent);
+      }
+    }
+
+    if (hasUpdates) {
+      await batch.commit();
+    }
+
+    return events;
   } catch (error) {
     throw new Error(
       `Failed to get all attendance events: ${error instanceof Error ? error.message : error}`
@@ -147,6 +186,24 @@ export async function checkIn(
   }
 }
 
+/**
+ * `expected_clubs` 存的是「社團類型／類別名稱」（可多選），
+ * 預計簽到總數應為各類別下 is_active 社團的**去重後數量**，不是類別個數。
+ */
+export async function getExpectedClubsForAttendanceEvent(
+  event: Pick<AttendanceEvent, "expected_clubs">
+): Promise<Club[]> {
+  const categories = Array.from(new Set(event.expected_clubs));
+  if (categories.length === 0) return [];
+  const clubsByCategory = await Promise.all(
+    categories.map((category) => getAllClubs({ category, isActive: true })),
+  );
+  const flat = clubsByCategory.flat();
+  return flat.filter(
+    (club, index, list) => list.findIndex((c) => c.id === club.id) === index,
+  );
+}
+
 export async function getAttendanceStats(
   eventId: string
 ): Promise<{ total: number; checkedIn: number }> {
@@ -158,7 +215,8 @@ export async function getAttendanceStats(
     }
 
     const event = eventDoc.data() as AttendanceEvent;
-    const total = event.expected_clubs.length;
+    const expectedClubs = await getExpectedClubsForAttendanceEvent(event);
+    const total = expectedClubs.length;
 
     const recordsSnapshot = await db
       .collection(COLLECTION)

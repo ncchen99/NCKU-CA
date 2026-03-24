@@ -5,7 +5,7 @@ import {
   updateAttendanceEvent,
   getAttendanceRecords,
   getAttendanceStats,
-  getAllClubs,
+  getExpectedClubsForAttendanceEvent,
 } from "@/lib/firestore";
 
 export async function GET(
@@ -41,15 +41,7 @@ export async function GET(
     }> = [];
 
     if (includeClubStatuses) {
-      const categories = Array.from(new Set(event.expected_clubs));
-      const clubsByCategory = await Promise.all(
-        categories.map((category) => getAllClubs({ category, isActive: true })),
-      );
-      const expectedClubs = clubsByCategory
-        .flat()
-        .filter(
-          (club, index, list) => list.findIndex((c) => c.id === club.id) === index,
-        );
+      const expectedClubs = await getExpectedClubsForAttendanceEvent(event);
 
       const nonDuplicateRecords = records.filter(
         (record) => !record.is_duplicate_attempt,

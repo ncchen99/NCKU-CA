@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -8,20 +9,23 @@ import {
   AdminFilterBar,
   AdminTableSkeleton,
   AdminErrorState,
-  AdminEmptyState,
   ConfirmDialog,
   FormModal,
   FormField,
   AdminTableCheckbox,
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
   type TabItem,
 } from "@/components/admin/shared";
-import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
+import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 
 type DepositStatus = "all" | "pending_payment" | "paid" | "returned";
 
 interface DepositRecord {
   id: string;
   club_id: string;
+  club_name?: string;
   form_response_id?: string;
   status: "pending_payment" | "paid" | "returned";
   amount: number;
@@ -58,7 +62,7 @@ export default function DepositPage() {
   const [confirmTarget, setConfirmTarget] = useState<{
     id: string;
     newStatus: "paid" | "returned";
-    clubId: string;
+    clubLabel: string;
   } | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -162,7 +166,12 @@ export default function DepositPage() {
 
   const filtered = deposits.filter((d) => {
     if (activeTab !== "all" && d.status !== activeTab) return false;
-    if (search && !d.club_id.includes(search)) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const idMatch = d.club_id.toLowerCase().includes(q);
+      const nameMatch = (d.club_name ?? "").toLowerCase().includes(q);
+      if (!idMatch && !nameMatch) return false;
+    }
     return true;
   });
 
@@ -174,22 +183,22 @@ export default function DepositPage() {
   const allFilteredSelected =
     filtered.length > 0 && filtered.every((d) => selected.has(d.id));
 
-  const toggleAll = () => {
+  const toggleAll = useCallback(() => {
     if (allFilteredSelected) {
       setSelected(new Set());
     } else {
       setSelected(new Set(filtered.map((d) => d.id)));
     }
-  };
+  }, [allFilteredSelected, filtered]);
 
-  const toggleOne = (id: string) => {
+  const toggleOne = useCallback((id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  };
+  }, []);
 
   const selectedPendingCount = filtered.filter(
     (d) => selected.has(d.id) && d.status === "pending_payment",
@@ -197,6 +206,174 @@ export default function DepositPage() {
   const selectedPaidCount = filtered.filter(
     (d) => selected.has(d.id) && d.status === "paid",
   ).length;
+
+  const depositColumns = useMemo<ColumnDef<DepositRecord>[]>(
+    () => [
+      {
+        id: "select",
+        header: () => (
+          <AdminTableCheckbox
+            checked={allFilteredSelected}
+            onChange={toggleAll}
+            aria-label="全選目前篩選結果"
+          />
+        ),
+        cell: ({ row }) => (
+          <AdminTableCheckbox
+            checked={selected.has(row.original.id)}
+            onChange={() => toggleOne(row.original.id)}
+            aria-label={`選取 ${row.original.club_name ?? row.original.club_id}`}
+          />
+        ),
+        enableSorting: false,
+        meta: {
+          thClassName: "w-10 px-3 text-center",
+          tdClassName: "w-10 px-3 text-center",
+        },
+      },
+      {
+        id: "club",
+        accessorFn: (row) => row.club_name ?? row.club_id ?? "",
+        header: ({ column }) => adminSortableHeader(column, "社團"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("club")),
+            String(rowB.getValue("club")),
+          ),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-950">
+            {row.original.club_name ?? row.original.club_id}
+          </span>
+        ),
+        meta: { thClassName: "px-3", tdClassName: "px-3" },
+      },
+      {
+        accessorKey: "amount",
+        header: ({ column }) => adminSortableHeader(column, "金額"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="font-mono text-sm font-semibold text-neutral-950">
+            ${row.original.amount.toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(rowA.original.status, rowB.original.status),
+        cell: ({ row }) => {
+          const badge = statusConfig[row.original.status];
+          return <Badge variant={badge.variant}>{badge.label}</Badge>;
+        },
+      },
+      {
+        id: "paid_at",
+        accessorFn: (row) => timestampToMs(row.paid_at),
+        header: ({ column }) => adminSortableHeader(column, "繳費日期"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-400">
+            {formatTimestamp(
+              row.original.paid_at as Parameters<typeof formatTimestamp>[0],
+            )}
+          </span>
+        ),
+      },
+      {
+        id: "returned_at",
+        accessorFn: (row) => timestampToMs(row.returned_at),
+        header: ({ column }) => adminSortableHeader(column, "退還日期"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-400">
+            {formatTimestamp(
+              row.original.returned_at as Parameters<
+                typeof formatTimestamp
+              >[0],
+            )}
+          </span>
+        ),
+      },
+      {
+        id: "notes",
+        accessorFn: (row) => row.notes ?? "",
+        header: ({ column }) => adminSortableHeader(column, "備註"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("notes")),
+            String(rowB.getValue("notes")),
+          ),
+        cell: ({ row }) => {
+          const dep = row.original;
+          return (
+            <button
+              type="button"
+              className="max-w-[120px] truncate text-[12px] text-neutral-500 underline decoration-dashed underline-offset-2 hover:text-neutral-700"
+              title={dep.notes || "點擊新增備註"}
+              onClick={() =>
+                setNotesTarget({
+                  id: dep.id,
+                  notes: dep.notes ?? "",
+                })
+              }
+            >
+              {dep.notes || "—"}
+            </button>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const dep = row.original;
+          return (
+            <div className="text-right">
+              {dep.status === "pending_payment" && (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
+                  onClick={() =>
+                    setConfirmTarget({
+                      id: dep.id,
+                      newStatus: "paid",
+                      clubLabel: dep.club_name ?? dep.club_id,
+                    })
+                  }
+                >
+                  標記已繳
+                </button>
+              )}
+              {dep.status === "paid" && (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
+                  onClick={() =>
+                    setConfirmTarget({
+                      id: dep.id,
+                      newStatus: "returned",
+                      clubLabel: dep.club_name ?? dep.club_id,
+                    })
+                  }
+                >
+                  退還保證金
+                </button>
+              )}
+            </div>
+          );
+        },
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+    ],
+    [
+      allFilteredSelected,
+      selected,
+      toggleAll,
+      toggleOne,
+    ],
+  );
 
   return (
     <>
@@ -220,7 +397,7 @@ export default function DepositPage() {
             }}
             search={search}
             onSearchChange={setSearch}
-            searchPlaceholder="搜尋社團 ID..."
+            searchPlaceholder="搜尋社團名稱或代碼..."
           />
 
           {/* batch action toolbar overlays filter bar to avoid layout shift */}
@@ -262,110 +439,13 @@ export default function DepositPage() {
         ) : error ? (
           <AdminErrorState message={error} onRetry={fetchDeposits} />
         ) : (
-          <table className="w-full text-left text-[13px]">
-            <thead>
-              <tr className="bg-neutral-100 text-neutral-500">
-                <th className="h-10 w-10 px-3 text-center">
-                  <AdminTableCheckbox
-                    checked={allFilteredSelected}
-                    onChange={toggleAll}
-                    aria-label="全選目前篩選結果"
-                  />
-                </th>
-                <th className="h-10 px-3 font-medium">社團 ID</th>
-                <th className="h-10 px-3 font-medium">金額</th>
-                <th className="h-10 px-3 font-medium">狀態</th>
-                <th className="h-10 px-3 font-medium">繳費日期</th>
-                <th className="h-10 px-3 font-medium">退還日期</th>
-                <th className="h-10 px-3 font-medium">備註</th>
-                <th className="h-10 px-5 text-right font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((dep) => {
-                const badge = statusConfig[dep.status];
-                return (
-                  <tr
-                    key={dep.id}
-                    className="border-b border-border/50 last:border-0 hover:bg-primary/5"
-                  >
-                    <td className="h-12 w-10 px-3 text-center">
-                      <AdminTableCheckbox
-                        checked={selected.has(dep.id)}
-                        onChange={() => toggleOne(dep.id)}
-                        aria-label={`選取 ${dep.club_id}`}
-                      />
-                    </td>
-                    <td className="h-12 px-3 font-medium text-neutral-950">
-                      {dep.club_id}
-                    </td>
-                    <td className="h-12 px-3 font-mono text-sm font-semibold text-neutral-950">
-                      ${dep.amount.toLocaleString()}
-                    </td>
-                    <td className="h-12 px-3">
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                    </td>
-                    <td className="h-12 px-3 text-neutral-400">
-                      {formatTimestamp(dep.paid_at as Parameters<typeof formatTimestamp>[0])}
-                    </td>
-                    <td className="h-12 px-3 text-neutral-400">
-                      {formatTimestamp(dep.returned_at as Parameters<typeof formatTimestamp>[0])}
-                    </td>
-                    <td className="h-12 px-3">
-                      <button
-                        className="max-w-[120px] truncate text-[12px] text-neutral-500 underline decoration-dashed underline-offset-2 hover:text-neutral-700"
-                        title={dep.notes || "點擊新增備註"}
-                        onClick={() =>
-                          setNotesTarget({
-                            id: dep.id,
-                            notes: dep.notes ?? "",
-                          })
-                        }
-                      >
-                        {dep.notes || "—"}
-                      </button>
-                    </td>
-                    <td className="h-12 px-5 text-right">
-                      {dep.status === "pending_payment" && (
-                        <button
-                          className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
-                          onClick={() =>
-                            setConfirmTarget({
-                              id: dep.id,
-                              newStatus: "paid",
-                              clubId: dep.club_id,
-                            })
-                          }
-                        >
-                          標記已繳
-                        </button>
-                      )}
-                      {dep.status === "paid" && (
-                        <button
-                          className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
-                          onClick={() =>
-                            setConfirmTarget({
-                              id: dep.id,
-                              newStatus: "returned",
-                              clubId: dep.club_id,
-                            })
-                          }
-                        >
-                          退還保證金
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <AdminEmptyState
-                  message="沒有找到符合條件的保證金紀錄"
-                  colSpan={8}
-                />
-              )}
-            </tbody>
-          </table>
+          <AdminDataTable
+            data={filtered}
+            columns={depositColumns}
+            getRowId={(row) => row.id}
+            emptyMessage="沒有找到符合條件的保證金紀錄"
+            emptyColSpan={8}
+          />
         )}
       </Card>
 
@@ -382,7 +462,7 @@ export default function DepositPage() {
         }
         description={
           confirmTarget
-            ? `即將更新社團「${confirmTarget.clubId}」的保證金狀態`
+            ? `即將更新社團「${confirmTarget.clubLabel}」的保證金狀態`
             : undefined
         }
         confirmLabel={

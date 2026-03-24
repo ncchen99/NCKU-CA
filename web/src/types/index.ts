@@ -7,6 +7,8 @@ export interface User {
   email: string;
   role: "admin" | "club_member";
   club_id?: string;
+  /** 由管理 API 依 club_id 解析，僅供顯示 */
+  club_name?: string;
   created_at: Timestamp;
 }
 
@@ -23,6 +25,8 @@ export interface Post {
   published_at: Timestamp;
   updated_at: Timestamp;
   author_uid: string;
+  /** 由管理 API 依 author_uid 解析，僅供顯示 */
+  author_display_name?: string;
 }
 
 /* ─── Club ─── */
@@ -55,6 +59,8 @@ export interface SiteContent {
   metadata?: Record<string, unknown>;
   updated_at: Timestamp;
   updated_by: string;
+  /** 由管理 API 依 updated_by 解析，僅供顯示 */
+  updated_by_display_name?: string;
 }
 
 /* ─── Form ─── */
@@ -137,6 +143,8 @@ export interface FormResponse {
 export interface DepositRecord {
   id: string;
   club_id: string;
+  /** 由管理 API 依 club_id 解析，僅供顯示 */
+  club_name?: string;
   form_response_id?: string;
   status: "pending_payment" | "paid" | "returned";
   amount: number;

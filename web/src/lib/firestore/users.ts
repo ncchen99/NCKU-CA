@@ -39,6 +39,38 @@ export async function getAllUsers(
   }
 }
 
+/** Firestore `in` 查詢每批最多 30 筆，依 uid（文件 ID）批次讀取。 */
+export async function getUsersByIds(uids: string[]): Promise<User[]> {
+  const unique = [...new Set(uids.filter(Boolean))];
+  if (unique.length === 0) return [];
+
+  try {
+    const db = getAdminDb();
+    const chunks: string[][] = [];
+    for (let i = 0; i < unique.length; i += 30) {
+      chunks.push(unique.slice(i, i + 30));
+    }
+
+    const results: User[] = [];
+    for (const chunk of chunks) {
+      const snapshot = await db
+        .collection(COLLECTION)
+        .where("__name__", "in", chunk)
+        .get();
+      results.push(
+        ...snapshot.docs.map(
+          (doc) => ({ uid: doc.id, ...doc.data() }) as User
+        )
+      );
+    }
+    return results;
+  } catch (error) {
+    throw new Error(
+      `Failed to get users by IDs: ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
 export async function createOrUpdateUser(
   uid: string,
   data: Partial<User>

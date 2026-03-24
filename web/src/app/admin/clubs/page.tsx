@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpTrayIcon,
   PencilSquareIcon,
@@ -15,10 +16,12 @@ import {
   AdminPageHeader,
   AdminFilterBar,
   AdminTableSkeleton,
-  AdminEmptyState,
   AdminErrorState,
   FullPageFormModal,
   FormField,
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
   type TabItem,
 } from "@/components/admin/shared";
 import { adminFetch } from "@/lib/admin-utils";
@@ -141,12 +144,12 @@ export default function ClubsPage() {
   });
 
   // ── Edit handlers ─────────────────────────────────────────────────
-  const openEdit = (club: Club) => {
+  const openEdit = useCallback((club: Club) => {
     setEditClub(club);
     setEditForm(clubToForm(club));
     setEditError(null);
     setEditOpen(true);
-  };
+  }, []);
 
   const closeEdit = () => {
     setEditOpen(false);
@@ -216,6 +219,140 @@ export default function ClubsPage() {
     }
   };
 
+  const clubColumns = useMemo<ColumnDef<Club>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: ({ column }) => adminSortableHeader(column, "社團名稱"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.name),
+            String(rowB.original.name),
+          ),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-950">{row.original.name}</span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => adminSortableHeader(column, "分類"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.category),
+            String(rowB.original.category),
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-600">{row.original.category}</span>
+        ),
+      },
+      {
+        accessorKey: "category_code",
+        header: ({ column }) => adminSortableHeader(column, "社團代碼"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.category_code),
+            String(rowB.original.category_code),
+          ),
+        cell: ({ row }) => (
+          <span className="font-mono text-[12px] text-neutral-400">
+            {row.original.category_code}
+          </span>
+        ),
+      },
+      {
+        id: "email",
+        accessorFn: (row) => row.email ?? "",
+        header: ({ column }) => adminSortableHeader(column, "Email"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("email")),
+            String(rowB.getValue("email")),
+          ),
+        cell: ({ row }) => (
+          <span className="font-mono text-[12px] text-neutral-400">
+            {row.original.email || "—"}
+          </span>
+        ),
+      },
+      {
+        id: "active",
+        accessorFn: (row) => (row.is_active ? 1 : 0),
+        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <Badge variant={row.original.is_active ? "success" : "neutral"}>
+            {row.original.is_active ? "啟用" : "停用"}
+          </Badge>
+        ),
+      },
+      {
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={() => openEdit(row.original)}
+              title="編輯"
+              className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
+            >
+              <PencilSquareIcon className="h-4 w-4" />
+            </button>
+          </div>
+        ),
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+    ],
+    [openEdit],
+  );
+
+  const importPreviewColumns = useMemo<ColumnDef<Record<string, unknown>>[]>(
+    () => [
+      {
+        id: "rowIndex",
+        header: "#",
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="text-neutral-400">{row.index + 1}</span>
+        ),
+        meta: { thClassName: "px-3 py-2", tdClassName: "px-3 py-1.5" },
+      },
+      {
+        accessorKey: "name",
+        header: ({ column }) => adminSortableHeader(column, "名稱"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("name") ?? ""),
+            String(rowB.getValue("name") ?? ""),
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-700">
+            {(row.original.name as string) || "—"}
+          </span>
+        ),
+        meta: { thClassName: "px-3 py-2", tdClassName: "px-3 py-1.5" },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => adminSortableHeader(column, "分類"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("category") ?? ""),
+            String(rowB.getValue("category") ?? ""),
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-500">
+            {(row.original.category as string) || "—"}
+          </span>
+        ),
+        meta: { thClassName: "px-3 py-2", tdClassName: "px-3 py-1.5" },
+      },
+    ],
+    [],
+  );
+
   const handleImportConfirm = async () => {
     setImportLoading(true);
     setImportError(null);
@@ -273,60 +410,13 @@ export default function ClubsPage() {
             searchPlaceholder="搜尋社團..."
           />
 
-          <table className="w-full text-left text-[13px]">
-            <thead>
-              <tr className="bg-neutral-100 text-neutral-500">
-                <th className="h-10 px-5 font-medium">社團名稱</th>
-                <th className="h-10 px-3 font-medium">分類</th>
-                <th className="h-10 px-3 font-medium">社團代碼</th>
-                <th className="h-10 px-3 font-medium">Email</th>
-                <th className="h-10 px-3 font-medium">狀態</th>
-                <th className="h-10 px-5 text-right font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <AdminEmptyState
-                  message="沒有找到符合條件的社團"
-                  colSpan={6}
-                />
-              ) : (
-                filtered.map((club) => (
-                  <tr
-                    key={club.id}
-                    className="border-b border-border/50 last:border-0 hover:bg-primary/5"
-                  >
-                    <td className="h-12 px-5 font-medium text-neutral-950">
-                      {club.name}
-                    </td>
-                    <td className="h-12 px-3 text-neutral-600">
-                      {club.category}
-                    </td>
-                    <td className="h-12 px-3 font-mono text-[12px] text-neutral-400">
-                      {club.category_code}
-                    </td>
-                    <td className="h-12 px-3 font-mono text-[12px] text-neutral-400">
-                      {club.email || "—"}
-                    </td>
-                    <td className="h-12 px-3">
-                      <Badge variant={club.is_active ? "success" : "neutral"}>
-                        {club.is_active ? "啟用" : "停用"}
-                      </Badge>
-                    </td>
-                    <td className="h-12 px-5 text-right">
-                      <button
-                        onClick={() => openEdit(club)}
-                        title="編輯"
-                        className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
-                      >
-                        <PencilSquareIcon className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <AdminDataTable
+            data={filtered}
+            columns={clubColumns}
+            getRowId={(row) => row.id}
+            emptyMessage="沒有找到符合條件的社團"
+            emptyColSpan={6}
+          />
         </Card>
       )}
 
@@ -474,43 +564,25 @@ export default function ClubsPage() {
             </div>
 
             <div className="max-h-48 overflow-y-auto rounded-lg border border-border">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="sticky top-0 bg-neutral-100 text-neutral-500">
-                    <th className="px-3 py-2 font-medium">#</th>
-                    <th className="px-3 py-2 font-medium">名稱</th>
-                    <th className="px-3 py-2 font-medium">分類</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {importData.slice(0, 50).map((item, i) => (
-                    <tr
-                      key={i}
-                      className="border-t border-border/50"
-                    >
-                      <td className="px-3 py-1.5 text-neutral-400">
-                        {i + 1}
-                      </td>
-                      <td className="px-3 py-1.5 text-neutral-700">
-                        {(item.name as string) || "—"}
-                      </td>
-                      <td className="px-3 py-1.5 text-neutral-500">
-                        {(item.category as string) || "—"}
-                      </td>
-                    </tr>
-                  ))}
-                  {importData.length > 50 && (
-                    <tr className="border-t border-border/50">
-                      <td
-                        colSpan={3}
-                        className="px-3 py-1.5 text-center text-neutral-400"
-                      >
-                        ⋯ 還有 {importData.length - 50} 筆
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              <AdminDataTable
+                data={importData.slice(0, 50)}
+                columns={importPreviewColumns}
+                getRowId={(_, i) => `import-${i}`}
+                emptyMessage="無預覽資料"
+                emptyColSpan={3}
+                classNames={{
+                  table: "w-full text-left text-xs",
+                  theadTr: "sticky top-0 bg-neutral-100 text-neutral-500",
+                  th: "font-medium",
+                  td: "",
+                  bodyRow: "border-t border-border/50 hover:bg-transparent",
+                }}
+              />
+              {importData.length > 50 && (
+                <div className="border-t border-border/50 px-3 py-1.5 text-center text-xs text-neutral-400">
+                  ⋯ 還有 {importData.length - 50} 筆
+                </div>
+              )}
             </div>
 
             {importError && (

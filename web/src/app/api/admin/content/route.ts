@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
-import { getAllSiteContent, updateSiteContent } from "@/lib/firestore";
+import { getAllSiteContent, updateSiteContent, getUsersByIds } from "@/lib/firestore";
 
 export async function GET() {
   const admin = await verifyAdmin();
@@ -8,7 +8,18 @@ export async function GET() {
 
   try {
     const content = await getAllSiteContent();
-    return Response.json({ content });
+    const uids = [
+      ...new Set(content.map((c) => c.updated_by).filter(Boolean)),
+    ];
+    const users = await getUsersByIds(uids);
+    const nameByUid = new Map(users.map((u) => [u.uid, u.display_name]));
+    const enriched = content.map((page) => ({
+      ...page,
+      updated_by_display_name: page.updated_by
+        ? nameByUid.get(page.updated_by)
+        : undefined,
+    }));
+    return Response.json({ content: enriched });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得網站內容失敗" },

@@ -22,6 +22,7 @@ interface SiteContent {
   metadata?: Record<string, unknown>;
   updated_at: unknown;
   updated_by: string;
+  updated_by_display_name?: string;
 }
 
 function getDescription(page: SiteContent): string {
@@ -78,6 +79,11 @@ export default function ContentPage() {
 
   const handleEditSave = async () => {
     if (!editTarget) return;
+    const pageId = editTarget.id.trim();
+    if (!pageId) {
+      setEditError("pageId 為必填，請手動輸入");
+      return;
+    }
     setEditLoading(true);
     setEditError(null);
     try {
@@ -85,13 +91,13 @@ export default function ContentPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: editTarget.id,
+          pageId: pageId,
           title: editTarget.title,
           content_markdown: editTarget.content_markdown,
         }),
       });
       setEditTarget(null);
-      setSuccessId(editTarget.id);
+      setSuccessId(pageId);
       setTimeout(() => setSuccessId(null), 2500);
       await fetchContent();
     } catch (err) {
@@ -163,7 +169,8 @@ export default function ContentPage() {
                     )}
                   </p>
                   <p className="text-[12px] text-neutral-400">
-                    由 {page.updated_by}
+                    由{" "}
+                    {page.updated_by_display_name ?? page.updated_by}
                   </p>
                 </div>
                 <button
@@ -190,17 +197,30 @@ export default function ContentPage() {
         wide
       >
         {editError && <AdminErrorBanner message={editError} />}
-        <FormField
-          label="標題"
-          required
-          value={editTarget?.title ?? ""}
-          onChange={(e) =>
-            setEditTarget((prev) =>
-              prev ? { ...prev, title: e.target.value } : null,
-            )
-          }
-          placeholder="頁面標題"
-        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="標題"
+            required
+            value={editTarget?.title ?? ""}
+            onChange={(e) =>
+              setEditTarget((prev) =>
+                prev ? { ...prev, title: e.target.value } : null,
+              )
+            }
+            placeholder="頁面標題"
+          />
+          <FormField
+            label="pageId"
+            required
+            value={editTarget?.id ?? ""}
+            onChange={(e) =>
+              setEditTarget((prev) =>
+                prev ? { ...prev, id: e.target.value } : null,
+              )
+            }
+            placeholder="例如：about / charter / members"
+          />
+        </div>
         <MarkdownEditor
           value={editTarget?.content_markdown ?? ""}
           onChange={(v) =>

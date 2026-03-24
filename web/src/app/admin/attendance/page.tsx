@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   PlusIcon,
   CalendarDaysIcon,
@@ -20,12 +21,17 @@ import {
   FormField,
   AdminEmptyState,
   AdminErrorState,
+  AdminSpinnerLoading,
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
 } from "@/components/admin/shared";
 import {
   formatTimestamp,
   formatTime,
   formatDateTime,
   adminFetch,
+  timestampToMs,
 } from "@/lib/admin-utils";
 
 type FilterStatus = "all" | "upcoming" | "open" | "closed";
@@ -43,6 +49,8 @@ interface AttendanceEvent {
 
 interface EventWithStats extends AttendanceEvent {
   checkedIn: number;
+  /** 依類別展開後的啟用社團數（來自 API stats，非 expected_clubs 長度） */
+  totalClubs?: number;
 }
 
 interface AttendanceClubStatus {
@@ -133,7 +141,6 @@ export default function AttendancePage() {
   const [detailData, setDetailData] =
     useState<AttendanceEventDetailResponse | null>(null);
   const [detailEvent, setDetailEvent] = useState<EventWithStats | null>(null);
-
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -147,28 +154,37 @@ export default function AttendancePage() {
         checkedIn: 0,
       }));
 
-      const needStats = data.filter((e) => e.status !== "upcoming");
       const results = await Promise.allSettled(
-        needStats.map((e) =>
+        data.map((e) =>
           adminFetch<{ stats: { total: number; checkedIn: number } }>(
             `/api/admin/attendance/${e.id}`,
           ),
         ),
       );
 
-      const statsMap = new Map<string, number>();
-      needStats.forEach((e, i) => {
+      const statsMap = new Map<
+        string,
+        { checkedIn: number; total: number }
+      >();
+      data.forEach((e, i) => {
         const r = results[i];
         if (r.status === "fulfilled") {
-          statsMap.set(e.id, r.value.stats.checkedIn);
+          statsMap.set(e.id, {
+            checkedIn: r.value.stats.checkedIn,
+            total: r.value.stats.total,
+          });
         }
       });
 
       setEvents(
-        withStats.map((e) => ({
-          ...e,
-          checkedIn: statsMap.get(e.id) ?? 0,
-        })),
+        withStats.map((e) => {
+          const s = statsMap.get(e.id);
+          return {
+            ...e,
+            checkedIn: s?.checkedIn ?? 0,
+            totalClubs: s?.total,
+          };
+        }),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "載入點名活動失敗");
@@ -271,6 +287,81 @@ export default function AttendancePage() {
       setFormLoading(false);
     }
   }
+
+  const detailClubColumns = useMemo<ColumnDef<AttendanceClubStatus>[]>(
+    () => [
+      {
+        accessorKey: "clubName",
+        header: ({ column }) => adminSortableHeader(column, "社團名稱"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(rowA.original.clubName, rowB.original.clubName),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-900">{row.original.clubName}</span>
+        ),
+        meta: {
+          thClassName:
+            "cursor-pointer px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:bg-neutral-100",
+          tdClassName: "px-4 py-3",
+        },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => adminSortableHeader(column, "類型"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(rowA.original.category, rowB.original.category),
+        cell: ({ row }) => (
+          <span className="text-neutral-500">{row.original.category}</span>
+        ),
+        meta: {
+          thClassName:
+            "cursor-pointer px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:bg-neutral-100",
+          tdClassName: "px-4 py-3",
+        },
+      },
+      {
+        id: "checkedInAt",
+        accessorFn: (row) =>
+          row.checkedIn && row.checkedInAt
+            ? timestampToMs(row.checkedInAt)
+            : 0,
+        header: ({ column }) => adminSortableHeader(column, "簽到時間"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-500">
+            {row.original.checkedIn && row.original.checkedInAt
+              ? formatDateTime(row.original.checkedInAt)
+              : "—"}
+          </span>
+        ),
+        meta: {
+          thClassName:
+            "cursor-pointer px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:bg-neutral-100",
+          tdClassName: "px-4 py-3",
+        },
+      },
+      {
+        accessorKey: "checkedIn",
+        header: ({ column }) =>
+          adminSortableHeader(column, "狀態", "right"),
+        sortingFn: (rowA, rowB) =>
+          Number(rowA.original.checkedIn) - Number(rowB.original.checkedIn),
+        cell: ({ row }) => (
+          <Badge
+            variant={row.original.checkedIn ? "success" : "neutral"}
+            className="inline-flex"
+          >
+            {row.original.checkedIn ? "已簽到" : "未簽到"}
+          </Badge>
+        ),
+        meta: {
+          thClassName:
+            "cursor-pointer px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:bg-neutral-100",
+          tdClassName: "px-4 py-3 text-right",
+        },
+      },
+    ],
+    [],
+  );
 
   async function openDetailModal(event: EventWithStats) {
     setDetailEvent(event);
@@ -377,7 +468,7 @@ export default function AttendancePage() {
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((event) => {
             const badge = statusConfig[event.status];
-            const total = event.expected_clubs.length;
+            const total = event.totalClubs ?? 0;
             const rate =
               total > 0 ? Math.round((event.checkedIn / total) * 100) : 0;
 
@@ -546,92 +637,110 @@ export default function AttendancePage() {
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         title={detailData?.event.title ?? detailEvent?.title ?? "點名詳情"}
-        className="max-w-5xl"
+        size="wide"
       >
-        <div className="max-h-[75vh] overflow-y-auto pt-2">
+        <div className="max-h-[78vh] overflow-y-auto pr-1">
           {detailLoading ? (
-            <div className="py-8 text-center text-sm text-neutral-500">
-              載入中...
-            </div>
+            <AdminSpinnerLoading message="正在載入點名詳情..." />
           ) : detailError ? (
             <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
               {detailError}
             </div>
           ) : detailData ? (
-            <div className="space-y-6">
-              <section className="rounded-xl border border-border bg-neutral-50/70 p-4">
-                <h4 className="text-sm font-semibold text-neutral-900">
-                  活動資訊
-                </h4>
-                <div className="mt-3 grid gap-2 text-sm text-neutral-600 md:grid-cols-2">
-                  <p>
-                    <span className="text-neutral-500">狀態：</span>
-                    {statusConfig[detailData.event.status]?.label ?? "未知"}
-                  </p>
-                  <p>
-                    <span className="text-neutral-500">預計簽到：</span>
-                    {detailData.stats.total} 社團
-                  </p>
-                  <p>
-                    <span className="text-neutral-500">已簽到：</span>
-                    {detailData.stats.checkedIn} 社團
-                  </p>
-                  <p>
-                    <span className="text-neutral-500">時間：</span>
-                    {formatTimestamp(detailData.event.opens_at)}{" "}
-                    {formatTime(detailData.event.opens_at)}–{formatTime(detailData.event.closes_at)}
-                  </p>
+            <div className="space-y-4 py-2">
+              {/* 統計卡片 */}
+              <section className="overflow-hidden rounded-xl border border-border">
+                <div className="grid grid-cols-3 divide-x divide-border">
+                  <div className="flex flex-col items-center justify-center bg-primary/5 px-4 py-5 text-center">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-primary/60">活動狀態</span>
+                    <div className="mt-2">
+                      <Badge variant={statusConfig[detailData.event.status]?.variant ?? "neutral"}>
+                        {statusConfig[detailData.event.status]?.label ?? "未知"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center justify-center bg-neutral-50 px-4 py-5 text-center">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">簽到進度</span>
+                    <div className="mt-2 flex items-baseline gap-1">
+                      <span className="text-2xl font-bold text-neutral-900">{detailData.stats.checkedIn}</span>
+                      <span className="text-sm text-neutral-400">/ {detailData.stats.total}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center justify-center bg-neutral-50 px-4 py-5 text-center">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">出席率</span>
+                    <div className="mt-2">
+                      <span className="text-2xl font-bold text-neutral-900">
+                        {detailData.stats.total > 0
+                          ? Math.round((detailData.stats.checkedIn / detailData.stats.total) * 100)
+                          : 0}%
+                      </span>
+                    </div>
+                    {detailData.stats.total > 0 && (
+                      <div className="mt-2 w-20 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{ width: `${Math.round((detailData.stats.checkedIn / detailData.stats.total) * 100)}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* 活動時間與說明 */}
+              <section className="rounded-xl border border-border bg-neutral-50/30 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
+                  <CalendarDaysIcon className="h-4 w-4 text-neutral-400" />
+                  活動時間與說明
+                </div>
+                <div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">開始時間</p>
+                    <p className="font-medium text-neutral-700">{formatDateTime(detailData.event.opens_at)}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">結束時間</p>
+                    <p className="font-medium text-neutral-700">{formatDateTime(detailData.event.closes_at)}</p>
+                  </div>
                 </div>
                 {detailData.event.description && (
-                  <p className="mt-3 text-sm text-neutral-600">
-                    {detailData.event.description}
-                  </p>
+                  <div className="mt-4 border-t border-border/50 pt-4">
+                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-neutral-400">活動說明</p>
+                    <p className="text-sm leading-relaxed text-neutral-600">
+                      {detailData.event.description}
+                    </p>
+                  </div>
                 )}
               </section>
 
-              <section>
-                <h4 className="text-sm font-semibold text-neutral-900">
-                  簽到狀態清單
-                </h4>
-                <div className="mt-3 overflow-hidden rounded-xl border border-border">
-                  <div className="grid grid-cols-[1fr_auto_auto] bg-neutral-50 px-4 py-2 text-xs font-medium text-neutral-500">
-                    <span>社團</span>
-                    <span>類型</span>
-                    <span>狀態</span>
-                  </div>
-                  <div className="max-h-[46vh] overflow-y-auto">
-                    {detailData.clubStatuses.length === 0 ? (
-                      <p className="px-4 py-6 text-sm text-neutral-500">
-                        尚未設定預計社團，或找不到對應社團資料。
-                      </p>
-                    ) : (
-                      detailData.clubStatuses.map((club) => (
-                        <div
-                          key={club.clubId}
-                          className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-t border-border px-4 py-3 text-sm"
-                        >
-                          <div>
-                            <p className="font-medium text-neutral-900">
-                              {club.clubName}
-                            </p>
-                            {club.checkedIn && club.checkedInAt && (
-                              <p className="mt-0.5 text-xs text-neutral-500">
-                                簽到時間：{formatDateTime(club.checkedInAt)}
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-xs text-neutral-500">
-                            {club.category}
-                          </span>
-                          <Badge
-                            variant={club.checkedIn ? "success" : "neutral"}
-                          >
-                            {club.checkedIn ? "已簽到" : "未簽到"}
-                          </Badge>
-                        </div>
-                      ))
-                    )}
-                  </div>
+              {/* 簽到狀態清單 */}
+              <section className="rounded-xl border border-border bg-white p-4">
+                <div className="mb-4 flex items-center justify-between">
+                  <h4 className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
+                    <UserGroupIcon className="h-4 w-4 text-neutral-400" />
+                    簽到狀態清單
+                  </h4>
+                  <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-500">
+                    共 {detailData.clubStatuses.length} 個社團
+                  </span>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-border">
+                  <AdminDataTable
+                    data={detailData.clubStatuses}
+                    columns={detailClubColumns}
+                    getRowId={(row) => row.clubId}
+                    emptyMessage="尚未設定預計社團，或找不到對應社團資料。"
+                    emptyColSpan={4}
+                    classNames={{
+                      table: "w-full text-left text-sm",
+                      theadTr: "bg-neutral-50",
+                      th: "",
+                      td: "",
+                      tbody: "divide-y divide-border",
+                      bodyRow:
+                        "transition-colors hover:bg-neutral-50/50 border-0",
+                    }}
+                  />
                 </div>
               </section>
             </div>

@@ -196,3 +196,37 @@ export async function getAllPostSlugs(): Promise<string[]> {
     );
   }
 }
+
+/**
+ * 聚合所有文章的標籤使用次數（依 posts.tags 陣列）。
+ * 每篇文章至少 1 次 Firestore 讀取；文章量大時可改為維護 tag_stats 集合以降低讀取成本。
+ */
+export async function getPostTagAggregates(): Promise<
+  { tag: string; count: number }[]
+> {
+  try {
+    const db = getAdminDb();
+    const snapshot = await db.collection(COLLECTION).select("tags").get();
+    const counts = new Map<string, number>();
+    for (const doc of snapshot.docs) {
+      const tags = doc.data().tags as string[] | undefined;
+      if (!Array.isArray(tags)) continue;
+      for (const raw of tags) {
+        const t = String(raw).trim();
+        if (!t) continue;
+        counts.set(t, (counts.get(t) ?? 0) + 1);
+      }
+    }
+    return Array.from(counts.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) =>
+        b.count !== a.count
+          ? b.count - a.count
+          : a.tag.localeCompare(b.tag, "zh-Hant"),
+      );
+  } catch (error) {
+    throw new Error(
+      `Failed to aggregate post tags: ${error instanceof Error ? error.message : error}`
+    );
+  }
+}

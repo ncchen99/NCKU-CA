@@ -143,6 +143,7 @@
 - [x] 文章 CRUD（新增 / 編輯 / 刪除 Modal）
 - [x] 狀態切換（draft ↔ published）
 - [ ] Markdown 編輯器 + 封面圖上傳
+- [ ] Slug 自動生成優化（可評估翻譯服務或 LLM，自動產生多語意/可讀性更高的 slug）
 
 ### 3.4 表單管理 `/admin/forms`
 - [x] 表單列表 UI（狀態 tabs + 搜尋 + mock data）

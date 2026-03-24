@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import {
   TagIcon,
@@ -13,7 +14,16 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/loading";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminErrorBanner } from "@/components/admin/shared";
-import { adminFetch, type FirestoreTimestamp } from "@/lib/admin-utils";
+import {
+  AdminDataTable,
+  adminSortableHeader,
+  compareZh,
+} from "@/components/admin/shared";
+import {
+  adminFetch,
+  timestampToMs,
+  type FirestoreTimestamp,
+} from "@/lib/admin-utils";
 import type { ComponentType, SVGProps } from "react";
 
 interface DepositRecord {
@@ -135,6 +145,132 @@ export default function AdminDashboard() {
   const recentResponses = data?.latestResponses ?? [];
   const depositRecords = data?.pendingDeposits?.records ?? [];
 
+  type DashboardLatestResponse = NonNullable<
+    DashboardData["latestResponses"]
+  >[number];
+
+  const dashboardResponseColumns = useMemo<ColumnDef<DashboardLatestResponse>[]>(
+    () => [
+      {
+        id: "club",
+        accessorFn: (r) => r.club_name ?? r.club_id ?? "",
+        header: ({ column }) => adminSortableHeader(column, "社團"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("club")),
+            String(rowB.getValue("club")),
+          ),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-950">
+            {row.original.club_name ?? row.original.club_id ?? "—"}
+          </span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        accessorKey: "form_title",
+        header: ({ column }) => adminSortableHeader(column, "表單"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.form_title ?? ""),
+            String(rowB.original.form_title ?? ""),
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-600">
+            {row.original.form_title ?? "—"}
+          </span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        id: "submitted_at",
+        accessorFn: (r) => timestampToMs(r.submitted_at),
+        header: ({ column }) =>
+          adminSortableHeader(column, "時間", "right"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-400">
+            {formatRelativeTime(row.original.submitted_at)}
+          </span>
+        ),
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+    ],
+    [],
+  );
+
+  const dashboardDepositColumns = useMemo<ColumnDef<DepositRecord>[]>(
+    () => [
+      {
+        id: "club",
+        accessorFn: (r) => r.club_name ?? r.club_id ?? "",
+        header: ({ column }) => adminSortableHeader(column, "社團"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.getValue("club")),
+            String(rowB.getValue("club")),
+          ),
+        cell: ({ row }) => (
+          <span className="font-medium text-neutral-950">
+            {row.original.club_name ?? row.original.club_id ?? "—"}
+          </span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        accessorKey: "form_title",
+        header: ({ column }) => adminSortableHeader(column, "表單"),
+        sortingFn: (rowA, rowB) =>
+          compareZh(
+            String(rowA.original.form_title ?? ""),
+            String(rowB.original.form_title ?? ""),
+          ),
+        cell: ({ row }) => (
+          <span className="text-neutral-600">
+            {row.original.form_title ?? "—"}
+          </span>
+        ),
+        meta: { thClassName: "px-5", tdClassName: "px-5" },
+      },
+      {
+        id: "amount",
+        accessorFn: (r) => r.amount ?? 0,
+        header: ({ column }) =>
+          adminSortableHeader(column, "金額", "right"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="font-mono text-sm font-semibold text-red-600">
+            ${(row.original.amount ?? 0).toLocaleString()}
+          </span>
+        ),
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+      {
+        id: "link",
+        header: "",
+        enableSorting: false,
+        cell: () => (
+          <Link
+            href="/admin/deposit"
+            className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
+          >
+            前往處理
+          </Link>
+        ),
+        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+      },
+    ],
+    [],
+  );
+
+  const dashboardTableClassNames = {
+    theadTr: "border-b border-border text-neutral-500",
+    th: "pb-2 font-medium",
+    td: "h-12",
+    bodyRow:
+      "group border-b border-border/50 last:border-0 hover:bg-primary/5",
+  } as const;
+
   return (
     <>
       <AdminPageHeader
@@ -193,33 +329,17 @@ export default function AdminDashboard() {
                 尚無表單回覆
               </p>
             ) : (
-              <table className="w-full text-left text-[13px]">
-                <thead>
-                  <tr className="border-b border-border text-neutral-500">
-                    <th className="px-5 pb-2 font-medium">社團</th>
-                    <th className="px-5 pb-2 font-medium">表單</th>
-                    <th className="px-5 pb-2 text-right font-medium">時間</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentResponses.map((r, i) => (
-                    <tr
-                      key={i}
-                      className="group border-b border-border/50 last:border-0 hover:bg-primary/5"
-                    >
-                      <td className="h-12 px-5 font-medium text-neutral-950">
-                        {r.club_name ?? r.club_id ?? "—"}
-                      </td>
-                      <td className="h-12 px-5 text-neutral-600">
-                        {r.form_title ?? "—"}
-                      </td>
-                      <td className="h-12 px-5 text-right text-neutral-400">
-                        {formatRelativeTime(r.submitted_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <AdminDataTable
+                data={recentResponses}
+                columns={dashboardResponseColumns}
+                getRowId={(_, i) => `resp-${i}`}
+                emptyMessage="尚無表單回覆"
+                emptyColSpan={3}
+                classNames={{
+                  table: "w-full text-left text-[13px]",
+                  ...dashboardTableClassNames,
+                }}
+              />
             )}
           </div>
         </Card>
@@ -248,42 +368,17 @@ export default function AdminDashboard() {
                 目前沒有待繳保證金
               </p>
             ) : (
-              <table className="w-full text-left text-[13px]">
-                <thead>
-                  <tr className="border-b border-border text-neutral-500">
-                    <th className="px-5 pb-2 font-medium">社團</th>
-                    <th className="px-5 pb-2 font-medium">表單</th>
-                    <th className="px-5 pb-2 text-right font-medium">金額</th>
-                    <th className="px-5 pb-2 text-right font-medium" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {depositRecords.map((d, i) => (
-                    <tr
-                      key={i}
-                      className="group border-b border-border/50 last:border-0 hover:bg-primary/5"
-                    >
-                      <td className="h-12 px-5 font-medium text-neutral-950">
-                        {d.club_name ?? d.club_id ?? "—"}
-                      </td>
-                      <td className="h-12 px-5 text-neutral-600">
-                        {d.form_title ?? "—"}
-                      </td>
-                      <td className="h-12 px-5 text-right font-mono text-sm font-semibold text-red-600">
-                        ${(d.amount ?? 0).toLocaleString()}
-                      </td>
-                      <td className="h-12 px-5 text-right">
-                        <Link
-                          href="/admin/deposit"
-                          className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
-                        >
-                          前往處理
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <AdminDataTable
+                data={depositRecords}
+                columns={dashboardDepositColumns}
+                getRowId={(_, i) => `dep-${i}`}
+                emptyMessage="目前沒有待繳保證金"
+                emptyColSpan={4}
+                classNames={{
+                  table: "w-full text-left text-[13px]",
+                  ...dashboardTableClassNames,
+                }}
+              />
             )}
           </div>
         </Card>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
-import { getPostById, updatePost, deletePost } from "@/lib/firestore";
+import { getPostById, updatePost, deletePost, getUsersByIds } from "@/lib/firestore";
 
 type RouteContext = { params: Promise<{ postId: string }> };
 
@@ -14,7 +14,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     if (!post) {
       return NextResponse.json({ error: "文章不存在" }, { status: 404 });
     }
-    return NextResponse.json(post);
+    const authors = post.author_uid
+      ? await getUsersByIds([post.author_uid])
+      : [];
+    const author_display_name = authors[0]?.display_name;
+    return NextResponse.json({ ...post, author_display_name });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "取得文章失敗" },

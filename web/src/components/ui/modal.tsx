@@ -10,16 +10,31 @@ import {
 import { createPortal } from "react-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
+const modalSizeClass: Record<"default" | "wide", string> = {
+  default: "max-w-[480px]",
+  wide: "max-w-4xl",
+};
+
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: ReactNode;
   className?: string;
+  /** 寬版適合表格、大量內容；預設為窄版對話框 */
+  size?: "default" | "wide";
   preventClose?: boolean;
 }
 
-function Modal({ open, onClose, title, children, className = "", preventClose = false }: ModalProps) {
+function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  className = "",
+  size = "default",
+  preventClose = false,
+}: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = useCallback(
@@ -54,7 +69,7 @@ function Modal({ open, onClose, title, children, className = "", preventClose = 
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative w-full max-w-[520px] mx-4 bg-white rounded-xl shadow-[0_0_0_1px_rgba(10,10,10,0.10),0_8px_40px_rgba(10,10,10,0.12)] ${className}`}
+        className={`relative mx-4 w-full ${modalSizeClass[size]} bg-white rounded-xl shadow-[0_0_0_1px_rgba(10,10,10,0.10),0_8px_40px_rgba(10,10,10,0.12)] ${className}`}
       >
         {title && (
           <div className="flex items-center justify-between px-6 pt-5 pb-3">

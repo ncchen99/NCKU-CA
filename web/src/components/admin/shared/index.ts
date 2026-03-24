@@ -9,3 +9,10 @@ export { AdminEmptyState } from "./admin-empty-state";
 export { AdminTableSkeleton, AdminSpinnerLoading } from "./admin-loading-state";
 export { AdminErrorState, AdminErrorBanner } from "./admin-error-state";
 export { AdminTableCheckbox } from "./admin-table-checkbox";
+export {
+  AdminDataTable,
+  AdminTableSortGlyph,
+  adminSortableHeader,
+  compareZh,
+  type AdminDataTableClassNames,
+} from "./admin-data-table";

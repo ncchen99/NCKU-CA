@@ -29,6 +29,13 @@ export async function GET() {
       0
     );
 
+    const clubNameById = new Map(clubs.map((c) => [c.id, c.name]));
+
+    const pendingWithNames = pendingDeposits.map((d) => ({
+      ...d,
+      club_name: d.club_id ? clubNameById.get(d.club_id) : undefined,
+    }));
+
     // Collect recent responses across all forms, then pick latest 5
     const responsesByForm = await Promise.all(
       forms.map(async (form) => {
@@ -45,7 +52,11 @@ export async function GET() {
         if (!bTime) return -1;
         return String(bTime) > String(aTime) ? 1 : -1;
       })
-      .slice(0, 5);
+      .slice(0, 5)
+      .map((r) => ({
+        ...r,
+        club_name: r.club_id ? clubNameById.get(r.club_id) : undefined,
+      }));
 
     const eventsWithStats = await Promise.all(
       openEvents.map(async (event) => {
@@ -58,9 +69,9 @@ export async function GET() {
       clubsCount: clubs.length,
       openFormsCount: openForms.length,
       pendingDeposits: {
-        count: pendingDeposits.length,
+        count: pendingWithNames.length,
         total: pendingDepositTotal,
-        records: pendingDeposits,
+        records: pendingWithNames,
       },
       latestResponses: allResponses,
       openAttendanceEvents: eventsWithStats,

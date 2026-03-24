@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
-import { getAllUsers, updateUserRole } from "@/lib/firestore";
+import { getAllUsers, getClubsByIds, updateUserRole } from "@/lib/firestore";
 import { getAdminAuth } from "@/lib/firebase-admin";
 
 export async function GET(req: NextRequest) {
@@ -10,7 +10,16 @@ export async function GET(req: NextRequest) {
   try {
     const role = req.nextUrl.searchParams.get("role") ?? undefined;
     const users = await getAllUsers({ role });
-    return Response.json({ users });
+    const clubIds = [
+      ...new Set(users.map((u) => u.club_id).filter(Boolean)),
+    ] as string[];
+    const clubs = await getClubsByIds(clubIds);
+    const nameByClubId = new Map(clubs.map((c) => [c.id, c.name]));
+    const enriched = users.map((u) => ({
+      ...u,
+      club_name: u.club_id ? nameByClubId.get(u.club_id) : undefined,
+    }));
+    return Response.json({ users: enriched });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得使用者列表失敗" },
