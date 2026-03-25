@@ -22,10 +22,10 @@ async function NewsPreviewSection() {
         category: p.tags?.[0] ?? "公告",
         date: d
           ? d.toLocaleDateString("zh-TW", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            })
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
           : "—",
         title: p.title,
         excerpt:
