@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
 import type { Post } from "@/types";
 
@@ -51,17 +51,42 @@ function getPostPaths(post: PostSnapshot): string[] {
 
 export function revalidatePostPaths(previousPost?: PostSnapshot, nextPost?: PostSnapshot): void {
     const paths = new Set<string>(["/"]);
+    const tags = new Set<string>([
+        "posts",
+        "posts:category:news",
+        "posts:category:activity_review",
+    ]);
 
     for (const p of getPostPaths(previousPost)) {
         paths.add(p);
+    }
+
+    if (previousPost?.slug) {
+        tags.add(`post:${previousPost.slug}`);
+    }
+
+    if (previousPost?.category) {
+        tags.add(`posts:category:${previousPost.category}`);
     }
 
     for (const p of getPostPaths(nextPost)) {
         paths.add(p);
     }
 
+    if (nextPost?.slug) {
+        tags.add(`post:${nextPost.slug}`);
+    }
+
+    if (nextPost?.category) {
+        tags.add(`posts:category:${nextPost.category}`);
+    }
+
     paths.add("/sitemap.xml");
     revalidatePaths(paths);
+
+    for (const tag of tags) {
+        revalidateTag(tag, "max");
+    }
 }
 
 export function revalidateFormPaths(formId?: string): void {

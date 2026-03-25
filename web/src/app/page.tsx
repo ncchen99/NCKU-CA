@@ -8,6 +8,8 @@ import { CanvasGrid } from "@/components/ui/canvas-grid";
 import { getOpenForms } from "@/lib/firestore/forms";
 import type { Form } from "@/types";
 
+export const revalidate = 300;
+
 export default async function Home() {
   let hasForms = false;
   let forms: Form[] = [];

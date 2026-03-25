@@ -1,20 +1,114 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { unstable_cache } from "next/cache";
 import type { Post } from "@/types";
 
 const COLLECTION = "posts";
 
+const PUBLIC_POSTS_REVALIDATE_SECONDS = 300;
+
+type PublishedPostOptions = {
+  category?: string;
+  limit?: number;
+  offset?: number;
+  tag?: string;
+};
+
+function normalizePublishedPostOptions(options?: PublishedPostOptions): Required<PublishedPostOptions> {
+  return {
+    category: options?.category ?? "",
+    limit: options?.limit ?? 0,
+    offset: options?.offset ?? 0,
+    tag: options?.tag ?? "",
+  };
+}
+
+function buildPublishedPostTags(options: Required<PublishedPostOptions>): string[] {
+  const tags = ["posts"];
+  if (options.category) {
+    tags.push(`posts:category:${options.category}`);
+  }
+  if (options.tag) {
+    tags.push(`posts:tag:${options.tag}`);
+  }
+  return tags;
+}
+
+async function queryPostBySlug(slug: string): Promise<Post | null> {
+  const db = getAdminDb();
+  const snapshot = await db
+    .collection(COLLECTION)
+    .where("slug", "==", slug)
+    .limit(1)
+    .get();
+  if (snapshot.empty) return null;
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() } as Post;
+}
+
+async function queryPublishedPosts(
+  options?: PublishedPostOptions,
+): Promise<{ posts: Post[]; total: number }> {
+  const db = getAdminDb();
+  const normalized = normalizePublishedPostOptions(options);
+
+  let query = db
+    .collection(COLLECTION)
+    .where("status", "==", "published") as FirebaseFirestore.Query;
+
+  if (normalized.category) {
+    query = query.where("category", "==", normalized.category);
+  }
+
+  if (normalized.tag) {
+    query = query.where("tags", "array-contains", normalized.tag);
+  }
+
+  const countSnapshot = await query.count().get();
+  const total = countSnapshot.data().count;
+
+  query = query.orderBy("published_at", "desc");
+
+  if (normalized.offset > 0) {
+    const offsetSnapshot = await query.limit(normalized.offset).get();
+    if (!offsetSnapshot.empty) {
+      const lastDoc = offsetSnapshot.docs[offsetSnapshot.docs.length - 1];
+      query = query.startAfter(lastDoc);
+    }
+  }
+
+  if (normalized.limit > 0) {
+    query = query.limit(normalized.limit);
+  }
+
+  const snapshot = await query.get();
+  const posts = snapshot.docs.map(
+    (doc) => ({ id: doc.id, ...doc.data() }) as Post,
+  );
+
+  return { posts, total };
+}
+
+async function queryAllPostSlugs(): Promise<string[]> {
+  const db = getAdminDb();
+  const snapshot = await db
+    .collection(COLLECTION)
+    .where("status", "==", "published")
+    .select("slug")
+    .get();
+  return snapshot.docs.map((doc) => doc.data().slug as string);
+}
+
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
-    const db = getAdminDb();
-    const snapshot = await db
-      .collection(COLLECTION)
-      .where("slug", "==", slug)
-      .limit(1)
-      .get();
-    if (snapshot.empty) return null;
-    const doc = snapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as Post;
+    return unstable_cache(
+      () => queryPostBySlug(slug),
+      ["posts:getPostBySlug", slug],
+      {
+        revalidate: PUBLIC_POSTS_REVALIDATE_SECONDS,
+        tags: ["posts", `post:${slug}`],
+      },
+    )();
   } catch (error) {
     throw new Error(
       `Failed to get post by slug "${slug}": ${error instanceof Error ? error.message : error}`
@@ -23,45 +117,19 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 }
 
 export async function getPublishedPosts(
-  options?: { category?: string; limit?: number; offset?: number }
+  options?: PublishedPostOptions,
 ): Promise<{ posts: Post[]; total: number }> {
   try {
-    const db = getAdminDb();
-    let query = db
-      .collection(COLLECTION)
-      .where("status", "==", "published") as FirebaseFirestore.Query;
-
-    if (options?.category) {
-      query = query.where("category", "==", options.category);
-    }
-
-    const countSnapshot = await query.count().get();
-    const total = countSnapshot.data().count;
-
-    query = query.orderBy("published_at", "desc");
-
-    if (options?.offset) {
-      const offsetSnapshot = await db
-        .collection(COLLECTION)
-        .where("status", "==", "published")
-        .orderBy("published_at", "desc")
-        .limit(options.offset)
-        .get();
-      if (!offsetSnapshot.empty) {
-        const lastDoc = offsetSnapshot.docs[offsetSnapshot.docs.length - 1];
-        query = query.startAfter(lastDoc);
-      }
-    }
-
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
-
-    const snapshot = await query.get();
-    const posts = snapshot.docs.map(
-      (doc) => ({ id: doc.id, ...doc.data() }) as Post
-    );
-    return { posts, total };
+    const normalized = normalizePublishedPostOptions(options);
+    const cacheKey = JSON.stringify(normalized);
+    return unstable_cache(
+      () => queryPublishedPosts(normalized),
+      ["posts:getPublishedPosts", cacheKey],
+      {
+        revalidate: PUBLIC_POSTS_REVALIDATE_SECONDS,
+        tags: buildPublishedPostTags(normalized),
+      },
+    )();
   } catch (error) {
     throw new Error(
       `Failed to get published posts: ${error instanceof Error ? error.message : error}`
@@ -155,14 +223,18 @@ export async function updatePost(
 ): Promise<void> {
   try {
     const db = getAdminDb();
-    const { id: _id, ...updateData } = data;
+    const updateData: Partial<Post> = { ...data };
+    delete updateData.id;
+    const updatePayload: Partial<Post> & {
+      published_at?: FirebaseFirestore.FieldValue;
+    } = { ...updateData };
 
     // 如果狀態設為「已發布」，且文章原本沒有發布時間，則補上發布時間
     if (updateData.status === "published") {
       const doc = await db.collection(COLLECTION).doc(id).get();
       const existingData = doc.data();
       if (!existingData?.published_at) {
-        (updateData as any).published_at = FieldValue.serverTimestamp();
+        updatePayload.published_at = FieldValue.serverTimestamp();
       }
     }
 
@@ -170,7 +242,7 @@ export async function updatePost(
       .collection(COLLECTION)
       .doc(id)
       .update({
-        ...updateData,
+        ...updatePayload,
         updated_at: FieldValue.serverTimestamp(),
       });
   } catch (error) {
@@ -193,13 +265,14 @@ export async function deletePost(id: string): Promise<void> {
 
 export async function getAllPostSlugs(): Promise<string[]> {
   try {
-    const db = getAdminDb();
-    const snapshot = await db
-      .collection(COLLECTION)
-      .where("status", "==", "published")
-      .select("slug")
-      .get();
-    return snapshot.docs.map((doc) => doc.data().slug as string);
+    return unstable_cache(
+      () => queryAllPostSlugs(),
+      ["posts:getAllPostSlugs"],
+      {
+        revalidate: PUBLIC_POSTS_REVALIDATE_SECONDS,
+        tags: ["posts"],
+      },
+    )();
   } catch (error) {
     throw new Error(
       `Failed to get all post slugs: ${error instanceof Error ? error.message : error}`

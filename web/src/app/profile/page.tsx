@@ -193,9 +193,11 @@ export default function ProfilePage() {
               <p className="text-[13px] text-emerald-700">已儲存。</p>
             ) : null}
 
-            <Button type="submit" variant="primary" disabled={saving}>
-              {saving ? "儲存中…" : "儲存"}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" variant="primary" disabled={saving}>
+                {saving ? "儲存中…" : "儲存"}
+              </Button>
+            </div>
           </form>
 
           <div className="mt-10 flex justify-center">

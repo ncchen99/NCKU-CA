@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 
 const stats = [
-  { value: "420+", label: "學生社團（A–H 類）" },
+  { value: "231+", label: "學生社團（A–H 類）" },
   { value: "2 學期", label: "定期代表大會 + 社博" },
   { value: "@gs.ncku.edu.tw", label: "僅限成大校內帳號" },
 ];

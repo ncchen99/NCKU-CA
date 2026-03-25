@@ -1,18 +1,19 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { getPublicPosts } from "@/lib/client-firestore";
+import { getPublishedPosts } from "@/lib/firestore/posts";
+import { anyTimestampToDate } from "@/lib/datetime";
+
+export const revalidate = 300;
 
 type Category = "全部" | "社博" | "大會" | "講座" | "其他";
+type SearchParams = Record<string, string | string[] | undefined>;
+type Props = { searchParams: Promise<SearchParams> };
 
 interface PostItem {
   id: string;
   slug: string;
   title: string;
-  category: string;
   tags: string[];
   excerpt: string;
   cover_image_url: string | null;
@@ -34,6 +35,8 @@ const categoryBadgeColor: Record<string, string> = {
   其他: "bg-neutral-600",
 };
 
+const PER_PAGE = 6;
+
 function getBadgeLabel(tags: string[]): string {
   for (const t of ["社博", "大會", "講座", "其他"]) {
     if (tags.includes(t)) return t;
@@ -41,44 +44,85 @@ function getBadgeLabel(tags: string[]): string {
   return tags[0] ?? "其他";
 }
 
-export default function ActivitiesPage() {
-  const [activeCategory, setActiveCategory] = useState<Category>("全部");
-  const [page, setPage] = useState(1);
-  const [posts, setPosts] = useState<PostItem[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
+function firstQueryValue(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
 
-  const perPage = 6;
+function parseCategory(raw: string | undefined): Category {
+  if (raw === "社博" || raw === "大會" || raw === "講座" || raw === "其他") {
+    return raw;
+  }
+  return "全部";
+}
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const tagParam = TAG_CATEGORIES.find((c) => c.label === activeCategory);
-      const data = await getPublicPosts({
-        category: "activity_review",
-        page,
-        perPage,
-        tag: tagParam?.tag,
-      });
-      setPosts(data.posts);
-      setTotalPages(data.totalPages);
-    } catch {
-      setPosts([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeCategory, page]);
+function parsePage(raw: string | undefined): number {
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 1) return 1;
+  return Math.floor(parsed);
+}
 
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+function buildActivitiesHref(category: Category, page: number): string {
+  const params = new URLSearchParams();
+  if (category !== "全部") {
+    params.set("tag", category);
+  }
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+  const query = params.toString();
+  return query ? `/activities?${query}` : "/activities";
+}
+
+export default async function ActivitiesPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const activeCategory = parseCategory(firstQueryValue(params.tag));
+  const requestedPage = parsePage(firstQueryValue(params.page));
+  const tagParam = TAG_CATEGORIES.find((c) => c.label === activeCategory)?.tag;
+
+  let posts: PostItem[] = [];
+  let totalPages = 1;
+
+  try {
+    const offset = (requestedPage - 1) * PER_PAGE;
+    const result = await getPublishedPosts({
+      category: "activity_review",
+      limit: PER_PAGE,
+      offset,
+      tag: tagParam,
+    });
+
+    totalPages = Math.max(1, Math.ceil(result.total / PER_PAGE));
+    posts = result.posts.map((post) => {
+      const publishedAt = anyTimestampToDate(post.published_at);
+      return {
+        id: post.id,
+        slug: post.slug,
+        title: post.title,
+        tags: Array.isArray(post.tags) ? post.tags.map((t) => String(t)) : [],
+        excerpt:
+          post.content_markdown?.substring(0, 120)?.replace(/[#*_>\-\[\]`]/g, "") ?? "",
+        cover_image_url: post.cover_image_url ?? null,
+        published_at_display: publishedAt
+          ? publishedAt.toLocaleDateString("zh-TW", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+          : "—",
+      };
+    });
+  } catch {
+    posts = [];
+    totalPages = 1;
+  }
+
+  const page = Math.min(requestedPage, totalPages);
 
   return (
     <PublicLayout>
       <section className="w-full">
         <div className="mx-auto max-w-6xl px-6 pt-24 pb-20">
-          {/* Header */}
           <div className="mb-10">
             <div className="flex items-center gap-3">
               <span
@@ -94,40 +138,23 @@ export default function ActivitiesPage() {
             </h1>
           </div>
 
-          {/* Category tabs */}
           <div className="mb-8 flex items-center gap-2">
             {TAG_CATEGORIES.map((cat) => (
-              <button
+              <Link
                 key={cat.label}
-                onClick={() => {
-                  setActiveCategory(cat.label);
-                  setPage(1);
-                }}
-                className={`inline-flex h-[32px] items-center rounded-full px-3 text-xs font-[500] transition-colors ${activeCategory === cat.label
-                  ? "bg-primary text-white"
-                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                  }`}
+                href={buildActivitiesHref(cat.label, 1)}
+                className={`inline-flex h-[32px] items-center rounded-full px-3 text-xs font-[500] transition-colors ${
+                  activeCategory === cat.label
+                    ? "bg-primary text-white"
+                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                }`}
               >
                 {cat.label}
-              </button>
+              </Link>
             ))}
           </div>
 
-          {/* Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)]">
-                  <div className="h-44 w-full animate-pulse bg-neutral-100" />
-                  <div className="bg-white p-4">
-                    <div className="h-3 w-20 animate-pulse rounded bg-neutral-100" />
-                    <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-neutral-100" />
-                    <div className="mt-2 h-3 w-full animate-pulse rounded bg-neutral-100" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : posts.length === 0 ? (
+          {posts.length === 0 ? (
             <div className="rounded-xl border border-border bg-neutral-50 py-12 text-center text-[14px] text-neutral-500">
               目前沒有已發布的活動回顧。
             </div>
@@ -173,35 +200,35 @@ export default function ActivitiesPage() {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-12 flex items-center justify-center gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:pointer-events-none"
+              <Link
+                href={buildActivitiesHref(activeCategory, Math.max(1, page - 1))}
+                aria-disabled={page === 1}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 aria-disabled:pointer-events-none aria-disabled:opacity-40"
               >
                 <ChevronLeftIcon className="h-4 w-4 text-neutral-600" />
-              </button>
+              </Link>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
+                <Link
                   key={p}
-                  onClick={() => setPage(p)}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-medium transition-colors ${page === p
-                    ? "bg-primary text-white"
-                    : "text-neutral-600 ring-1 ring-neutral-950/8 hover:bg-neutral-50"
-                    }`}
+                  href={buildActivitiesHref(activeCategory, p)}
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-medium transition-colors ${
+                    page === p
+                      ? "bg-primary text-white"
+                      : "text-neutral-600 ring-1 ring-neutral-950/8 hover:bg-neutral-50"
+                  }`}
                 >
                   {p}
-                </button>
+                </Link>
               ))}
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:pointer-events-none"
+              <Link
+                href={buildActivitiesHref(activeCategory, Math.min(totalPages, page + 1))}
+                aria-disabled={page === totalPages}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 aria-disabled:pointer-events-none aria-disabled:opacity-40"
               >
                 <ChevronRightIcon className="h-4 w-4 text-neutral-600" />
-              </button>
+              </Link>
             </div>
           )}
         </div>
