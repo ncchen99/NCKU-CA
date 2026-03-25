@@ -59,16 +59,16 @@ export function ClubCategoryPicker({
     !categoryName
       ? []
       : clubs.length > 0
-      ? clubs.map((c) => ({ value: c.id, label: c.name }))
-      : valueClubId && defaultClubName
-        ? [{ value: valueClubId, label: defaultClubName }]
-        : [];
+        ? clubs.map((c) => ({ value: c.id, label: c.name }))
+        : valueClubId && defaultClubName
+          ? [{ value: valueClubId, label: defaultClubName }]
+          : [];
 
   const clubPlaceholder = !categoryName
     ? "請先選擇類別"
     : clubs.length === 0
-        ? "此類別尚無啟用中的社團"
-        : "請選擇社團";
+      ? "此類別尚無啟用中的社團"
+      : "請選擇社團";
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end">

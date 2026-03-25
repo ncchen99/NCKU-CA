@@ -11,15 +11,15 @@ const areas = [
   {
     icon: BuildingLibraryIcon,
     title: "組織治理",
-    desc: "代表大會與委員會運作管理",
+    desc: "代表大會、主席團與行政團隊分工運作",
   },
   { icon: TicketIcon, title: "社博管理", desc: "每學期社團博覽會策劃執行" },
   {
     icon: ClipboardDocumentCheckIcon,
-    title: "表單系統",
-    desc: "線上報名與資料收集平台",
+    title: "資源與財務",
+    desc: "會費、預決算與社團會產租借管理",
   },
-  { icon: UserGroupIcon, title: "數位點名", desc: "代表大會出席紀錄管理" },
+  { icon: UserGroupIcon, title: "場地協調", desc: "學生活動中心與芸青軒場地管理" },
 ];
 
 function OrgBriefSection() {
@@ -37,11 +37,11 @@ function OrgBriefSection() {
           <div className="flex flex-col gap-8">
             <div className="max-w-[52ch] space-y-5 leading-[28px] text-neutral-600 text-pretty">
               <p>
-                成功大學社團聯合會（Club Association of National Cheng Kung University，簡稱 NCA）成立於 1993
-                年，是由全校學生社團代表組成的最高自治組織。我們肩負社團運作協調、資源分配以及學生權益代言的重要任務。
+                成功大學社團聯合會（Club Association of National Cheng Kung University，簡稱 NCA）成立於 1994
+                年，目前共有 231 個社團。我們是校內社團的自治聯合組織，負責協調共同事務、整合資源並維護社團權益。
               </p>
               <p>
-                透過每學期的代表大會、社團博覽會及各項行政服務，我們致力於打造更透明、高效的社團管理體系，讓每一位學生都能在豐富的校園生活中找到歸屬。
+                社聯會由正副會長、行政團隊、六性質主席團與顧問團共同運作，並透過社團代表大會與性質會議推動決策，執行社團博覽會、場地協調與財務管理等核心業務。
               </p>
             </div>
             <div className="flex items-center gap-3">

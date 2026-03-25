@@ -42,12 +42,12 @@ const OPERATOR_OPTIONS: {
   value: DependsOn["operator"];
   label: string;
 }[] = [
-  { value: "equals", label: "等於" },
-  { value: "not_equals", label: "不等於" },
-  { value: "contains", label: "包含" },
-  { value: "is_empty", label: "為空" },
-  { value: "is_not_empty", label: "不為空" },
-];
+    { value: "equals", label: "等於" },
+    { value: "not_equals", label: "不等於" },
+    { value: "contains", label: "包含" },
+    { value: "is_empty", label: "為空" },
+    { value: "is_not_empty", label: "不為空" },
+  ];
 
 const HAS_OPTIONS_TYPES: FormFieldType["type"][] = [
   "select",
