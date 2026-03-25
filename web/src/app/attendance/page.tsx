@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
 import { useAuth } from "@/lib/auth-context";
+import { createLoginHref } from "@/lib/login-redirect";
 import { formatDateTimeZhTWFromUnknown } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
@@ -19,6 +21,8 @@ type OpenEvent = {
 
 export default function AttendancePage() {
   const { user, firebaseUser, loading: authLoading } = useAuth();
+  const pathname = usePathname();
+  const loginHref = createLoginHref(pathname);
   const [events, setEvents] = useState<OpenEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [clubId, setClubId] = useState("");
@@ -58,7 +62,7 @@ export default function AttendancePage() {
   // Use user profile from auth context as a fallback or for real-time updates
   useEffect(() => {
     if (authLoading) return;
-    
+
     if (user) {
       // Only set if not already set by the initial fetch to avoid flickers
       setClubId((prev) => prev || user.club_id || "");
@@ -96,10 +100,10 @@ export default function AttendancePage() {
       const res = await fetch("/api/attendance/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          event_id: event.id, 
-          club_id: clubId, 
-          passcode: passcode.trim() 
+        body: JSON.stringify({
+          event_id: event.id,
+          club_id: clubId,
+          passcode: passcode.trim()
         }),
       });
       const data = (await res.json().catch(() => ({}))) as {
@@ -154,7 +158,7 @@ export default function AttendancePage() {
               {!authLoading && !firebaseUser ? (
                 <div className="mt-6 rounded-lg bg-neutral-50 px-4 py-3 text-[13px] text-neutral-700">
                   簽到需先登入。{" "}
-                  <Link href="/login" className="font-medium text-primary underline">
+                  <Link href={loginHref} className="font-medium text-primary underline">
                     前往登入
                   </Link>
                 </div>
@@ -183,7 +187,7 @@ export default function AttendancePage() {
                       若搜尋不到，請確認社團名稱是否正確
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="mb-2 block text-[13px] font-medium text-neutral-700">點名密碼</label>
                     <input
@@ -195,7 +199,7 @@ export default function AttendancePage() {
                       disabled={submitting}
                     />
                   </div>
-                  
+
                   {error ? (
                     <p className="text-[13px] text-red-600">{error}</p>
                   ) : null}

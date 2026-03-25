@@ -94,8 +94,8 @@ const EMPTY_DRAFT: FormDraft = {
 };
 
 const formTypeLabels: Record<string, string> = {
-  expo_registration: "博覽會報名",
-  winter_association_registration: "寒聯會報名",
+  expo_registration: "社團博覽會報名",
+  winter_association_registration: "寒假場協報名",
   general_registration: "一般報名",
   attendance_survey: "出席調查",
   custom: "自訂表單",
@@ -182,13 +182,16 @@ export default function FormsPage() {
       } else {
         toast(err instanceof Error ? err.message : "載入資料失敗", "error");
       }
+      throw err;
     } finally {
       if (!background) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchForms();
+    fetchForms().catch(() => {
+      // Error state is handled in fetchForms.
+    });
   }, [fetchForms]);
 
   const filtered = forms.filter((f) => {
@@ -349,10 +352,11 @@ export default function FormsPage() {
         });
       }
 
+      await fetchForms(true);
+
       setModalOpen(false);
       setEditingForm(null);
-      toast(editingForm ? "表單已更新" : "表單已建立", "success");
-      await fetchForms(true);
+      toast(editingForm ? "表單已更新，列表已同步" : "表單已建立，列表已同步", "success");
     } catch (err) {
       setModalError(err instanceof Error ? err.message : "操作失敗");
     } finally {
@@ -701,7 +705,7 @@ export default function FormsPage() {
                   { value: "linked_to_response", label: "綁定表單回覆（自動建立）" },
                   { value: "independent", label: "獨立管理（手動建立）" },
                 ]}
-                hint="「綁定表單回覆」適合社博/場協；「獨立管理」適合其他情境"
+                hint="「綁定表單回覆」適合社團博覽會/寒假場協；「獨立管理」適合其他情境"
               />
             )}
 

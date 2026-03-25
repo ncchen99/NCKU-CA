@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { createLoginHref } from "@/lib/login-redirect";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
 import type { FormField } from "@/types";
 
@@ -209,6 +211,8 @@ export function FormClient({
   fields: FormField[];
 }) {
   const { user, loading: authLoading } = useAuth();
+  const pathname = usePathname();
+  const loginHref = createLoginHref(pathname);
 
   // 回答 state：{ [field.id]: value }
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -463,7 +467,7 @@ export function FormClient({
         <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
           <p className="text-[12px] text-neutral-400">請先登入後再填寫表單</p>
           <a
-            href="/login"
+            href={loginHref}
             className="inline-flex h-[38px] items-center rounded-full bg-primary px-5 text-[14px] font-[550] text-white transition-colors hover:bg-primary-light"
           >
             登入以提交

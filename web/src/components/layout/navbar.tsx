@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bars3Icon,
   XMarkIcon,
@@ -12,6 +12,7 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/lib/auth-context";
+import { createLoginHref } from "@/lib/login-redirect";
 import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
 
 const NAV_LINKS = [
@@ -24,6 +25,8 @@ const NAV_LINKS = [
 export function Navbar() {
   const { user, firebaseUser, loading, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const loginHref = createLoginHref(pathname);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [charterOpen, setCharterOpen] = useState(false);
@@ -185,7 +188,7 @@ export function Navbar() {
             </>
           ) : (
             <Link
-              href="/login"
+              href={loginHref}
               className="flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-neutral-600 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
             >
               以 Google 登入
@@ -302,7 +305,7 @@ export function Navbar() {
               </div>
             ) : (
               <Link
-                href="/login"
+                href={loginHref}
                 className="flex h-10 w-full items-center justify-center rounded-full text-[13px] font-medium text-neutral-600 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
                 onClick={() => setMobileOpen(false)}
               >

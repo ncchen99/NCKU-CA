@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { ClubCategoryPicker } from "@/components/public/club-category-picker";
 import { useAuth } from "@/lib/auth-context";
+import { createLoginHref } from "@/lib/login-redirect";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
 import { useId } from "react";
+import { usePathname } from "next/navigation";
 
 type ProfileUser = {
   display_name: string;
@@ -22,6 +24,8 @@ type ProfileUser = {
 
 export default function ProfilePage() {
   const { firebaseUser, loading: authLoading, refreshUser } = useAuth();
+  const pathname = usePathname();
+  const loginHref = createLoginHref(pathname);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +119,7 @@ export default function ProfilePage() {
         <div className="mx-auto max-w-xl px-6 pt-32 pb-24 text-center">
           <p className="text-[15px] text-neutral-600">請先登入以設定個人資料。</p>
           <Link
-            href="/login"
+            href={loginHref}
             className="mt-4 inline-block text-[14px] font-medium text-primary underline"
           >
             前往登入

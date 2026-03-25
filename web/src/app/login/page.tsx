@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 import { useAuth } from "@/lib/auth-context";
+import { sanitizeRedirectPath } from "@/lib/login-redirect";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -12,7 +13,7 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  const redirectTo = sanitizeRedirectPath(searchParams.get("redirect"));
 
   useEffect(() => {
     if (!authLoading && firebaseUser) {

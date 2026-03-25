@@ -379,7 +379,130 @@ async function seedForms(db: FirebaseFirestore.Firestore, adminUid: string) {
     );
   }
 
-  // --- 表單 2: 期初社代會出席調查 ---
+  // --- 表單 2: 寒假場協報名 ---
+  const winterFormRef = db.collection("forms").doc();
+  const winterFormData = {
+    title: "113-1 寒假場協報名",
+    description:
+      "寒假場地協調活動報名表單。請於截止前完成填寫並繳交保證金。",
+    form_type: "winter_association_registration",
+    status: "open",
+    settings: {
+      one_response_per_club: true,
+      prefill_from_user: true,
+    },
+    deposit_policy: {
+      required: true,
+      amount: 2000,
+      binding_mode: "linked_to_response",
+      refund_rule: "活動結束後三個工作天內完成場地檢核，通過後退還保證金。",
+    },
+    fields: [
+      {
+        id: "club_name",
+        type: "club_picker",
+        label: "社團名稱",
+        required: true,
+        default_from_user: "club_name",
+        order: 1,
+      },
+      {
+        id: "contact_person",
+        type: "text",
+        label: "聯絡人姓名",
+        placeholder: "請輸入聯絡人姓名",
+        required: true,
+        default_from_user: "display_name",
+        order: 2,
+      },
+      {
+        id: "contact_phone",
+        type: "phone",
+        label: "聯絡電話",
+        placeholder: "0912-345-678",
+        required: true,
+        order: 3,
+      },
+      {
+        id: "contact_email",
+        type: "email",
+        label: "聯絡信箱",
+        required: true,
+        default_from_user: "email",
+        order: 4,
+      },
+      {
+        id: "activity_name",
+        type: "text",
+        label: "活動名稱",
+        placeholder: "例：寒訓成果發表",
+        required: true,
+        order: 5,
+      },
+      {
+        id: "use_case",
+        type: "textarea",
+        label: "場地使用需求",
+        placeholder: "請說明場地配置與需求",
+        required: true,
+        order: 6,
+      },
+      {
+        id: "remarks",
+        type: "textarea",
+        label: "備註",
+        placeholder: "其他需要補充的事項",
+        required: false,
+        order: 7,
+      },
+    ],
+    created_by: adminUid,
+    created_at: FieldValue.serverTimestamp(),
+    closes_at: Timestamp.fromDate(new Date("2026-01-05T23:59:59+08:00")),
+    revalidate_path: `/forms/${winterFormRef.id}`,
+  };
+
+  await winterFormRef.set(winterFormData);
+  console.log(`  ✅ 表單: ${winterFormData.title} (ID: ${winterFormRef.id})`);
+
+  for (let i = 0; i < Math.min(3, clubIds.length); i++) {
+    const responseRef = winterFormRef.collection("responses").doc();
+    await responseRef.set({
+      form_id: winterFormRef.id,
+      club_id: clubIds[i],
+      submitted_by_uid: adminUid,
+      answers: {
+        club_name: clubNames[i],
+        contact_person: `寒假聯絡人${i + 1}`,
+        contact_phone: `092${String(i).padStart(7, "0")}${i + 1}`,
+        contact_email: `winter${i + 1}@gs.ncku.edu.tw`,
+        activity_name: `寒假活動${i + 1}`,
+        use_case: "需要 1 間教室與投影設備",
+        remarks: "",
+      },
+      submitted_at: FieldValue.serverTimestamp(),
+      is_duplicate_attempt: false,
+    });
+
+    const depositRef = db.collection("deposit_records").doc();
+    await depositRef.set({
+      club_id: clubIds[i],
+      form_id: winterFormRef.id,
+      form_response_id: responseRef.id,
+      status: i === 0 ? "returned" : "paid",
+      amount: 2000,
+      updated_by: adminUid,
+      notes: "",
+      paid_at: Timestamp.fromDate(new Date(`2025-12-${20 + i}T14:00:00+08:00`)),
+      ...(i === 0
+        ? { returned_at: Timestamp.fromDate(new Date("2026-01-25T11:30:00+08:00")) }
+        : {}),
+    });
+
+    console.log(`    📝 回覆 + 💰 保證金(寒假場協): ${clubNames[i]}`);
+  }
+
+  // --- 表單 3: 期初社代會出席調查 ---
   const surveyFormRef = db.collection("forms").doc();
   const surveyFormData = {
     title: "113-2 期初社代會出席意願調查",

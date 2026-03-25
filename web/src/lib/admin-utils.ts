@@ -60,7 +60,12 @@ export async function adminFetch<T>(
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(url, options);
+  const mergedOptions: RequestInit = {
+    cache: "no-store",
+    ...options,
+  };
+
+  const res = await fetch(url, mergedOptions);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(
