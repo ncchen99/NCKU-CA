@@ -17,7 +17,15 @@ function LoginContent() {
 
   useEffect(() => {
     if (!authLoading && firebaseUser) {
+      const fallbackId = window.setTimeout(() => {
+        window.location.assign(redirectTo);
+      }, 1500);
+
       router.replace(redirectTo);
+
+      return () => {
+        window.clearTimeout(fallbackId);
+      };
     }
   }, [authLoading, firebaseUser, redirectTo, router]);
 
@@ -26,7 +34,7 @@ function LoginContent() {
     setError(null);
     try {
       await signInWithGoogle();
-      router.push(redirectTo);
+      router.replace(redirectTo);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "登入失敗，請稍後再試";

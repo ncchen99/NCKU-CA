@@ -55,13 +55,70 @@ npm run dev
 
 預設網址：`http://localhost:3000`
 
-### 3.4 Firebase 環境變數
+### 3.4 Firebase 設定（Client + Admin）
 
-`web/.env` 需具備管理端服務帳號：
+本專案同時使用 Firebase Client SDK（前端登入）與 Admin SDK（後端 API / seed）。
+
+建議先複製環境檔：
+
+```bash
+cd web
+copy .env.example .env
+```
+
+#### Step 1：建立 Firebase 專案
+
+1. 進入 Firebase Console，建立新專案（或使用既有專案）。
+2. 啟用 Firestore Database（建議先用測試模式，之後再收斂規則）。
+
+#### Step 2：啟用 Authentication（Google）
+
+1. 到 Authentication -> Sign-in method。
+2. 啟用 `Google` 登入。
+3. 在 Authorized domains 加入開發與正式網域（例如 `localhost`）。
+
+說明：
+
+- 本專案登入流程使用 Google Provider。
+- 前端程式會限制僅允許 `@gs.ncku.edu.tw` 信箱登入。
+
+#### Step 3：建立 Web App 並填入 Client SDK 參數
+
+1. 在 Firebase 專案設定新增 Web App。
+2. 取得 SDK 設定值，填入 `web/.env`：
+
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+
+#### Step 4：建立 Service Account 並設定 Admin SDK
+
+1. 到 Firebase Console -> Project settings -> Service accounts。
+2. 點擊 `Generate new private key`，下載 JSON 金鑰。
+3. 將 JSON 內容 base64 編碼後，填入：
 
 - `FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64`
 
-此變數會被 `scripts/seed-firestore.ts` 使用，用於寫入 Firestore。
+PowerShell 範例（Windows）：
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes("service-account.json")
+[Convert]::ToBase64String($bytes)
+```
+
+若有使用 Firebase Storage Admin 操作，可額外設定：
+
+- `FIREBASE_STORAGE_BUCKET`（未設定時，系統會 fallback 到 `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`）
+
+#### Step 5：驗證 Firebase 設定
+
+1. 啟動網站：`cd web && npm run dev`。
+2. 到登入頁測試 Google 登入。
+3. 執行 seed：`cd web && npm run seed`。
+4. 確認 Firestore 有成功寫入 `clubs` 與 `site_content`。
 
 ### 3.5 Cloudflare R2 圖片上傳環境變數
 
@@ -87,45 +144,60 @@ npm run dev
 - 你有 Cloudflare 帳號，且已啟用 R2。
 - 你有該 Cloudflare 帳號的 R2 操作權限。
 
-#### Step 1：建立 Bucket
+#### Step 1：進入 R2 Overview 頁面
 
-1. 進入 Cloudflare Dashboard。
-2. 左側選單選擇 `R2 Object Storage`。
-3. 點 `Create bucket`。
-4. 輸入 bucket 名稱（例如：`ncku-nca-images`）。
+1. 登入 Cloudflare Dashboard。
+2. 左側選單選擇 `R2 Object Storage -> Overview`。
+
+#### Step 2：建立 Bucket 與取得 Account ID
+
+1. 在 Overview 頁面點擊 `Create bucket`。
+2. 輸入 bucket 名稱（例如：`ncku-nca-images`）。
+3. 在右側 `Account Details` 區塊取得 `Account ID`。
 
 你會得到：
 
 - `CLOUDFLARE_R2_BUCKET`：就是你建立的 bucket 名稱。
+- `CLOUDFLARE_R2_ACCOUNT_ID`：Cloudflare 帳號的 Account ID。
 
-#### Step 2：取得 Account ID
+#### Step 3：找到 Manage R2 API Tokens
 
-1. 在 Cloudflare Dashboard 右側或帳號總覽頁可看到 `Account ID`。
-2. 複製該值。
+1. 在 R2 `Overview` 頁面的右側 `Account Details` 區塊。
+2. 點擊 `Manage R2 API Tokens`。
 
-填入：
+#### Step 4：建立 R2 API Token
 
-- `CLOUDFLARE_R2_ACCOUNT_ID`。
+1. 點擊 `Create API token`。
+2. 依需求填寫欄位：
+   - `Token Name`：例如 `ncku-nca-r2-token`。
+   - `Permissions`：一般上傳場景建議選 `Object Read & Write`。
+   - `Specify Bucket(s)`：建議只授權目標 bucket（最小權限原則）。
+   - `TTL`：可選 `Forever`，或設定到期時間。
+3. 點擊 `Create API Token`。
 
-#### Step 3：建立 R2 API Token（Access Key / Secret）
+建立後會顯示：
 
-1. 進入 `R2 Object Storage`。
-2. 找到 `Manage R2 API tokens`（或 `API Tokens` 相關入口）。
-3. 建立一組可讀寫目標 bucket 的 token。
-4. 建立後會看到：
-   - `Access Key ID`
-   - `Secret Access Key`（通常只顯示一次，請立即保存）
+- `Access Key ID`
+- `Secret Access Key`（通常只顯示一次，請立即保存）
+
+說明：
+
+- 本專案使用的是 R2 API Token 建立出的 S3 相容金鑰，不是 Cloudflare Global API Key。
+
+建議權限：
+
+- 最小權限原則，至少允許目標 bucket 的 `Object Read` 與 `Object Write`。
+
+#### Step 5：保存 Access Key / Secret Key
+
+請立刻把 Access Key / Secret Key 保存到密碼管理工具或安全位置。
 
 填入：
 
 - `CLOUDFLARE_R2_ACCESS_KEY_ID`：對應 Access Key ID。
 - `CLOUDFLARE_R2_SECRET_ACCESS_KEY`：對應 Secret Access Key。
 
-建議權限：
-
-- 最小權限原則，至少允許目標 bucket 的 `Object Read` 與 `Object Write`。
-
-#### Step 4：設定公開讀取網址（Public Base URL）
+#### Step 6：設定公開讀取網址（Public Base URL）
 
 目前系統是「上傳後直接回傳公開 URL」，所以需要可公開讀取的 base URL。
 
@@ -141,7 +213,7 @@ npm run dev
   - `https://pub-xxxxxxxx.r2.dev`
   - `https://cdn.your-domain.com`
 
-#### Step 5：寫入環境變數
+#### Step 7：寫入環境變數
 
 將以下內容填入 `web/.env`：
 
@@ -155,7 +227,7 @@ CLOUDFLARE_R2_PUBLIC_BASE_URL=https://你的公開網域
 
 另外在 `web/.env.example` 也保留同樣欄位（不放真值），避免團隊成員遺漏設定。
 
-#### Step 6：驗證設定是否成功
+#### Step 8：驗證設定是否成功
 
 1. 啟動網站：`cd web && npm run dev`。
 2. 以管理員登入後台。

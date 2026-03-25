@@ -82,6 +82,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
 
+          // Keep server session cookie in sync with persisted Firebase login state.
+          const idToken = await fbUser.getIdToken();
+          await createSession(idToken);
+
           setFirebaseUser(fbUser);
           const userData = await fetchUserData(fbUser.uid);
           setUser(userData);
