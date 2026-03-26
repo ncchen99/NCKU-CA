@@ -62,19 +62,26 @@ async function ActivityPreviewSection() {
       : sideCardRows === 2
         ? "lg:grid-rows-2"
         : "lg:grid-rows-1";
-  const sideCardHeightClass = "lg:h-[150px]";
+  const sideCardHeightClass =
+    sideCardRows === 3
+      ? "lg:h-[150px]"
+      : sideCardRows === 2
+        ? "lg:h-[185px]"
+        : "lg:h-[170px]";
   const featuredHeightClass =
     sideCardRows === 3
       ? "lg:h-[calc(150px*3+1rem*2)]"
       : sideCardRows === 2
-        ? "lg:h-[calc(150px*2+1rem)]"
-        : "lg:h-[150px]";
+        ? "lg:h-[calc(185px*2+1rem)]"
+        : "lg:h-[170px]";
   const featuredImageHeightClass =
     sideCardRows === 3
       ? "lg:h-[250px]"
       : sideCardRows === 2
-        ? "lg:h-[170px]"
-        : "lg:h-[150px]";
+        ? "lg:h-[210px]"
+        : "lg:h-[170px]";
+  const featuredExcerptClampClass =
+    sideCardRows === 2 ? "lg:line-clamp-2" : "lg:line-clamp-4";
 
   return (
     <section className="w-full bg-neutral-50">
@@ -122,7 +129,7 @@ async function ActivityPreviewSection() {
                   <h3 className="mt-2 line-clamp-2 text-[16px] font-semibold tracking-tight text-neutral-950 transition-colors group-hover:text-primary">
                     {featured.title}
                   </h3>
-                  <p className="mt-1.5 line-clamp-4 text-[13px] leading-[21px] text-neutral-600 text-pretty">
+                  <p className={`mt-1.5 line-clamp-4 text-[13px] leading-[21px] text-neutral-600 text-pretty ${featuredExcerptClampClass}`}>
                     {featured.excerpt}
                   </p>
                   <div className="group mt-auto inline-flex items-center gap-1 self-end pt-3 text-sm font-[450] text-primary transition-colors hover:text-primary-dark">
