@@ -6,8 +6,9 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeStringify from "rehype-stringify";
+import type { Schema } from "hast-util-sanitize";
 
-const markdownSanitizeSchema = {
+const markdownSanitizeSchema: Schema = {
   ...defaultSchema,
   attributes: {
     ...defaultSchema.attributes,
