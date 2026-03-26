@@ -109,10 +109,10 @@
 ### 2.7 公開表單 `/forms/[form_id]`
 - [x] 表單頁面結構（標題 + 描述 + 欄位預覽 + mock data）
 - [x] 表單已截止狀態處理
-- [ ] 表單 Schema 動態渲染（JSON → React 元件）
-- [ ] 條件邏輯（depends_on）前端計算
-- [ ] 預填值（default_from_user）
-- [ ] 提交驗證 + 防重複 Transaction
+- [x] 表單 Schema 動態渲染（JSON → React 元件）
+- [x] 條件邏輯（depends_on）前端計算
+- [x] 預填值（default_from_user）
+- [x] 提交驗證 + 防重複 Transaction
 
 ### 2.8 SEO
 - [x] 每頁 title / description / og 基礎設定
@@ -166,8 +166,8 @@
 - [x] 新增點名事件（FormModal）
 - [x] 編輯點名事件
 - [x] 狀態快速切換（upcoming→open→closed）
-- [ ] 事件詳頁（`/admin/attendance/[event_id]`）
-- [ ] 即時出席統計 + 出席列表
+- [x] 事件詳頁（`/admin/attendance/[event_id]`）
+- [x] 即時出席統計 + 出席列表
 - [x] 手動補點名 Modal
 - [x] CSV 匯出
 
@@ -193,10 +193,10 @@
 - [x] `/api/revalidate` — ISR On-demand Revalidation
 - [x] `/api/auth/session` — Session Cookie 管理（POST + DELETE）
 - [x] `/api/auth/claims` — Custom Claims RBAC
-- [ ] `/api/forms/[form_id]/submit` — 表單提交（含防重複 Transaction）
+- [x] `/api/forms/[form_id]/submit` — 表單提交（含防重複 Transaction）
 - [x] `/api/attendance/checkin` — 點名提交（含防重複 Transaction）
 - [x] `/api/clubs/import` — 社團 YAML/JSON 匯入
-- [ ] `/api/export/csv` — CSV 匯出通用接口
+- [x] `/api/export/csv` — CSV 匯出通用接口
 
 ### 4.2 Firestore 資料層
 - [x] 建立 Firestore 資料存取函數庫（`lib/firestore/`）
@@ -209,16 +209,16 @@
 - [x] site_content CRUD
 
 ### 4.3 Cloud Functions
-- [ ] 表單提交後自動建立 deposit_record
-- [ ] 表單統計計數更新
-- [ ] ISR 觸發 Webhook
+- [x] 表單提交後自動建立 deposit_record
+- [x] 表單統計計數更新
+- [x] ISR 觸發 Webhook
 
 ### 4.4 Firestore Security Rules
 - [x] 全路徑 deny-by-default
 - [x] admin RBAC 驗證
 - [x] 表單回覆 create-only
 - [x] 點名 uid 一致性驗證
-- [ ] 複合索引設定
+- [x] 複合索引設定
 
 ### 4.5 Firebase Storage Security Rules
 - [x] 文章圖片公開讀取、管理員寫入
@@ -237,13 +237,13 @@
 ## Phase 5：SEO 優化與上線準備
 
 - [x] Sitemap.xml + Robots.txt
-- [ ] 效能優化（Firestore 索引、ISR revalidate 間隔）
-- [ ] Lighthouse 審查（Performance / Accessibility / SEO）
-- [ ] 安全性審查（XSS / CSRF / Token 保護）
-- [ ] Vercel 部署設定
-- [ ] 環境變數設定（Production / Preview / Development）
-- [ ] Firebase Emulator 本地開發設定
-- [ ] 最終測試
+- [x] 效能優化（Firestore 索引、ISR revalidate 間隔）
+- [x] Lighthouse 審查（Performance / Accessibility / SEO）
+- [x] 安全性審查（XSS / CSRF / Token 保護）
+- [x] Vercel 部署設定
+- [x] 環境變數設定（Production / Preview / Development）
+- [x] Firebase Emulator 本地開發設定
+- [x] 最終測試
 
 ---
 
