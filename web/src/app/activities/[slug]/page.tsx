@@ -120,22 +120,22 @@ export default async function ActivityArticlePage({ params }: Props) {
       <section className="w-full">
         <div className="mx-auto max-w-6xl px-6 pt-24 pb-20">
           {/* Breadcrumb */}
-          <nav className="mb-8 flex items-center gap-1.5 text-[13px]">
+          <nav className="mb-8 flex min-w-0 flex-wrap items-center gap-1.5 text-[13px] sm:flex-nowrap">
             <Link
               href="/"
-              className="text-neutral-500 transition-colors hover:text-neutral-950"
+              className="whitespace-nowrap text-neutral-500 [text-orientation:mixed] [writing-mode:horizontal-tb] transition-colors hover:text-neutral-950"
             >
               首頁
             </Link>
-            <span className="text-neutral-400">/</span>
+            <span className="whitespace-nowrap text-neutral-400 [text-orientation:mixed] [writing-mode:horizontal-tb]">/</span>
             <Link
               href="/activities"
-              className="text-neutral-500 transition-colors hover:text-neutral-950"
+              className="whitespace-nowrap text-neutral-500 [text-orientation:mixed] [writing-mode:horizontal-tb] transition-colors hover:text-neutral-950"
             >
               活動回顧
             </Link>
-            <span className="text-neutral-400">/</span>
-            <span className="truncate text-neutral-950">{post.title}</span>
+            <span className="whitespace-nowrap text-neutral-400 [text-orientation:mixed] [writing-mode:horizontal-tb]">/</span>
+            <span className="min-w-0 max-w-full truncate text-neutral-950 [text-orientation:mixed] [writing-mode:horizontal-tb]">{post.title}</span>
           </nav>
 
           <div className="flex gap-12 lg:gap-16">
