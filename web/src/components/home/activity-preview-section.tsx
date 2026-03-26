@@ -111,20 +111,20 @@ async function ActivityPreviewSection() {
               <Link
                 key={item.slug}
                 href={`/activities/${item.slug}`}
-                className="group overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
+                className="group block h-full w-full overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
               >
-                <article className="flex w-full flex-col sm:flex-row">
-                  <div className="h-[180px] w-full shrink-0 bg-neutral-200 sm:min-h-[120px] sm:h-auto sm:w-[120px] sm:self-stretch">
+                <article className="flex h-full w-full flex-col sm:flex-row sm:items-stretch">
+                  <div className="relative h-[180px] w-full shrink-0 overflow-hidden bg-neutral-200 sm:h-full sm:w-[120px] sm:self-stretch">
                     {item.cover_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={item.cover_image_url}
                         alt={item.title}
-                        className="block h-full w-full object-cover"
+                        className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : null}
                   </div>
-                  <div className="flex flex-col justify-center p-4">
+                  <div className="flex flex-1 flex-col justify-center p-4">
                     <div className="flex items-center gap-2">
                       <GhostTag>{item.tag}</GhostTag>
                       <time className="font-mono text-[11px] text-neutral-400">
