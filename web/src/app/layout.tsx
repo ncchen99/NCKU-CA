@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   },
   description:
     "國立成功大學社團聯合會官方數位平台。提供公告資訊、表單報名、點名管理一站式服務。",
+  verification: {
+    google: "cd1s498aORyKCK9CyY0iIXUlHAu2eg0GgdHfAi-mNIE",
+  },
   alternates: {
     canonical: "./",
   },
