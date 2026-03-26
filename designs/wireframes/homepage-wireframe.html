@@ -1,35 +1,46 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NCKU NCA — 首頁 Wireframe v1.1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Geist+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
   <style>
     /* ── Reset & Base ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --primary:       #510110;
-      --primary-light: #7a0118;
-      --primary-dark:  #3a000b;
-      --bg:            #FFFFFF;
-      --border:        #E5E7EB;
-      --neutral-950:   #0a0a0a;
-      --neutral-700:   #404040;
-      --neutral-600:   #525252;
-      --neutral-400:   #a3a3a3;
-      --neutral-200:   #e5e5e5;
-      --neutral-100:   #f5f5f5;
-      --neutral-50:    #fafafa;
-      --wf-fill:       #f0f0ef;
-      --wf-stroke:     #c8c8c6;
-      --wf-img:        #dadada;
-      --wf-label:      #888887;
-      --wf-accent:     rgba(81,1,16,0.10);
-      --wf-accent-txt: rgba(81,1,16,0.72);
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
+
+    :root {
+      --primary: #510110;
+      --primary-light: #7a0118;
+      --primary-dark: #3a000b;
+      --bg: #FFFFFF;
+      --border: #E5E7EB;
+      --neutral-950: #0a0a0a;
+      --neutral-700: #404040;
+      --neutral-600: #525252;
+      --neutral-400: #a3a3a3;
+      --neutral-200: #e5e5e5;
+      --neutral-100: #f5f5f5;
+      --neutral-50: #fafafa;
+      --wf-fill: #f0f0ef;
+      --wf-stroke: #c8c8c6;
+      --wf-img: #dadada;
+      --wf-label: #888887;
+      --wf-accent: rgba(81, 1, 16, 0.10);
+      --wf-accent-txt: rgba(81, 1, 16, 0.72);
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif;
       font-feature-settings: 'ss01' 1;
@@ -40,841 +51,1391 @@
 
     /* ── Legend ── */
     .legend {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       background: #fffef8;
       border-bottom: 1px solid var(--border);
       padding: 10px 24px;
-      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
-      font-size: 11px; font-family: 'Geist Mono', monospace; color: var(--neutral-600);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      font-family: 'Geist Mono', monospace;
+      color: var(--neutral-600);
     }
-    .legend-title { font-size: 13px; font-weight: 650; color: var(--neutral-950); letter-spacing: -0.02em; }
-    .legend-item  { display: flex; align-items: center; gap: 5px; }
-    .ld            { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-    .ld-section   { background: var(--wf-fill); border: 1px solid var(--wf-stroke); }
-    .ld-primary   { background: var(--wf-accent); border: 1px solid rgba(81,1,16,0.25); }
-    .ld-img       { background: var(--wf-img); border: 1px solid var(--wf-stroke); }
-    .ld-btn       { background: var(--primary); border-radius: 999px; }
-    .ld-note      { background: #fef9c3; border: 1px solid #fde047; }
-    .ld-state     { background: #dbeafe; border: 1px solid #93c5fd; }
+
+    .legend-title {
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--neutral-950);
+      letter-spacing: -0.02em;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .ld {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .ld-section {
+      background: var(--wf-fill);
+      border: 1px solid var(--wf-stroke);
+    }
+
+    .ld-primary {
+      background: var(--wf-accent);
+      border: 1px solid rgba(81, 1, 16, 0.25);
+    }
+
+    .ld-img {
+      background: var(--wf-img);
+      border: 1px solid var(--wf-stroke);
+    }
+
+    .ld-btn {
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .ld-note {
+      background: #fef9c3;
+      border: 1px solid #fde047;
+    }
+
+    .ld-state {
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+    }
 
     /* ── Page Wrap ── */
     .page-wrap {
-      max-width: 1200px; margin: 32px auto;
-      background: white; border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.07);
-      overflow: hidden; outline: 1px solid var(--border);
+      max-width: 1200px;
+      margin: 32px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(0, 0, 0, 0.07);
+      overflow: hidden;
+      outline: 1px solid var(--border);
     }
 
     /* ── Badges ── */
     .sec-badge {
-      display: inline-flex; align-items: center;
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      letter-spacing: 0.09em; text-transform: uppercase;
-      color: var(--wf-label); background: var(--neutral-100);
-      border: 1px solid var(--border); border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--wf-label);
+      background: var(--neutral-100);
+      border: 1px solid var(--border);
+      border-radius: 4px;
       padding: 2px 7px;
     }
+
     .state-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      letter-spacing: 0.06em; text-transform: uppercase;
-      color: #1d4ed8; background: #dbeafe;
-      border: 1px solid #93c5fd; border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #1d4ed8;
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      border-radius: 4px;
       padding: 2px 7px;
     }
+
     .design-rule {
-      font-family: 'Geist Mono', monospace; font-size: 9px;
-      color: var(--wf-accent-txt); background: var(--wf-accent);
-      border-radius: 3px; padding: 2px 5px; white-space: nowrap;
+      font-family: 'Geist Mono', monospace;
+      font-size: 9px;
+      color: var(--wf-accent-txt);
+      background: var(--wf-accent);
+      border-radius: 3px;
+      padding: 2px 5px;
+      white-space: nowrap;
     }
+
     .sec-note {
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      color: #92400e; background: #fef9c3;
-      border: 1px solid #fde047; border-radius: 4px; padding: 3px 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      color: #92400e;
+      background: #fef9c3;
+      border: 1px solid #fde047;
+      border-radius: 4px;
+      padding: 3px 8px;
       display: inline-block;
     }
 
     /* ── Shared Components ── */
     .btn-primary {
-      height: 36px; padding: 0 14px; border-radius: 999px;
-      background: var(--primary); border: none;
-      font-size: 13px; font-weight: 550; color: white;
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: var(--primary);
+      border: none;
+      font-size: 13px;
+      font-weight: 550;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       cursor: pointer;
     }
+
     .btn-ghost {
-      height: 36px; padding: 0 14px; border-radius: 999px;
-      background: white; border: 1px solid var(--border);
-      font-size: 13px; font-weight: 450; color: var(--neutral-700);
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 450;
+      color: var(--neutral-700);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       cursor: pointer;
     }
+
     .btn-sm-outline {
-      height: 28px; padding: 0 10px; border-radius: 999px;
-      background: transparent; border: 1px solid rgba(255,255,255,0.4);
-      font-size: 11px; font-weight: 500; color: white;
-      display: inline-flex; align-items: center; gap: 4px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      font-size: 11px;
+      font-weight: 500;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
+
     .wf-block {
-      background: var(--wf-fill); border: 1px solid var(--wf-stroke); border-radius: 6px;
+      background: var(--wf-fill);
+      border: 1px solid var(--wf-stroke);
+      border-radius: 6px;
     }
+
     .wf-img {
-      background: var(--wf-img); border: 1px solid var(--wf-stroke); border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--wf-label);
+      background: var(--wf-img);
+      border: 1px solid var(--wf-stroke);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      color: var(--wf-label);
     }
+
     .section-heading-inline {
-      display: flex; align-items: baseline; gap: 10px; margin-bottom: 32px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 32px;
     }
-    .sh-title { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; color: var(--neutral-950); }
-    .sh-sub   { font-size: 14px; font-weight: 450; color: var(--neutral-600); }
+
+    .sh-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--neutral-950);
+    }
+
+    .sh-sub {
+      font-size: 14px;
+      font-weight: 450;
+      color: var(--neutral-600);
+    }
+
     .grid-divider {
-      position: relative; height: 28px; overflow: hidden;
+      position: relative;
+      height: 28px;
+      overflow: hidden;
     }
+
     .grid-divider::before {
-      content: ''; position: absolute; inset: 0;
-      background-image: repeating-linear-gradient(90deg,var(--border) 0,var(--border) 1px,transparent 1px,transparent 48px);
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(90deg, var(--border) 0, var(--border) 1px, transparent 1px, transparent 48px);
     }
+
     .grid-divider::after {
-      content: ''; position: absolute; top: 50%; left: 0; right: 0;
-      height: 1px; background: var(--border); transform: translateY(-50%);
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+      transform: translateY(-50%);
     }
-    .wf-divider { height: 1px; background: var(--border); }
+
+    .wf-divider {
+      height: 1px;
+      background: var(--border);
+    }
+
     .abs-labels {
-      position: absolute; top: 8px; right: 8px;
-      display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     /* ─────────────────────────────────────────
        STATE SWITCHER
     ───────────────────────────────────────── */
     .state-bar {
-      background: #eff6ff; border-bottom: 1px solid #bfdbfe;
-      padding: 8px 40px; display: flex; align-items: center; gap: 16px;
+      background: #eff6ff;
+      border-bottom: 1px solid #bfdbfe;
+      padding: 8px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
+
     .state-bar-label {
-      font-family: 'Geist Mono', monospace; font-size: 11px;
-      color: #1e40af; font-weight: 500;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: #1e40af;
+      font-weight: 500;
     }
+
     .state-toggle {
-      display: flex; gap: 0;
+      display: flex;
+      gap: 0;
     }
+
     .state-btn {
-      height: 28px; padding: 0 12px;
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      cursor: pointer; border: 1px solid #93c5fd;
-      background: white; color: #3b82f6;
+      height: 28px;
+      padding: 0 12px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border: 1px solid #93c5fd;
+      background: white;
+      color: #3b82f6;
       transition: background 0.15s;
     }
-    .state-btn:first-child { border-radius: 4px 0 0 4px; }
-    .state-btn:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
-    .state-btn.active { background: #3b82f6; color: white; }
+
+    .state-btn:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+
+    .state-btn:last-child {
+      border-radius: 0 4px 4px 0;
+      border-left: none;
+    }
+
+    .state-btn.active {
+      background: #3b82f6;
+      color: white;
+    }
 
     /* ─────────────────────────────────────────
        NAVBAR — 匿名態
     ───────────────────────────────────────── */
     .navbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; height: 56px;
-      background: white; border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 56px;
+      background: white;
+      border-bottom: 1px solid var(--border);
     }
-    .nav-logo { display: flex; align-items: center; gap: 10px; }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .nav-logo-mark {
-      width: 28px; height: 28px; background: var(--primary);
-      border-radius: 6px; flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      border-radius: 6px;
+      flex-shrink: 0;
     }
+
     .nav-logo-text {
-      font-size: 13px; font-weight: 650;
-      letter-spacing: -0.02em; color: var(--neutral-950);
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      color: var(--neutral-950);
     }
+
     .nav-links {
-      display: flex; gap: 28px;
-      font-size: 13px; color: var(--neutral-600); font-weight: 450;
+      display: flex;
+      gap: 28px;
+      font-size: 13px;
+      color: var(--neutral-600);
+      font-weight: 450;
     }
-    .nav-actions { display: flex; align-items: center; gap: 8px; }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
     /* ─────────────────────────────────────────
        NAVBAR — 登入態快速入口
     ───────────────────────────────────────── */
-    .nav-quick { display: flex; align-items: center; gap: 6px; }
+    .nav-quick {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .nav-quick-pill {
-      height: 32px; padding: 0 12px; border-radius: 999px;
-      border: 1px solid var(--border); background: white;
-      font-size: 12px; font-weight: 500; color: var(--neutral-700);
-      display: inline-flex; align-items: center; gap: 5px;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--neutral-700);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       cursor: pointer;
     }
+
     .nav-quick-pill.active {
-      background: var(--primary); color: white; border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
     }
+
     .nav-avatar {
-      width: 32px; height: 32px; border-radius: 999px;
-      background: var(--wf-img); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; color: var(--wf-label); font-family: 'Geist Mono', monospace;
-      cursor: pointer; flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: var(--wf-img);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--wf-label);
+      font-family: 'Geist Mono', monospace;
+      cursor: pointer;
+      flex-shrink: 0;
     }
+
     .nav-divider-v {
-      width: 1px; height: 20px; background: var(--border); margin: 0 4px;
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 4px;
     }
 
     /* ─────────────────────────────────────────
        ATTENDANCE BANNER
     ───────────────────────────────────────── */
     .attendance-banner {
-      background: var(--primary); color: white;
+      background: var(--primary);
+      color: white;
       padding: 10px 40px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
     }
-    .banner-left { display: flex; align-items: center; gap: 10px; }
+
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .banner-dot {
-      width: 8px; height: 8px; background: #fca5a5;
-      border-radius: 999px; flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      background: #fca5a5;
+      border-radius: 999px;
+      flex-shrink: 0;
       animation: pulse 1.5s infinite;
     }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
-    .banner-text { font-size: 13px; font-weight: 450; }
-    .banner-text strong { font-weight: 650; }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.35;
+      }
+    }
+
+    .banner-text {
+      font-size: 13px;
+      font-weight: 450;
+    }
+
+    .banner-text strong {
+      font-weight: 650;
+    }
 
     /* ─────────────────────────────────────────
        HERO
     ───────────────────────────────────────── */
     .hero {
       padding: 72px 40px 64px;
-      display: grid; grid-template-columns: 3fr 2fr; gap: 56px;
-      align-items: end; background: white;
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 56px;
+      align-items: end;
+      background: white;
     }
+
     .hero-eyebrow {
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.12em;
-      color: var(--neutral-600); margin-bottom: 18px;
-      display: flex; align-items: center; gap: 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--neutral-600);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .eyebrow-line { flex: 0 0 24px; height: 1px; background: var(--neutral-400); }
+
+    .eyebrow-line {
+      flex: 0 0 24px;
+      height: 1px;
+      background: var(--neutral-400);
+    }
+
     .hero-headline {
-      font-size: 50px; font-weight: 700; letter-spacing: -0.03em;
-      line-height: 1.06; color: var(--neutral-950);
-      text-wrap: pretty; margin-bottom: 6px;
+      font-size: 50px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.06;
+      color: var(--neutral-950);
+      text-wrap: pretty;
+      margin-bottom: 6px;
     }
-    .hero-headline span { color: var(--primary); }
+
+    .hero-headline span {
+      color: var(--primary);
+    }
+
     .hero-sub {
-      font-size: 30px; font-weight: 350; letter-spacing: -0.02em;
-      line-height: 1.2; color: var(--neutral-600); margin-bottom: 36px;
+      font-size: 30px;
+      font-weight: 350;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--neutral-600);
+      margin-bottom: 36px;
     }
-    .hero-cta { display: flex; align-items: center; gap: 8px; }
-    .hero-right { padding-bottom: 4px; }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-right {
+      padding-bottom: 4px;
+    }
+
     .hero-desc {
-      font-size: 14px; line-height: 28px; color: var(--neutral-600);
-      max-width: 40ch; text-wrap: pretty; margin-bottom: 28px;
+      font-size: 14px;
+      line-height: 28px;
+      color: var(--neutral-600);
+      max-width: 40ch;
+      text-wrap: pretty;
+      margin-bottom: 28px;
     }
-    .hero-stats { display: flex; flex-direction: column; gap: 0; }
+
+    .hero-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
     .hero-stat {
-      padding: 12px 0; border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
     }
-    .hero-stat:last-child { border-bottom: none; }
-    .stat-num { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; color: var(--neutral-950); }
-    .stat-label { font-size: 12px; color: var(--neutral-500,#737373); }
+
+    .hero-stat:last-child {
+      border-bottom: none;
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--neutral-950);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--neutral-500, #737373);
+    }
 
     /* ─────────────────────────────────────────
        ORG BRIEF (Reorganized)
     ───────────────────────────────────────── */
     .org-brief {
-      padding: 64px 40px; background: var(--neutral-50);
+      padding: 64px 40px;
+      background: var(--neutral-50);
     }
+
     .org-inner {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
     }
+
     .org-mission-text {
-      font-size: 14px; line-height: 28px; color: var(--neutral-600);
-      max-width: 52ch; text-wrap: pretty; margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 28px;
+      color: var(--neutral-600);
+      max-width: 52ch;
+      text-wrap: pretty;
+      margin-bottom: 24px;
     }
+
     .org-highlight-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
+
     .org-highlight-card {
       padding: 16px;
       border-radius: 8px;
       background: white;
-      box-shadow: 0 0 0 1px rgba(10,10,10,0.08); /* outer ring */
+      box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.08);
+      /* outer ring */
     }
+
     .ohc-icon {
-      width: 28px; height: 28px; border-radius: 6px;
-      background: var(--wf-accent); margin-bottom: 10px;
-      display: flex; align-items: center; justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--wf-accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 14px;
     }
-    .ohc-title { font-size: 13px; font-weight: 600; color: var(--neutral-950); margin-bottom: 4px; }
-    .ohc-desc  { font-size: 12px; color: var(--neutral-600); line-height: 1.55; }
+
+    .ohc-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--neutral-950);
+      margin-bottom: 4px;
+    }
+
+    .ohc-desc {
+      font-size: 12px;
+      color: var(--neutral-600);
+      line-height: 1.55;
+    }
 
     /* ─────────────────────────────────────────
        NEWS
     ───────────────────────────────────────── */
-    .news-section { padding: 64px 40px; background: white; }
+    .news-section {
+      padding: 64px 40px;
+      background: white;
+    }
+
     .section-header-row {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
     }
+
     .link-arrow {
-      font-size: 13px; font-weight: 500; color: var(--primary); cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+      cursor: pointer;
     }
-    .news-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
-    .news-card { border-radius: 8px; box-shadow: 0 0 0 1px rgba(10,10,10,0.08); overflow: hidden; }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .news-card {
+      border-radius: 8px;
+      box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.08);
+      overflow: hidden;
+    }
+
     .news-card-img {
-      height: 154px; background: var(--wf-img); position: relative;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--wf-label);
+      height: 154px;
+      background: var(--wf-img);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      color: var(--wf-label);
     }
+
     .news-tag {
-      position: absolute; top: 10px; left: 10px; height: 20px; padding: 0 8px;
-      background: var(--primary); border-radius: 999px;
-      font-size: 10px; color: white; font-weight: 550;
-      display: flex; align-items: center; font-family: 'Geist Mono', monospace;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      height: 20px;
+      padding: 0 8px;
+      background: var(--primary);
+      border-radius: 999px;
+      font-size: 10px;
+      color: white;
+      font-weight: 550;
+      display: flex;
+      align-items: center;
+      font-family: 'Geist Mono', monospace;
     }
-    .news-body { padding: 14px; }
-    .news-meta { font-size: 11px; color: var(--neutral-400); font-family: 'Geist Mono', monospace; margin-bottom: 6px; }
-    .news-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; color: var(--neutral-950); line-height: 1.4; margin-bottom: 6px; }
-    .news-excerpt { font-size: 12px; color: var(--neutral-600); line-height: 1.6;
-      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+
+    .news-body {
+      padding: 14px;
+    }
+
+    .news-meta {
+      font-size: 11px;
+      color: var(--neutral-400);
+      font-family: 'Geist Mono', monospace;
+      margin-bottom: 6px;
+    }
+
+    .news-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--neutral-950);
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .news-excerpt {
+      font-size: 12px;
+      color: var(--neutral-600);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
 
     /* ─────────────────────────────────────────
        ACTIVITY REVIEW
     ───────────────────────────────────────── */
-    .activity-section { padding: 64px 40px; background: var(--neutral-50); }
-    .activity-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    .activity-section {
+      padding: 64px 40px;
+      background: var(--neutral-50);
     }
+
+    .activity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
     .act-card-feat {
-      box-shadow: 0 0 0 1px rgba(10,10,10,0.08); border-radius: 8px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.08);
+      border-radius: 8px;
+      overflow: hidden;
       grid-row: span 2;
     }
+
     .act-card-sm {
-      box-shadow: 0 0 0 1px rgba(10,10,10,0.08); border-radius: 8px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.08);
+      border-radius: 8px;
+      overflow: hidden;
       display: flex;
     }
-    .act-img { background: var(--wf-img);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--wf-label);
+
+    .act-img {
+      background: var(--wf-img);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      color: var(--wf-label);
     }
-    .act-body { padding: 16px; flex: 1; }
+
+    .act-body {
+      padding: 16px;
+      flex: 1;
+    }
+
     .act-tag {
-      display: inline-block; height: 18px; padding: 0 8px;
-      border: 1px solid var(--border); border-radius: 999px;
-      font-size: 10px; color: var(--neutral-600); font-family: 'Geist Mono', monospace;
-      line-height: 18px; margin-bottom: 8px;
+      display: inline-block;
+      height: 18px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 10px;
+      color: var(--neutral-600);
+      font-family: 'Geist Mono', monospace;
+      line-height: 18px;
+      margin-bottom: 8px;
     }
-    .act-title { font-size: 14px; font-weight: 600; color: var(--neutral-950); letter-spacing: -0.01em; line-height: 1.4; margin-bottom: 6px; }
-    .act-excerpt { font-size: 12px; color: var(--neutral-600); line-height: 1.6; }
+
+    .act-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--neutral-950);
+      letter-spacing: -0.01em;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .act-excerpt {
+      font-size: 12px;
+      color: var(--neutral-600);
+      line-height: 1.6;
+    }
 
     /* ─────────────────────────────────────────
        FOOTER
     ───────────────────────────────────────── */
-    .footer-section { padding: 56px 40px 40px; background: white; }
-    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; }
-    .footer-brand-desc { font-size: 13px; line-height: 24px; color: var(--neutral-600); max-width: 40ch; margin: 14px 0 18px; }
-    .social-row { display: flex; gap: 8px; }
+    .footer-section {
+      padding: 56px 40px 40px;
+      background: white;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+    }
+
+    .footer-brand-desc {
+      font-size: 13px;
+      line-height: 24px;
+      color: var(--neutral-600);
+      max-width: 40ch;
+      margin: 14px 0 18px;
+    }
+
+    .social-row {
+      display: flex;
+      gap: 8px;
+    }
+
     .social-icon {
-      width: 30px; height: 30px; border-radius: 6px;
-      border: 1px solid var(--border); background: var(--wf-fill);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 9px; color: var(--neutral-400); font-family: 'Geist Mono', monospace;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--wf-fill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--neutral-400);
+      font-family: 'Geist Mono', monospace;
     }
-    .footer-col-title { font-size: 12px; font-weight: 600; color: var(--neutral-950); letter-spacing: -0.01em; margin-bottom: 14px; }
-    .footer-links { display: flex; flex-direction: column; gap: 9px; }
-    .footer-link { font-size: 13px; color: var(--neutral-600); font-weight: 450; }
+
+    .footer-col-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--neutral-950);
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--neutral-600);
+      font-weight: 450;
+    }
+
     .footer-bar {
-      margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .footer-copy { font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--neutral-400); }
+
+    .footer-copy {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: var(--neutral-400);
+    }
 
     /* ─────────────────────────────────────────
        ANNOTATION PANEL
     ───────────────────────────────────────── */
     .anno-bar {
-      background: #161311; color: #d4d0c8; padding: 28px 40px;
+      background: #161311;
+      color: #d4d0c8;
+      padding: 28px 40px;
     }
+
     .anno-title {
-      font-family: 'Geist Mono', monospace; font-size: 11px;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      color: #fde68a; margin-bottom: 22px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #fde68a;
+      margin-bottom: 22px;
     }
-    .anno-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+
+    .anno-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
     .anno-group-title {
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af;
-      margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2d2926;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #2d2926;
     }
-    .anno-item { display: flex; gap: 8px; margin-bottom: 9px; font-size: 12px; line-height: 1.5; }
+
+    .anno-item {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 9px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
     .anno-key {
-      font-family: 'Geist Mono', monospace; font-size: 10px;
-      color: #fca5a5; background: rgba(220,38,38,0.1);
-      border-radius: 3px; padding: 1px 5px; white-space: nowrap;
-      height: fit-content; margin-top: 1px; flex-shrink: 0;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      color: #fca5a5;
+      background: rgba(220, 38, 38, 0.1);
+      border-radius: 3px;
+      padding: 1px 5px;
+      white-space: nowrap;
+      height: fit-content;
+      margin-top: 1px;
+      flex-shrink: 0;
     }
-    .anno-val { color: #d4d0c8; }
+
+    .anno-val {
+      color: #d4d0c8;
+    }
   </style>
 </head>
+
 <body>
 
-<!-- ══ LEGEND BAR ══ -->
-<div class="legend">
-  <span class="legend-title">NCKU NCA 首頁 Wireframe v1.1</span>
-  <span class="legend-item"><span class="ld ld-section"></span>Section 區塊</span>
-  <span class="legend-item"><span class="ld ld-primary"></span>#510110 主色元素</span>
-  <span class="legend-item"><span class="ld ld-img"></span>圖片佔位</span>
-  <span class="legend-item"><span class="ld ld-btn"></span>Primary Button</span>
-  <span class="legend-item"><span class="ld ld-note"></span>設計備註</span>
-  <span class="legend-item"><span class="ld ld-state"></span>狀態切換說明</span>
-  <span style="margin-left:auto;font-size:10px;color:var(--neutral-400);">v1.1 · 2026-03-24 · designs/wireframes/</span>
-</div>
-
-<!-- ══ PAGE CANVAS ══ -->
-<div style="padding:24px 24px 56px;">
-<div class="page-wrap">
-
-  <!-- ════════════════════════════════════
-       ① NAVBAR — 匿名態（預設）
-  ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="navbar">
-      <div class="nav-logo">
-        <div class="nav-logo-mark"></div>
-        <span class="nav-logo-text">成大社聯會 NCKU NCA</span>
-      </div>
-      <nav class="nav-links">
-        <span>關於我們</span>
-        <span>組織章程</span>
-        <span>幹部成員</span>
-        <span>最新消息</span>
-        <span>活動回顧</span>
-      </nav>
-      <div class="nav-actions">
-        <button class="btn-ghost" style="height:36px; font-size:13px;">以 Google 登入</button>
-      </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">① NAV · 匿名態</span>
-      <span class="design-rule">btn h-36 + rounded-full</span>
-    </div>
+  <!-- ══ LEGEND BAR ══ -->
+  <div class="legend">
+    <span class="legend-title">NCKU NCA 首頁 Wireframe v1.1</span>
+    <span class="legend-item"><span class="ld ld-section"></span>Section 區塊</span>
+    <span class="legend-item"><span class="ld ld-primary"></span>#510110 主色元素</span>
+    <span class="legend-item"><span class="ld ld-img"></span>圖片佔位</span>
+    <span class="legend-item"><span class="ld ld-btn"></span>Primary Button</span>
+    <span class="legend-item"><span class="ld ld-note"></span>設計備註</span>
+    <span class="legend-item"><span class="ld ld-state"></span>狀態切換說明</span>
+    <span style="margin-left:auto;font-size:10px;color:var(--neutral-400);">v1.1 · 2026-03-24 ·
+      designs/wireframes/</span>
   </div>
 
-  <!-- ════════════════════════════════════
+  <!-- ══ PAGE CANVAS ══ -->
+  <div style="padding:24px 24px 56px;">
+    <div class="page-wrap">
+
+      <!-- ════════════════════════════════════
+       ① NAVBAR — 匿名態（預設）
+  ════════════════════════════════════ -->
+      <div style="position:relative;">
+        <div class="navbar">
+          <div class="nav-logo">
+            <div class="nav-logo-mark"></div>
+            <span class="nav-logo-text">成大社聯會 NCKU NCA</span>
+          </div>
+          <nav class="nav-links">
+            <span>關於我們</span>
+            <span>組織章程</span>
+            <span>幹部成員</span>
+            <span>最新消息</span>
+            <span>活動回顧</span>
+          </nav>
+          <div class="nav-actions">
+            <button class="btn-ghost" style="height:36px; font-size:13px;">以 Google 登入</button>
+          </div>
+        </div>
+        <div class="abs-labels">
+          <span class="sec-badge">① NAV · 匿名態</span>
+          <span class="design-rule">btn h-36 + rounded-full</span>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════
        ① NAVBAR — 登入態（含快速入口）
        [功能：快速入口移至此處]
   ════════════════════════════════════ -->
-  <div style="background:#eff6ff; padding: 6px 40px; display:flex; gap:8px; align-items:center; border-bottom:1px solid #bfdbfe;">
-    <span class="state-badge">↑ 以上為匿名態</span>
-    <span class="state-badge">↓ 以下為登入態 Navbar</span>
-    <span class="sec-note">快速入口從「組織簡介」移至此處，僅登入者可見</span>
-  </div>
-  <div style="position:relative;">
-    <div class="navbar" style="background:#fafafa;">
-      <div class="nav-logo">
-        <div class="nav-logo-mark"></div>
-        <span class="nav-logo-text">成大社聯會 NCKU NCA</span>
+      <div
+        style="background:#eff6ff; padding: 6px 40px; display:flex; gap:8px; align-items:center; border-bottom:1px solid #bfdbfe;">
+        <span class="state-badge">↑ 以上為匿名態</span>
+        <span class="state-badge">↓ 以下為登入態 Navbar</span>
+        <span class="sec-note">快速入口從「組織簡介」移至此處，僅登入者可見</span>
       </div>
-      <nav class="nav-links">
-        <span>關於我們</span>
-        <span>組織章程</span>
-        <span>幹部成員</span>
-        <span>最新消息</span>
-        <span>活動回顧</span>
-      </nav>
-      <div class="nav-actions">
-        <!-- 快速入口 pills（登入態） -->
-        <div class="nav-quick">
-          <button class="nav-quick-pill active">✓ 今日點名</button>
-          <button class="nav-quick-pill">📋 表單報名</button>
+      <div style="position:relative;">
+        <div class="navbar" style="background:#fafafa;">
+          <div class="nav-logo">
+            <div class="nav-logo-mark"></div>
+            <span class="nav-logo-text">成大社聯會 NCKU NCA</span>
+          </div>
+          <nav class="nav-links">
+            <span>關於我們</span>
+            <span>組織章程</span>
+            <span>幹部成員</span>
+            <span>最新消息</span>
+            <span>活動回顧</span>
+          </nav>
+          <div class="nav-actions">
+            <!-- 快速入口 pills（登入態） -->
+            <div class="nav-quick">
+              <button class="nav-quick-pill active">✓ 今日點名</button>
+              <button class="nav-quick-pill">📋 表單報名</button>
+            </div>
+            <div class="nav-divider-v"></div>
+            <div class="nav-avatar">林</div>
+          </div>
         </div>
-        <div class="nav-divider-v"></div>
-        <div class="nav-avatar">林</div>
+        <div class="abs-labels">
+          <span class="sec-badge">① NAV · 登入態</span>
+          <span class="design-rule">快速入口 pill：h-32 + rounded-full + border</span>
+          <span class="design-rule">今日點名 active → primary bg</span>
+          <span class="design-rule">User Avatar：circle 32px</span>
+        </div>
       </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">① NAV · 登入態</span>
-      <span class="design-rule">快速入口 pill：h-32 + rounded-full + border</span>
-      <span class="design-rule">今日點名 active → primary bg</span>
-      <span class="design-rule">User Avatar：circle 32px</span>
-    </div>
-  </div>
-  <div style="padding: 6px 40px; background:#fff9f9; border-bottom:1px solid #fecdd3; display:flex; gap:8px; align-items:center;">
-    <span class="sec-note">「今日點名」僅在有進行中點名事件時高亮（primary bg）；平時仍顯示但為 ghost 樣式</span>
-    <span class="sec-note">「表單報名」開啟下拉選單，列出目前開放中的表單（status = open）</span>
-  </div>
+      <div
+        style="padding: 6px 40px; background:#fff9f9; border-bottom:1px solid #fecdd3; display:flex; gap:8px; align-items:center;">
+        <span class="sec-note">「今日點名」僅在有進行中點名事件時高亮（primary bg）；平時仍顯示但為 ghost 樣式</span>
+        <span class="sec-note">「表單報名」開啟下拉選單，列出目前開放中的表單（status = open）</span>
+      </div>
 
-  <!-- ════════════════════════════════════
+      <!-- ════════════════════════════════════
        ② 點名橫幅（條件：登入 + 進行中事件）
   ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="attendance-banner">
-      <div class="banner-left">
-        <div class="banner-dot"></div>
-        <span class="banner-text"><strong>點名進行中</strong>：113-2 第一次代表大會　·　截止 17:00</span>
+      <div style="position:relative;">
+        <div class="attendance-banner">
+          <div class="banner-left">
+            <div class="banner-dot"></div>
+            <span class="banner-text"><strong>點名進行中</strong>：113-2 第一次代表大會　·　截止 17:00</span>
+          </div>
+          <button class="btn-sm-outline">立即前往點名 →</button>
+        </div>
+        <div class="abs-labels">
+          <span class="sec-badge"
+            style="background:rgba(81,1,16,.08);border-color:rgba(81,1,16,.22);color:rgba(81,1,16,.72);">② 點名橫幅 ·
+            條件顯示</span>
+        </div>
       </div>
-      <button class="btn-sm-outline">立即前往點名 →</button>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge" style="background:rgba(81,1,16,.08);border-color:rgba(81,1,16,.22);color:rgba(81,1,16,.72);">② 點名橫幅 · 條件顯示</span>
-    </div>
-  </div>
-  <div style="padding:6px 40px; background:#fff9f9; border-bottom:1px solid #fecdd3; display:flex; gap:8px; align-items:center;">
-    <span class="sec-note">req §6.2：僅登入用戶 + 有 status=open 的 attendance_event 時顯示</span>
-    <span class="sec-note">Navbar 的「今日點名」pill 同步高亮 → 兩處互相呼應</span>
-  </div>
+      <div
+        style="padding:6px 40px; background:#fff9f9; border-bottom:1px solid #fecdd3; display:flex; gap:8px; align-items:center;">
+        <span class="sec-note">req §6.2：僅登入用戶 + 有 status=open 的 attendance_event 時顯示</span>
+        <span class="sec-note">Navbar 的「今日點名」pill 同步高亮 → 兩處互相呼應</span>
+      </div>
 
-  <!-- ════════════════════════════════════
+      <!-- ════════════════════════════════════
        ③ HERO — Split Headline 3/5 : 2/5
   ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="hero">
-      <div><!-- 左 3/5 -->
-        <div class="hero-eyebrow">
-          <div class="eyebrow-line"></div>
-          NCKU STUDENT FEDERATION — EST. 1993
+      <div style="position:relative;">
+        <div class="hero">
+          <div><!-- 左 3/5 -->
+            <div class="hero-eyebrow">
+              <div class="eyebrow-line"></div>
+              NCKU STUDENT FEDERATION — EST. 1993
+            </div>
+            <h1 class="hero-headline">成功大學<br /><span>社團聯合會</span></h1>
+            <p class="hero-sub">官方數位平台</p>
+            <div class="hero-cta">
+              <span style="display:inline-flex;padding:1px;"><!-- p-px 補 2px 對齊 -->
+                <button class="btn-primary" style="height:38px;padding:0 18px;font-size:14px;">認識組織</button>
+              </span>
+              <button class="btn-ghost" style="height:36px;padding:0 18px;font-size:14px;">最新消息</button>
+            </div>
+          </div>
+          <div class="hero-right"><!-- 右 2/5 -->
+            <p class="hero-desc">
+              成功大學社團聯合會（NCKU NCA）是成大各社團與系所的最高自治組織，
+              負責協調社團活動、代表會議及社博等重要事務。
+            </p>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="stat-num">420+</div>
+                <div class="stat-label">學生社團（A–H 類）</div>
+              </div>
+              <div class="hero-stat">
+                <div class="stat-num">2 學期</div>
+                <div class="stat-label">定期代表大會 + 社博</div>
+              </div>
+              <div class="hero-stat">
+                <div class="stat-num">@gs.ncku.edu.tw</div>
+                <div class="stat-label">僅限成大校內帳號登入</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <h1 class="hero-headline">成功大學<br/><span>社團聯合會</span></h1>
-        <p class="hero-sub">官方數位平台</p>
-        <div class="hero-cta">
-          <span style="display:inline-flex;padding:1px;"><!-- p-px 補 2px 對齊 -->
-            <button class="btn-primary" style="height:38px;padding:0 18px;font-size:14px;">認識組織</button>
-          </span>
-          <button class="btn-ghost" style="height:36px;padding:0 18px;font-size:14px;">最新消息</button>
+        <div class="abs-labels">
+          <span class="sec-badge">③ HERO</span>
+          <span class="design-rule">Split 3/5 : 2/5 · 左對齊</span>
+          <span class="design-rule">Eyebrow: Geist Mono + uppercase + tracking-wider + text-xs</span>
+          <span class="design-rule">h1 tracking-tight (-0.03em)</span>
+          <span class="design-rule">Primary btn: span p-px 補 2px 對齊</span>
+          <span class="design-rule">desc max-w-[40ch] + lh 28px</span>
         </div>
       </div>
-      <div class="hero-right"><!-- 右 2/5 -->
-        <p class="hero-desc">
-          成功大學社團聯合會（NCKU NCA）是成大各社團與系所的最高自治組織，
-          負責協調社團活動、代表會議及社博等重要事務。
-        </p>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <div class="stat-num">420+</div>
-            <div class="stat-label">學生社團（A–H 類）</div>
-          </div>
-          <div class="hero-stat">
-            <div class="stat-num">2 學期</div>
-            <div class="stat-label">定期代表大會 + 社博</div>
-          </div>
-          <div class="hero-stat">
-            <div class="stat-num">@gs.ncku.edu.tw</div>
-            <div class="stat-label">僅限成大校內帳號登入</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">③ HERO</span>
-      <span class="design-rule">Split 3/5 : 2/5 · 左對齊</span>
-      <span class="design-rule">Eyebrow: Geist Mono + uppercase + tracking-wider + text-xs</span>
-      <span class="design-rule">h1 tracking-tight (-0.03em)</span>
-      <span class="design-rule">Primary btn: span p-px 補 2px 對齊</span>
-      <span class="design-rule">desc max-w-[40ch] + lh 28px</span>
-    </div>
-  </div>
 
-  <div class="grid-divider"></div>
+      <div class="grid-divider"></div>
 
-  <!-- ════════════════════════════════════
+      <!-- ════════════════════════════════════
        ④ 組織簡介（重排後）
        [移除功能連結、移除快速入口 Widget]
   ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="org-brief">
-      <div class="section-heading-inline">
-        <span class="sh-title">關於組織</span>
-        <span class="sh-sub">About NCKU NCA</span>
-      </div>
-      <div class="org-inner">
-        <!-- 左：使命說明 -->
-        <div>
-          <p class="org-mission-text">
-            成功大學社團聯合會（NCKU NCA）是成大所有學生社團的最高自治組織，
-            由各類型社團代表共同組成。我們負責推動社團政策、舉辦聯合活動及管理社博事務，
-            致力於打造透明、高效的社團治理環境，讓每個社團都能在最佳條件下發展。
-          </p>
-          <p class="org-mission-text" style="margin-top:-8px;">
-            本平台提供即時公告、活動回顧、表單報名與數位點名服務，
-            取代傳統紙本流程，讓幹部與社員都能以最低成本完成行政工作。
-          </p>
-          <div style="margin-top:24px; display:flex; gap:8px;">
-            <button class="btn-primary" style="height:36px; padding:0 14px; font-size:13px;">閱讀更多</button>
-            <button class="btn-ghost" style="height:36px; padding:0 14px; font-size:13px;">組織章程</button>
+      <div style="position:relative;">
+        <div class="org-brief">
+          <div class="section-heading-inline">
+            <span class="sh-title">關於組織</span>
+            <span class="sh-sub">About NCKU NCA</span>
+          </div>
+          <div class="org-inner">
+            <!-- 左：使命說明 -->
+            <div>
+              <p class="org-mission-text">
+                成功大學社團聯合會（NCKU NCA）是成大所有學生社團的最高自治組織，
+                由各類型社團代表共同組成。我們負責推動社團政策、舉辦聯合活動及管理社博事務，
+                致力於打造透明、高效的社團治理環境，讓每個社團都能在最佳條件下發展。
+              </p>
+              <p class="org-mission-text" style="margin-top:-8px;">
+                本平台提供即時公告、活動回顧、表單報名與數位點名服務，
+                取代傳統紙本流程，讓幹部與社員都能以最低成本完成行政工作。
+              </p>
+              <div style="margin-top:24px; display:flex; gap:8px;">
+                <button class="btn-primary" style="height:36px; padding:0 14px; font-size:13px;">閱讀更多</button>
+                <button class="btn-ghost" style="height:36px; padding:0 14px; font-size:13px;">組織章程</button>
+              </div>
+            </div>
+            <!-- 右：四大職能亮點 Cards -->
+            <div>
+              <div
+                style="font-family:'Geist Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.09em; color:var(--neutral-600); margin-bottom:14px;">
+                我們負責的四大領域
+              </div>
+              <div class="org-highlight-grid">
+                <div class="org-highlight-card">
+                  <div class="ohc-icon">🏛</div>
+                  <div class="ohc-title">組織治理</div>
+                  <div class="ohc-desc">代表大會、決策機制、幹部架構</div>
+                </div>
+                <div class="org-highlight-card">
+                  <div class="ohc-icon">🎪</div>
+                  <div class="ohc-title">社博管理</div>
+                  <div class="ohc-desc">報名系統、保證金追蹤、攤位安排</div>
+                </div>
+                <div class="org-highlight-card">
+                  <div class="ohc-icon">📋</div>
+                  <div class="ohc-title">表單系統</div>
+                  <div class="ohc-desc">自製表單、回覆管理、條件邏輯</div>
+                </div>
+                <div class="org-highlight-card">
+                  <div class="ohc-icon">✅</div>
+                  <div class="ohc-title">數位點名</div>
+                  <div class="ohc-desc">多裝置同步、防重複、即時統計</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <!-- 右：四大職能亮點 Cards -->
-        <div>
-          <div style="font-family:'Geist Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.09em; color:var(--neutral-600); margin-bottom:14px;">
-            我們負責的四大領域
-          </div>
-          <div class="org-highlight-grid">
-            <div class="org-highlight-card">
-              <div class="ohc-icon">🏛</div>
-              <div class="ohc-title">組織治理</div>
-              <div class="ohc-desc">代表大會、決策機制、幹部架構</div>
-            </div>
-            <div class="org-highlight-card">
-              <div class="ohc-icon">🎪</div>
-              <div class="ohc-title">社博管理</div>
-              <div class="ohc-desc">報名系統、保證金追蹤、攤位安排</div>
-            </div>
-            <div class="org-highlight-card">
-              <div class="ohc-icon">📋</div>
-              <div class="ohc-title">表單系統</div>
-              <div class="ohc-desc">自製表單、回覆管理、條件邏輯</div>
-            </div>
-            <div class="org-highlight-card">
-              <div class="ohc-icon">✅</div>
-              <div class="ohc-title">數位點名</div>
-              <div class="ohc-desc">多裝置同步、防重複、即時統計</div>
-            </div>
-          </div>
+        <div class="abs-labels">
+          <span class="sec-badge">④ 組織簡介（重排）</span>
+          <span class="design-rule">Inline Section Heading 同行</span>
+          <span class="design-rule">功能連結已移除（移至 admin pages）</span>
+          <span class="design-rule">快速入口已移至 Navbar 登入態</span>
+          <span class="design-rule">card: outer ring gray-950/8%</span>
+          <span class="design-rule">inner radius = outer radius − padding</span>
         </div>
       </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">④ 組織簡介（重排）</span>
-      <span class="design-rule">Inline Section Heading 同行</span>
-      <span class="design-rule">功能連結已移除（移至 admin pages）</span>
-      <span class="design-rule">快速入口已移至 Navbar 登入態</span>
-      <span class="design-rule">card: outer ring gray-950/8%</span>
-      <span class="design-rule">inner radius = outer radius − padding</span>
-    </div>
-  </div>
 
-  <div class="grid-divider"></div>
+      <div class="grid-divider"></div>
 
-  <!-- ════════════════════════════════════
+      <!-- ════════════════════════════════════
        ⑤ 最新消息預覽
   ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="news-section">
-      <div class="section-header-row">
-        <div class="section-heading-inline" style="margin-bottom:0;">
-          <span class="sh-title">最新消息</span>
-          <span class="sh-sub">Latest News</span>
+      <div style="position:relative;">
+        <div class="news-section">
+          <div class="section-header-row">
+            <div class="section-heading-inline" style="margin-bottom:0;">
+              <span class="sh-title">最新消息</span>
+              <span class="sh-sub">Latest News</span>
+            </div>
+            <span class="link-arrow">查看全部 →</span>
+          </div>
+          <div class="news-grid">
+            <div class="news-card">
+              <div class="news-card-img"><span class="news-tag">公告</span>封面圖 16:9</div>
+              <div class="news-body">
+                <div class="news-meta">2026-03-20</div>
+                <div class="news-title">113 學年度下學期社博報名公告</div>
+                <div class="news-excerpt">本學期社博預計於 5 月 15 日舉行，即日起開放社團報名，截止日期為 4 月 30 日…</div>
+              </div>
+            </div>
+            <div class="news-card">
+              <div class="news-card-img"><span class="news-tag">活動</span>封面圖 16:9</div>
+              <div class="news-body">
+                <div class="news-meta">2026-03-15</div>
+                <div class="news-title">第一次代表大會公告事項與紀錄</div>
+                <div class="news-excerpt">本學期第一次代表大會已順利召開，會議紀錄及相關決議請詳閱本公告…</div>
+              </div>
+            </div>
+            <div class="news-card">
+              <div class="news-card-img"><span class="news-tag">重要</span>封面圖 16:9</div>
+              <div class="news-body">
+                <div class="news-meta">2026-03-10</div>
+                <div class="news-title">保證金繳交期限提醒</div>
+                <div class="news-excerpt">請各社團於 3 月 31 日前完成保證金繳交，逾期將影響社博攤位申請資格…</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <span class="link-arrow">查看全部 →</span>
+        <div class="abs-labels">
+          <span class="sec-badge">⑤ 最新消息</span>
+          <span class="design-rule">3 欄 grid · outer ring not solid border</span>
+          <span class="design-rule">category tag: primary bg + Geist Mono</span>
+        </div>
       </div>
-      <div class="news-grid">
-        <div class="news-card">
-          <div class="news-card-img"><span class="news-tag">公告</span>封面圖 16:9</div>
-          <div class="news-body">
-            <div class="news-meta">2026-03-20</div>
-            <div class="news-title">113 學年度下學期社博報名公告</div>
-            <div class="news-excerpt">本學期社博預計於 5 月 15 日舉行，即日起開放社團報名，截止日期為 4 月 30 日…</div>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-card-img"><span class="news-tag">活動</span>封面圖 16:9</div>
-          <div class="news-body">
-            <div class="news-meta">2026-03-15</div>
-            <div class="news-title">第一次代表大會公告事項與紀錄</div>
-            <div class="news-excerpt">本學期第一次代表大會已順利召開，會議紀錄及相關決議請詳閱本公告…</div>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-card-img"><span class="news-tag">重要</span>封面圖 16:9</div>
-          <div class="news-body">
-            <div class="news-meta">2026-03-10</div>
-            <div class="news-title">保證金繳交期限提醒</div>
-            <div class="news-excerpt">請各社團於 3 月 31 日前完成保證金繳交，逾期將影響社博攤位申請資格…</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">⑤ 最新消息</span>
-      <span class="design-rule">3 欄 grid · outer ring not solid border</span>
-      <span class="design-rule">category tag: primary bg + Geist Mono</span>
-    </div>
-  </div>
 
-  <div class="grid-divider"></div>
+      <div class="grid-divider"></div>
 
-  <!-- ════════════════════════════════════
+      <!-- ════════════════════════════════════
        ⑥ 活動回顧預覽（不對稱版型）
   ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="activity-section">
-      <div class="section-header-row">
-        <div class="section-heading-inline" style="margin-bottom:0;">
-          <span class="sh-title">活動回顧</span>
-          <span class="sh-sub">Activity Review</span>
-        </div>
-        <span class="link-arrow">查看全部 →</span>
-      </div>
-      <div class="activity-grid">
-        <!-- Featured -->
-        <div class="act-card-feat">
-          <div class="act-img" style="height:260px;">Featured 封面</div>
-          <div class="act-body">
-            <span class="act-tag">活動回顧</span>
-            <div class="act-title">112 學年度社博成果回顧——創紀錄的 180 攤</div>
-            <div class="act-excerpt" style="font-size:13px;line-height:1.6;">
-              去年社博吸引全校超過 5,000 名學生參與，創下歷年最高紀錄。
-              本文整理各攤精彩照片與幕後花絮…
+      <div style="position:relative;">
+        <div class="activity-section">
+          <div class="section-header-row">
+            <div class="section-heading-inline" style="margin-bottom:0;">
+              <span class="sh-title">活動回顧</span>
+              <span class="sh-sub">Activity Review</span>
             </div>
-            <div style="margin-top:14px;"><span class="link-arrow" style="font-size:13px;">閱讀全文 →</span></div>
+            <span class="link-arrow">查看全部 →</span>
+          </div>
+          <div class="activity-grid">
+            <!-- Featured -->
+            <div class="act-card-feat">
+              <div class="act-img" style="height:260px;">Featured 封面</div>
+              <div class="act-body">
+                <span class="act-tag">活動回顧</span>
+                <div class="act-title">112 學年度社博成果回顧——創紀錄的 180 攤</div>
+                <div class="act-excerpt" style="font-size:13px;line-height:1.6;">
+                  去年社博吸引全校超過 5,000 名學生參與，創下歷年最高紀錄。
+                  本文整理各攤精彩照片與幕後花絮…
+                </div>
+                <div style="margin-top:14px;"><span class="link-arrow" style="font-size:13px;">閱讀全文 →</span></div>
+              </div>
+            </div>
+            <!-- Small × 2 -->
+            <div class="act-card-sm">
+              <div class="act-img" style="width:120px;flex-shrink:0;">縮圖</div>
+              <div class="act-body">
+                <span class="act-tag">活動回顧</span>
+                <div class="act-title" style="font-size:13px;">113-1 代表大會暨新生說明會</div>
+                <div class="act-excerpt">本學期首次代表大會邀請各社團代表出席…</div>
+              </div>
+            </div>
+            <div class="act-card-sm">
+              <div class="act-img" style="width:120px;flex-shrink:0;">縮圖</div>
+              <div class="act-body">
+                <span class="act-tag">活動回顧</span>
+                <div class="act-title" style="font-size:13px;">社幹培訓工作坊成果紀錄</div>
+                <div class="act-excerpt">邀請各社團幹部參與，共探討財務管理與活動規劃…</div>
+              </div>
+            </div>
           </div>
         </div>
-        <!-- Small × 2 -->
-        <div class="act-card-sm">
-          <div class="act-img" style="width:120px;flex-shrink:0;">縮圖</div>
-          <div class="act-body">
-            <span class="act-tag">活動回顧</span>
-            <div class="act-title" style="font-size:13px;">113-1 代表大會暨新生說明會</div>
-            <div class="act-excerpt">本學期首次代表大會邀請各社團代表出席…</div>
-          </div>
-        </div>
-        <div class="act-card-sm">
-          <div class="act-img" style="width:120px;flex-shrink:0;">縮圖</div>
-          <div class="act-body">
-            <span class="act-tag">活動回顧</span>
-            <div class="act-title" style="font-size:13px;">社幹培訓工作坊成果紀錄</div>
-            <div class="act-excerpt">邀請各社團幹部參與，共探討財務管理與活動規劃…</div>
-          </div>
+        <div class="abs-labels">
+          <span class="sec-badge">⑥ 活動回顧</span>
+          <span class="design-rule">Featured 左大 + Small ×2 右疊排</span>
+          <span class="design-rule">Canvas Grid 裝飾線分隔</span>
         </div>
       </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">⑥ 活動回顧</span>
-      <span class="design-rule">Featured 左大 + Small ×2 右疊排</span>
-      <span class="design-rule">Canvas Grid 裝飾線分隔</span>
-    </div>
-  </div>
 
-  <div class="grid-divider"></div>
+      <div class="grid-divider"></div>
 
-  <!-- ════════════════════════════════════
+      <!-- ════════════════════════════════════
        ⑦ 聯絡資訊 / Footer
   ════════════════════════════════════ -->
-  <div style="position:relative;">
-    <div class="footer-section">
-      <div class="footer-grid">
-        <div>
-          <div class="nav-logo">
-            <div class="nav-logo-mark" style="width:22px;height:22px;"></div>
-            <span style="font-size:13px;font-weight:650;letter-spacing:-0.02em;">成大社聯會 NCKU NCA</span>
+      <div style="position:relative;">
+        <div class="footer-section">
+          <div class="footer-grid">
+            <div>
+              <div class="nav-logo">
+                <div class="nav-logo-mark" style="width:22px;height:22px;"></div>
+                <span style="font-size:13px;font-weight:650;letter-spacing:-0.02em;">成大社聯會 NCKU NCA</span>
+              </div>
+              <p class="footer-brand-desc">
+                成功大學社團聯合會官方數位平台。<br />
+                提供公告資訊、表單報名、點名管理一站式服務。<br />
+                僅限 @gs.ncku.edu.tw 帳號登入使用後台功能。
+              </p>
+              <div class="social-row">
+                <div class="social-icon">FB</div>
+                <div class="social-icon">IG</div>
+                <div class="social-icon">YT</div>
+              </div>
+            </div>
+            <div>
+              <div class="footer-col-title">快速導覽</div>
+              <div class="footer-links">
+                <span class="footer-link">關於我們</span>
+                <span class="footer-link">組織章程</span>
+                <span class="footer-link">幹部成員</span>
+                <span class="footer-link">最新消息</span>
+                <span class="footer-link">活動回顧</span>
+              </div>
+            </div>
+            <div>
+              <div class="footer-col-title">聯絡資訊</div>
+              <div class="footer-links">
+                <span class="footer-link">📧 nca.ncku@gmail.com</span>
+                <span class="footer-link">📍 台南市東區大學路1號學生活動中心2樓社團聯合會辦公室</span>
+                <span class="footer-link" style="margin-top:12px; color:var(--primary); font-weight:500;">登入系統 →</span>
+              </div>
+            </div>
           </div>
-          <p class="footer-brand-desc">
-            成功大學社團聯合會官方數位平台。<br/>
-            提供公告資訊、表單報名、點名管理一站式服務。<br/>
-            僅限 @gs.ncku.edu.tw 帳號登入使用後台功能。
-          </p>
-          <div class="social-row">
-            <div class="social-icon">FB</div>
-            <div class="social-icon">IG</div>
-            <div class="social-icon">YT</div>
+          <div class="footer-bar">
+            <span class="footer-copy">© 2026 成功大學社團聯合會 · NCKU NCA</span>
+            <span class="footer-copy">Built with Next.js · Deployed on Vercel</span>
           </div>
         </div>
-        <div>
-          <div class="footer-col-title">快速導覽</div>
-          <div class="footer-links">
-            <span class="footer-link">關於我們</span>
-            <span class="footer-link">組織章程</span>
-            <span class="footer-link">幹部成員</span>
-            <span class="footer-link">最新消息</span>
-            <span class="footer-link">活動回顧</span>
-          </div>
-        </div>
-        <div>
-          <div class="footer-col-title">聯絡資訊</div>
-          <div class="footer-links">
-            <span class="footer-link">📧 nca.ncku@gmail.com</span>
-            <span class="footer-link">📍 成功大學 光復校區</span>
-            <span class="footer-link" style="margin-top:12px; color:var(--primary); font-weight:500;">登入系統 →</span>
-          </div>
+        <div class="abs-labels">
+          <span class="sec-badge">⑦ Footer</span>
+          <span class="design-rule">2/4 + 1/4 + 1/4 grid</span>
         </div>
       </div>
-      <div class="footer-bar">
-        <span class="footer-copy">© 2026 成功大學社團聯合會 · NCKU NCA</span>
-        <span class="footer-copy">Built with Next.js · Deployed on Vercel</span>
-      </div>
-    </div>
-    <div class="abs-labels">
-      <span class="sec-badge">⑦ Footer</span>
-      <span class="design-rule">2/4 + 1/4 + 1/4 grid</span>
-    </div>
-  </div>
 
-</div><!-- /.page-wrap -->
-</div><!-- /padding -->
+    </div><!-- /.page-wrap -->
+  </div><!-- /padding -->
 
-<!-- ════════════════════════════════════
+  <!-- ════════════════════════════════════
      ANNOTATION PANEL
 ════════════════════════════════════ -->
-<div class="anno-bar">
-  <div style="max-width:1200px;margin:0 auto;">
-    <div class="anno-title">▌ 設計規範對照（AGENTS.md）· v1.1 更動說明</div>
-    <div class="anno-grid">
-      <div>
-        <div class="anno-group-title">v1.1 變更項目</div>
-        <div class="anno-item">
-          <span class="anno-key">移動</span>
-          <span class="anno-val">「快速入口」從 §組織簡介 移至 Navbar 登入態（pill 樣式，h-32 rounded-full）</span>
+  <div class="anno-bar">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="anno-title">▌ 設計規範對照（AGENTS.md）· v1.1 更動說明</div>
+      <div class="anno-grid">
+        <div>
+          <div class="anno-group-title">v1.1 變更項目</div>
+          <div class="anno-item">
+            <span class="anno-key">移動</span>
+            <span class="anno-val">「快速入口」從 §組織簡介 移至 Navbar 登入態（pill 樣式，h-32 rounded-full）</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">移除</span>
+            <span class="anno-val">「功能連結列表」從首頁組織簡介移出 → 詳見 admin-pages.md</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">重排</span>
+            <span class="anno-val">組織簡介改為 2 欄：左側使命文字 + 右側四大職能 highlight cards</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">新增</span>
+            <span class="anno-val">Navbar 雙狀態展示（匿名態 / 登入態），含「今日點名」active 狀態說明</span>
+          </div>
         </div>
-        <div class="anno-item">
-          <span class="anno-key">移除</span>
-          <span class="anno-val">「功能連結列表」從首頁組織簡介移出 → 詳見 admin-pages.md</span>
+        <div>
+          <div class="anno-group-title">AGENTS.md 規則對照</div>
+          <div class="anno-item">
+            <span class="anno-key">Eyebrow</span>
+            <span class="anno-val">Geist Mono · uppercase · tracking-wider · text-xs · gray-600</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">大字體</span>
+            <span class="anno-val">h1 ≥24px → letter-spacing -0.03em (tracking-tight)</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">text-sm lh</span>
+            <span class="anno-val">14px 描述文字 line-height 28px（雙倍呼吸感）</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">ch 寬</span>
+            <span class="anno-val">Hero desc max-w-[40ch]、Org mission max-w-[52ch]</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">Inline H.</span>
+            <span class="anno-val">標題深色粗體 + 副標灰色中等字重同行（每個 Section）</span>
+          </div>
         </div>
-        <div class="anno-item">
-          <span class="anno-key">重排</span>
-          <span class="anno-val">組織簡介改為 2 欄：左側使命文字 + 右側四大職能 highlight cards</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">新增</span>
-          <span class="anno-val">Navbar 雙狀態展示（匿名態 / 登入態），含「今日點名」active 狀態說明</span>
-        </div>
-      </div>
-      <div>
-        <div class="anno-group-title">AGENTS.md 規則對照</div>
-        <div class="anno-item">
-          <span class="anno-key">Eyebrow</span>
-          <span class="anno-val">Geist Mono · uppercase · tracking-wider · text-xs · gray-600</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">大字體</span>
-          <span class="anno-val">h1 ≥24px → letter-spacing -0.03em (tracking-tight)</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">text-sm lh</span>
-          <span class="anno-val">14px 描述文字 line-height 28px（雙倍呼吸感）</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">ch 寬</span>
-          <span class="anno-val">Hero desc max-w-[40ch]、Org mission max-w-[52ch]</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">Inline H.</span>
-          <span class="anno-val">標題深色粗體 + 副標灰色中等字重同行（每個 Section）</span>
-        </div>
-      </div>
-      <div>
-        <div class="anno-group-title">Border & Button 規則</div>
-        <div class="anno-item">
-          <span class="anno-key">btn</span>
-          <span class="anno-val">h-36~38 · rounded-full · text-sm · font-weight 550</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">btn align</span>
-          <span class="anno-val">Primary btn 用 span(inline-flex + p-px) 包裹補 2px 高度差</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">outer ring</span>
-          <span class="anno-val">卡片 / Navbar 用 gray-950 opacity 8~10% ring，非 solid border</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">inset ring</span>
-          <span class="anno-val">淡色容器（org-brief bg, footer bg）用 5% inset ring 邊緣定義</span>
-        </div>
-        <div class="anno-item">
-          <span class="anno-key">concentric</span>
-          <span class="anno-val">card outer rounded-lg p-4 → inner icon rounded-md（8 - 4 = 4px 補值）</span>
+        <div>
+          <div class="anno-group-title">Border & Button 規則</div>
+          <div class="anno-item">
+            <span class="anno-key">btn</span>
+            <span class="anno-val">h-36~38 · rounded-full · text-sm · font-weight 550</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">btn align</span>
+            <span class="anno-val">Primary btn 用 span(inline-flex + p-px) 包裹補 2px 高度差</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">outer ring</span>
+            <span class="anno-val">卡片 / Navbar 用 gray-950 opacity 8~10% ring，非 solid border</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">inset ring</span>
+            <span class="anno-val">淡色容器（org-brief bg, footer bg）用 5% inset ring 邊緣定義</span>
+          </div>
+          <div class="anno-item">
+            <span class="anno-key">concentric</span>
+            <span class="anno-val">card outer rounded-lg p-4 → inner icon rounded-md（8 - 4 = 4px 補值）</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
 </body>
+
 </html>

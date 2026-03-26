@@ -89,7 +89,7 @@ function StaticAboutContent() {
       <dl className="mt-4 flex flex-col gap-3">
         {[
           { label: "電子信箱", value: "nca.ncku@gmail.com" },
-          { label: "辦公地點", value: "國立成功大學 光復校區 學生活動中心" },
+          { label: "辦公地點", value: "國立台南市東區大學路1號學生活動中心2樓社團聯合會辦公室 學生活動中心" },
           { label: "服務時間", value: "週一至週五 10:00–17:00" },
         ].map((item) => (
           <div

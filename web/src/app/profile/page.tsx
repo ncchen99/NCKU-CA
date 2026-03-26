@@ -190,7 +190,9 @@ export default function ProfilePage() {
               <p className="text-[13px] text-red-600">{error}</p>
             ) : null}
             {success ? (
-              <p className="text-[13px] text-emerald-700">已儲存。</p>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[13px] text-emerald-700">
+                儲存好囉
+              </div>
             ) : null}
 
             <div className="flex justify-end">

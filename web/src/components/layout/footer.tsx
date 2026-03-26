@@ -104,7 +104,7 @@ export function Footer() {
               </li>
               <li>
                 <span className="text-[13px] text-neutral-600">
-                  成功大學 光復校區
+                  台南市東區大學路1號學生活動中心2樓社團聯合會辦公室
                 </span>
               </li>
 

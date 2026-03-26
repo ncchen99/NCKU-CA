@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "npx tsx ../scripts/seed-firestore.ts"
+    "seed": "npx tsx ../scripts/seed-firestore.ts",
+    "seed:facebook-posts": "npx tsx ../scripts/seed-facebook-posts.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1016.0",

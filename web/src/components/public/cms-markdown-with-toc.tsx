@@ -33,7 +33,7 @@ export async function CmsMarkdownWithToc({ markdown }: CmsMarkdownWithTocProps) 
     <div className="flex gap-12 lg:gap-16">
       <div className="min-w-0 flex-1">
         <div
-          className="cms-markdown max-w-[65ch] text-[15px] leading-[28px] text-neutral-700"
+          className="cms-markdown max-w-[65ch] lg:max-w-[84ch] text-[15px] leading-[28px] text-neutral-700"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>

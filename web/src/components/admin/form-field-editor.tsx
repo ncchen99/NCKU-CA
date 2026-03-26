@@ -646,7 +646,7 @@ export function FormFieldEditor({
       <div className="relative">
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           onClick={() => setAddMenuOpen(!addMenuOpen)}
           className="w-full justify-center gap-1.5 border-dashed"
         >
