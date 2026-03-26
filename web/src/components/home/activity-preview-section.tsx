@@ -97,7 +97,8 @@ async function ActivityPreviewSection() {
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Featured card */}
-            <div
+            <Link
+              href={`/activities/${featured.slug}`}
               className={`group block overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${featuredHeightClass}`}
             >
               <article className="flex h-full flex-col">
@@ -132,7 +133,7 @@ async function ActivityPreviewSection() {
                   </p>
                 </div>
               </article>
-            </div>
+            </Link>
 
             {/* Side cards */}
             <div className={`grid h-full gap-4 ${rightGridRowsClass}`}>

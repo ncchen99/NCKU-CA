@@ -31,9 +31,9 @@ export function Footer() {
     <footer className="bg-white">
       {/* Main footer content */}
       <div className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Brand column — 2/4 */}
-          <div className="sm:col-span-2">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12">
+          {/* Brand column — wider */}
+          <div className="sm:col-span-2 lg:col-span-6">
             <Link href="/" className="flex items-center gap-3">
               <img src="/logo.svg" alt="NCA Logo" className="h-7 w-7 shrink-0" />
               <div className="flex items-baseline gap-2">
@@ -46,7 +46,7 @@ export function Footer() {
               </div>
             </Link>
 
-            <p className="mt-4 max-w-[40ch] text-[13px] leading-6 text-neutral-600">
+            <p className="mt-4 max-w-[56ch] text-[13px] leading-6 text-neutral-600">
               成大學生社團聯合會作為綜理學生社團事務之學生自治組織，對內代表學生社團向校方維護權益，對外則協助爭取引進外部資源
             </p>
 
@@ -69,8 +69,8 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick nav column — 1/4 */}
-          <div>
+          {/* Quick nav column */}
+          <div className="lg:col-span-3 lg:justify-self-end text-left">
             <h3 className="text-[12px] font-semibold uppercase tracking-wide text-neutral-950">
               快速導覽
             </h3>
@@ -88,8 +88,8 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact column — 1/4 */}
-          <div>
+          {/* Contact column */}
+          <div className="lg:col-span-3 lg:justify-self-end text-left">
             <h3 className="text-[12px] font-semibold uppercase tracking-wide text-neutral-950">
               聯繫我們
             </h3>
