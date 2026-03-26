@@ -25,7 +25,7 @@ async function ActivityPreviewSection() {
   try {
     const { posts } = await getPublishedPosts({
       category: "activity_review",
-      limit: 3,
+      limit: 4,
     });
     items = posts.map((p) => {
       const d = anyTimestampToDate(p.published_at);
@@ -53,12 +53,33 @@ async function ActivityPreviewSection() {
   }
 
   const featured = items[0];
-  const sideCards = items.slice(1);
+  const isFourPlusLayout = items.length >= 4;
+  const sideCards = isFourPlusLayout ? items.slice(1, 4) : items.slice(1, 3);
+  const sideCardRows = isFourPlusLayout ? 3 : sideCards.length >= 2 ? 2 : 1;
+  const rightGridRowsClass =
+    sideCardRows === 3
+      ? "lg:grid-rows-3"
+      : sideCardRows === 2
+        ? "lg:grid-rows-2"
+        : "lg:grid-rows-1";
+  const sideCardHeightClass = "lg:h-[150px]";
+  const featuredHeightClass =
+    sideCardRows === 3
+      ? "lg:h-[calc(150px*3+1rem*2)]"
+      : sideCardRows === 2
+        ? "lg:h-[calc(150px*2+1rem)]"
+        : "lg:h-[150px]";
+  const featuredImageHeightClass =
+    sideCardRows === 3
+      ? "lg:h-[250px]"
+      : sideCardRows === 2
+        ? "lg:h-[170px]"
+        : "lg:h-[150px]";
 
   return (
     <section className="w-full bg-neutral-50">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
           <SectionHeading title="活動回顧" subtitle="Activity Review" />
           <ViewAllLink href="/activities" />
         </div>
@@ -68,14 +89,14 @@ async function ActivityPreviewSection() {
             尚無已發布的活動回顧。
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Featured card */}
             <Link
               href={`/activities/${featured.slug}`}
-              className="group row-span-2 block overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
+              className={`group block overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${featuredHeightClass}`}
             >
-              <article>
-                <div className="h-[220px] w-full bg-neutral-200 sm:h-[260px]">
+              <article className="flex h-full flex-col">
+                <div className={`h-[220px] w-full bg-neutral-200 sm:h-[260px] ${featuredImageHeightClass}`}>
                   {featured.cover_image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -83,22 +104,28 @@ async function ActivityPreviewSection() {
                       alt={featured.title}
                       className="h-full w-full object-cover"
                     />
-                  ) : null}
+                  ) : (
+                    <div className="flex h-full w-full items-end bg-gradient-to-br from-neutral-200 via-neutral-100 to-white p-4">
+                      <span className="font-mono text-[10px] tracking-wide text-neutral-500">
+                        ACTIVITY REVIEW
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div className="p-5">
+                <div className="flex min-h-0 flex-1 flex-col p-4">
                   <div className="flex items-center gap-2">
                     <GhostTag>{featured.tag}</GhostTag>
                     <time className="font-mono text-[11px] text-neutral-400">
                       {featured.date}
                     </time>
                   </div>
-                  <h3 className="mt-3 text-[16px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary transition-colors">
+                  <h3 className="mt-2 line-clamp-2 text-[16px] font-semibold tracking-tight text-neutral-950 transition-colors group-hover:text-primary">
                     {featured.title}
                   </h3>
-                  <p className="mt-2 text-[13px] leading-[22px] text-neutral-600 text-pretty">
+                  <p className="mt-1.5 line-clamp-4 text-[13px] leading-[21px] text-neutral-600 text-pretty">
                     {featured.excerpt}
                   </p>
-                  <div className="group mt-4 inline-flex items-center gap-1 text-sm font-[450] text-primary transition-colors hover:text-primary-dark">
+                  <div className="group mt-auto inline-flex items-center gap-1 self-end pt-3 text-sm font-[450] text-primary transition-colors hover:text-primary-dark">
                     閱讀全文
                     <ArrowLongRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                   </div>
@@ -107,40 +134,48 @@ async function ActivityPreviewSection() {
             </Link>
 
             {/* Side cards */}
-            {sideCards.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/activities/${item.slug}`}
-                className="group block h-full w-full overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
-              >
-                <article className="flex h-full w-full flex-col sm:flex-row sm:items-stretch">
-                  <div className="relative h-[180px] w-full shrink-0 overflow-hidden bg-neutral-200 sm:h-full sm:w-[120px] sm:self-stretch">
-                    {item.cover_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.cover_image_url}
-                        alt={item.title}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="flex flex-1 flex-col justify-center p-4">
-                    <div className="flex items-center gap-2">
-                      <GhostTag>{item.tag}</GhostTag>
-                      <time className="font-mono text-[11px] text-neutral-400">
-                        {item.date}
-                      </time>
+            <div className={`grid h-full gap-4 ${rightGridRowsClass}`}>
+              {sideCards.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={`/activities/${item.slug}`}
+                  className={`group block w-full overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${sideCardHeightClass}`}
+                >
+                  <article className="flex h-full w-full flex-col sm:flex-row sm:items-stretch">
+                    <div className="relative h-[180px] w-full shrink-0 overflow-hidden bg-neutral-200 sm:h-full sm:w-[120px] sm:self-stretch">
+                      {item.cover_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.cover_image_url}
+                          alt={item.title}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-end bg-gradient-to-br from-neutral-200 via-neutral-100 to-white p-3">
+                          <span className="font-mono text-[10px] tracking-wide text-neutral-500">
+                            ACTIVITY REVIEW
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <h3 className="mt-2 text-[14px] font-semibold tracking-tight text-neutral-950 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 line-clamp-2 text-[12px] text-neutral-600">
-                      {item.excerpt}
-                    </p>
-                  </div>
-                </article>
-              </Link>
-            ))}
+                    <div className="flex flex-1 flex-col justify-center p-3.5">
+                      <div className="flex items-center gap-2">
+                        <GhostTag>{item.tag}</GhostTag>
+                        <time className="font-mono text-[11px] text-neutral-400">
+                          {item.date}
+                        </time>
+                      </div>
+                      <h3 className="mt-1.5 text-[14px] font-semibold tracking-tight text-neutral-950 transition-colors group-hover:text-primary">
+                        {item.title}
+                      </h3>
+                      <p className="mt-0.5 line-clamp-2 text-[12px] text-neutral-600">
+                        {item.excerpt}
+                      </p>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
