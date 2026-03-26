@@ -14,6 +14,18 @@ type PublishedPostOptions = {
   tag?: string;
 };
 
+export const DEFAULT_PRIMARY_TAG = "其他";
+
+export function getPrimaryPostTag(tags: unknown, fallback = DEFAULT_PRIMARY_TAG): string {
+  if (!Array.isArray(tags)) return fallback;
+
+  const first = tags
+    .map((tag) => String(tag).trim())
+    .find((tag) => tag.length > 0);
+
+  return first ?? fallback;
+}
+
 function normalizePublishedPostOptions(options?: PublishedPostOptions): Required<PublishedPostOptions> {
   return {
     category: options?.category ?? "",

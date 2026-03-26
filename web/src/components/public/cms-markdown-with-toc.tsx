@@ -5,11 +5,29 @@ interface CmsMarkdownWithTocProps {
   markdown: string;
 }
 
+function extractHeadingIdsFromHtml(html: string): string[] {
+  const ids: string[] = [];
+  const headingRegex = /<h([23])\b[^>]*\sid="([^"]+)"[^>]*>/gi;
+
+  for (const match of html.matchAll(headingRegex)) {
+    const id = match[2]?.trim();
+    if (id) ids.push(id);
+  }
+
+  return ids;
+}
+
 export async function CmsMarkdownWithToc({ markdown }: CmsMarkdownWithTocProps) {
-  const [html, toc] = await Promise.all([
+  const [html, markdownToc] = await Promise.all([
     renderMarkdownToHtml(markdown),
     Promise.resolve(extractMarkdownToc(markdown)),
   ]);
+
+  const headingIds = extractHeadingIdsFromHtml(html);
+  const toc = markdownToc.map((item, index) => ({
+    ...item,
+    id: headingIds[index] ?? item.id,
+  }));
 
   return (
     <div className="flex gap-12 lg:gap-16">
@@ -35,9 +53,8 @@ export async function CmsMarkdownWithToc({ markdown }: CmsMarkdownWithTocProps) 
                 <li key={`${item.id}-${item.text}`}>
                   <a
                     href={`#${item.id}`}
-                    className={`block rounded-md px-3 py-2 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950 ${
-                      item.depth === 3 ? "pl-6" : ""
-                    }`}
+                    className={`block rounded-md px-3 py-2 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950 ${item.depth === 3 ? "pl-6" : ""
+                      }`}
                   >
                     {item.text}
                   </a>

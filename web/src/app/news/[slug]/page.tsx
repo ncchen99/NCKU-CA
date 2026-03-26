@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { CmsMarkdownWithToc } from "@/components/public/cms-markdown-with-toc";
-import { getPostBySlug, getPublishedPosts, getAllPostSlugs } from "@/lib/firestore/posts";
+import { DEFAULT_PRIMARY_TAG, getAllPostSlugs, getPostBySlug, getPrimaryPostTag, getPublishedPosts } from "@/lib/firestore/posts";
 import { anyTimestampToDate } from "@/lib/datetime";
 import { buildOgImageUrl } from "@/lib/seo";
 import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
@@ -85,12 +85,7 @@ export default async function NewsArticlePage({ params }: Props) {
     })
     : "—";
 
-  const badgeLabel = (() => {
-    for (const t of ["重要", "活動", "公告"]) {
-      if (post.tags?.includes(t)) return t;
-    }
-    return post.tags?.[0] ?? "公告";
-  })();
+  const badgeLabel = getPrimaryPostTag(post.tags, DEFAULT_PRIMARY_TAG);
 
   // 取得相關文章
   let relatedPosts: { slug: string; title: string; date: string; excerpt: string; cover?: string | null }[] = [];
