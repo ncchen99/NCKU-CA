@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       meta: {
         exported_at: new Date().toISOString(),
         total_clubs: exportClubs.length,
-        source: "ncku-nca-admin",
+        source: "ncku-ca-admin",
       },
       clubs: exportClubs,
     };

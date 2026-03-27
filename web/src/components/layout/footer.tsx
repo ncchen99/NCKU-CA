@@ -120,7 +120,7 @@ export function Footer() {
             &copy; {new Date().getFullYear()} 國立成功大學社團聯合會
           </p>
           <a
-            href="https://github.com/ncchen99/NCKU-NCA"
+            href="https://github.com/ncchen99/NCKU-CA"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-[12px] text-neutral-400 transition-colors hover:text-neutral-700"

@@ -1,4 +1,4 @@
-# NCKU-NCA 專案操作手冊
+# NCKU-CA 專案操作手冊
 
 ## 1. 專案概觀
 
@@ -161,7 +161,7 @@ $bytes = [System.IO.File]::ReadAllBytes("service-account.json")
 #### Step 2：建立 Bucket 與取得 Account ID
 
 1. 在 Overview 頁面點擊 `Create bucket`。
-2. 輸入 bucket 名稱（例如：`ncku-nca-images`）。
+2. 輸入 bucket 名稱（例如：`ncku-ca-images`）。
 3. 在右側 `Account Details` 區塊取得 `Account ID`。
 
 你會得到：
@@ -178,7 +178,7 @@ $bytes = [System.IO.File]::ReadAllBytes("service-account.json")
 
 1. 點擊 `Create API token`。
 2. 依需求填寫欄位：
-   - `Token Name`：例如 `ncku-nca-r2-token`。
+   - `Token Name`：例如 `ncku-ca-r2-token`。
    - `Permissions`：一般上傳場景建議選 `Object Read & Write`。
    - `Specify Bucket(s)`：建議只授權目標 bucket（最小權限原則）。
    - `TTL`：可選 `Forever`，或設定到期時間。
