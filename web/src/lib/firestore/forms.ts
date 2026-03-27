@@ -1,9 +1,24 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldPath, FieldValue } from "firebase-admin/firestore";
+import { unstable_cache } from "next/cache";
 import type { Form, FormResponse } from "@/types";
 
 const COLLECTION = "forms";
 const RESPONSES_SUB = "responses";
+const PUBLIC_FORMS_REVALIDATE_SECONDS = 31_536_000;
+
+async function queryFormById(formId: string): Promise<Form | null> {
+  const db = getAdminDb();
+  const doc = await db.collection(COLLECTION).doc(formId).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as Form;
+}
+
+async function queryPublicFormIds(): Promise<string[]> {
+  const db = getAdminDb();
+  const snapshot = await db.collection(COLLECTION).select().get();
+  return snapshot.docs.map((doc) => doc.id);
+}
 
 export class DuplicateFormSubmissionError extends Error {
   constructor(message = "此社團已提交過此表單") {
@@ -14,13 +29,44 @@ export class DuplicateFormSubmissionError extends Error {
 
 export async function getForm(formId: string): Promise<Form | null> {
   try {
-    const db = getAdminDb();
-    const doc = await db.collection(COLLECTION).doc(formId).get();
-    if (!doc.exists) return null;
-    return { id: doc.id, ...doc.data() } as Form;
+    return queryFormById(formId);
   } catch (error) {
     throw new Error(
       `Failed to get form "${formId}": ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
+export async function getPublicFormById(formId: string): Promise<Form | null> {
+  try {
+    return unstable_cache(
+      () => queryFormById(formId),
+      ["forms:getPublicFormById", formId],
+      {
+        revalidate: PUBLIC_FORMS_REVALIDATE_SECONDS,
+        tags: ["forms", `form:${formId}`],
+      },
+    )();
+  } catch (error) {
+    throw new Error(
+      `Failed to get public form "${formId}": ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
+export async function getPublicFormIds(): Promise<string[]> {
+  try {
+    return unstable_cache(
+      () => queryPublicFormIds(),
+      ["forms:getPublicFormIds"],
+      {
+        revalidate: PUBLIC_FORMS_REVALIDATE_SECONDS,
+        tags: ["forms"],
+      },
+    )();
+  } catch (error) {
+    throw new Error(
+      `Failed to get public form IDs: ${error instanceof Error ? error.message : error}`
     );
   }
 }

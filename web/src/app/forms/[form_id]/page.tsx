@@ -1,21 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicLayout } from "@/components/layout/public-layout";
-import { getForm } from "@/lib/firestore/forms";
+import { getPublicFormById, getPublicFormIds } from "@/lib/firestore/forms";
 import { anyTimestampToDate, formatDateTimeZhTW } from "@/lib/datetime";
 import { buildOgImageUrl } from "@/lib/seo";
 import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 import { FormClient } from "./form-client";
  
 export const revalidate = 31_536_000;
+export const dynamicParams = true;
  
 type Props = { params: Promise<{ form_id: string }> };
+
+export async function generateStaticParams() {
+  try {
+    const formIds = await getPublicFormIds();
+    return formIds.map((form_id) => ({ form_id }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { form_id } = await params;
   const canonicalPath = `/forms/${form_id}`;
   try {
-    const form = await getForm(form_id);
+    const form = await getPublicFormById(form_id);
     if (!form) return { title: "表單未找到" };
     const description = form.description?.substring(0, 160) ?? "社聯會線上表單";
     const ogImage = buildOgImageUrl({
@@ -51,7 +61,7 @@ export default async function FormPage({ params }: Props) {
 
   let form;
   try {
-    form = await getForm(form_id);
+    form = await getPublicFormById(form_id);
   } catch {
     form = null;
   }

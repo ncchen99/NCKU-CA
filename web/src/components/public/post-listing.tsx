@@ -69,6 +69,13 @@ function buildListingHref(basePath: string, tag: string, page: number): string {
     return query ? `${basePath}?${query}` : basePath;
 }
 
+function parsePositivePage(raw: string | null): number {
+    if (!raw) return 1;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed < 1) return 1;
+    return Math.floor(parsed);
+}
+
 export function PostListing({
     posts,
     basePath,
@@ -112,6 +119,22 @@ export function PostListing({
         return topTagSet.has(incomingTag) ? incomingTag : ALL_TAG_VALUE;
     }, [hasOtherBucket, initialTag, topTagSet]);
 
+    const normalizeTagValue = (incomingTag: string | null): string => {
+        if (!incomingTag || incomingTag === ALL_TAG_LABEL || incomingTag === ALL_TAG_VALUE) {
+            return ALL_TAG_VALUE;
+        }
+
+        if (incomingTag === OTHER_TAG_VALUE) {
+            return hasOtherBucket ? OTHER_TAG_VALUE : ALL_TAG_VALUE;
+        }
+
+        if (incomingTag === OTHER_TAG_LABEL && hasOtherBucket && !topTagSet.has(OTHER_TAG_LABEL)) {
+            return OTHER_TAG_VALUE;
+        }
+
+        return topTagSet.has(incomingTag) ? incomingTag : ALL_TAG_VALUE;
+    };
+
     const [activeTag, setActiveTag] = useState<string>(
         normalizedInitialTag
     );
@@ -123,6 +146,19 @@ export function PostListing({
     useEffect(() => {
         setActiveTag(normalizedInitialTag);
     }, [normalizedInitialTag]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const params = new URLSearchParams(window.location.search);
+        const queryTag = params.get("tag");
+        const queryPage = parsePositivePage(params.get("page"));
+
+        const normalizedTagFromUrl = normalizeTagValue(queryTag);
+        setActiveTag(normalizedTagFromUrl);
+        setPage(queryPage);
+        // The available filters can change with fetched posts, so re-parse when tag buckets update.
+    }, [hasOtherBucket, topTagSet]);
 
     const availableTagValues = useMemo(
         () => new Set(tagFilters.map((filter) => filter.value)),

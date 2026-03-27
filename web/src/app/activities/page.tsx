@@ -5,9 +5,6 @@ import { PostListing } from "@/components/public/post-listing";
 
 export const revalidate = 31_536_000;
 
-type SearchParams = Record<string, string | string[] | undefined>;
-type Props = { searchParams: Promise<SearchParams> };
-
 interface PostItem {
     id: string;
     slug: string;
@@ -19,21 +16,7 @@ interface PostItem {
     published_at_display: string;
 }
 
-function firstQueryValue(value: string | string[] | undefined): string | undefined {
-    if (Array.isArray(value)) return value[0];
-    return value;
-}
-
-function parsePage(raw: string | undefined): number {
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed < 1) return 1;
-    return Math.floor(parsed);
-}
-
-export default async function ActivitiesPage({ searchParams }: Props) {
-    const params = await searchParams;
-    const requestedTag = firstQueryValue(params.tag)?.trim() || "全部";
-    const requestedPage = parsePage(firstQueryValue(params.page));
+export default async function ActivitiesPage() {
 
     let allPosts: PostItem[] = [];
 
@@ -89,8 +72,6 @@ export default async function ActivitiesPage({ searchParams }: Props) {
                     <PostListing
                         posts={allPosts}
                         basePath="/activities"
-                        initialTag={requestedTag}
-                        initialPage={requestedPage}
                         emptyText="目前沒有已發布的活動回顧。"
                     />
                 </div>

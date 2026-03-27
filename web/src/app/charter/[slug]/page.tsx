@@ -11,11 +11,16 @@ import {
 import { buildOgImageUrl } from "@/lib/seo";
  
 export const revalidate = 31_536_000;
+export const dynamicParams = false;
  
 type Props = { params: Promise<{ slug: string }> };
 
 function isCharterSlug(s: string): s is CharterDocumentSlug {
   return CHARTER_DOCUMENTS.some((d) => d.slug === s);
+}
+
+export async function generateStaticParams() {
+  return CHARTER_DOCUMENTS.map((doc) => ({ slug: doc.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

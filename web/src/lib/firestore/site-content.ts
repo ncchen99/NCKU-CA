@@ -1,17 +1,30 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { unstable_cache } from "next/cache";
 import type { SiteContent } from "@/types";
 
 const COLLECTION = "site_content";
+const PUBLIC_SITE_CONTENT_REVALIDATE_SECONDS = 31_536_000;
+
+async function querySiteContent(pageId: string): Promise<SiteContent | null> {
+  const db = getAdminDb();
+  const doc = await db.collection(COLLECTION).doc(pageId).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as SiteContent;
+}
 
 export async function getSiteContent(
   pageId: string
 ): Promise<SiteContent | null> {
   try {
-    const db = getAdminDb();
-    const doc = await db.collection(COLLECTION).doc(pageId).get();
-    if (!doc.exists) return null;
-    return { id: doc.id, ...doc.data() } as SiteContent;
+    return unstable_cache(
+      () => querySiteContent(pageId),
+      ["site-content:getSiteContent", pageId],
+      {
+        revalidate: PUBLIC_SITE_CONTENT_REVALIDATE_SECONDS,
+        tags: ["site-content", `site-content:${pageId}`],
+      },
+    )();
   } catch (error) {
     throw new Error(
       `Failed to get site content "${pageId}": ${error instanceof Error ? error.message : error}`
