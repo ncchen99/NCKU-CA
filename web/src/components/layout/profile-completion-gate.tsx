@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { localizePath, stripLocalePrefix } from "@/lib/locale-path";
 
 /**
  * 未完成個人資料時導向 /profile（首次登入與未勾選完成者）。
@@ -19,9 +20,12 @@ export function ProfileCompletionGate({
   useEffect(() => {
     if (loading) return;
     if (!firebaseUser) return;
-    if (pathname.startsWith("/admin")) return;
-    if (pathname.startsWith("/login")) return;
-    if (pathname.startsWith("/profile")) return;
+
+    const currentPath = stripLocalePrefix(pathname ?? "/");
+
+    if (currentPath.startsWith("/admin")) return;
+    if (currentPath.startsWith("/login")) return;
+    if (currentPath.startsWith("/profile")) return;
 
     const incomplete = (() => {
       if (!user) return true;
@@ -34,7 +38,7 @@ export function ProfileCompletionGate({
     })();
 
     if (incomplete) {
-      router.replace("/profile");
+      router.replace(localizePath("/profile", pathname));
     }
   }, [loading, user, firebaseUser, pathname, router]);
 

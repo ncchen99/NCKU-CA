@@ -1,5 +1,7 @@
 const DEFAULT_REDIRECT_PATH = "/";
 
+const LOGIN_PATH_PATTERN = /^\/(?:[a-z]{2}(?:-[a-z]{2})?)?\/?login(?:\?|$)/i;
+
 export function sanitizeRedirectPath(
     rawRedirect: string | null | undefined,
     fallback = DEFAULT_REDIRECT_PATH,
@@ -12,7 +14,7 @@ export function sanitizeRedirectPath(
     }
 
     // Avoid login-loop redirects.
-    if (value === "/login" || value.startsWith("/login?")) {
+    if (LOGIN_PATH_PATTERN.test(value)) {
         return fallback;
     }
 

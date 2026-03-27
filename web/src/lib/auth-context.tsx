@@ -25,6 +25,11 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function toApiUrl(path: string): string {
+  if (typeof window === "undefined") return path;
+  return new URL(path, window.location.origin).toString();
+}
+
 async function fetchUserData(uid: string): Promise<User | null> {
   const { getClientDb } = await import("@/lib/firebase");
   const { doc, getDoc } = await import("firebase/firestore");
@@ -35,7 +40,7 @@ async function fetchUserData(uid: string): Promise<User | null> {
 }
 
 async function createSession(idToken: string) {
-  const res = await fetch("/api/auth/session", {
+  const res = await fetch(toApiUrl("/api/auth/session"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ idToken }),
@@ -48,7 +53,7 @@ async function createSession(idToken: string) {
 }
 
 async function deleteSession() {
-  await fetch("/api/auth/session", { method: "DELETE" });
+  await fetch(toApiUrl("/api/auth/session"), { method: "DELETE" });
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

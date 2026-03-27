@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
+import { localizePaths } from "@/lib/locale-path";
 import type { Post } from "@/types";
 
 const CHARTER_SLUGS = new Set<string>(CHARTER_DOCUMENTS.map((doc) => doc.slug));
@@ -10,7 +11,15 @@ function normalizePath(path: string): string {
 }
 
 function revalidatePaths(paths: Iterable<string>) {
+    const localizedPaths = new Set<string>();
+
     for (const path of new Set(paths)) {
+        for (const localizedPath of localizePaths(path)) {
+            localizedPaths.add(localizedPath);
+        }
+    }
+
+    for (const path of localizedPaths) {
         revalidatePath(path);
     }
 }
