@@ -1,0 +1,782 @@
+{
+  "common": {
+    "viewAll": "View All",
+    "language": "Language",
+    "languageZh": "繁中",
+    "languageEn": "English",
+    "tocTitle": "Contents",
+    "tocEmpty": "Use ## and ### headings in the content to generate a table of contents."
+  },
+  "layout": {
+    "navbar": {
+      "brand": "NCKU Club Association",
+      "about": "About",
+      "charter": "Charter",
+      "members": "Members",
+      "news": "News",
+      "activities": "Activities",
+      "admin": "Admin",
+      "profile": "Profile",
+      "logout": "Sign out",
+      "login": "Sign in with Google",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "footer": {
+      "brandDescription": "The NCKU Club Association is the self-governance organization for student clubs, representing club interests on campus and connecting external resources for student initiatives.",
+      "quickNav": "Quick Links",
+      "contact": "Contact",
+      "address": "2F, Student Activity Center, No.1 University Rd., East Dist., Tainan City, Taiwan",
+      "copyright": "NCKU Club Association"
+    }
+  },
+  "home": {
+    "hero": {
+      "tagline": "#Where clubs belong #Where NCA belongs",
+      "titleLine1": "National Cheng Kung University",
+      "titleLine2": "Club Association",
+      "subtitle": "Club Association of NCKU",
+      "ctaAbout": "Discover NCA",
+      "ctaNews": "Latest News",
+      "description": "The Club Association of National Cheng Kung University (NCA) is the top-level student self-governance body for clubs and departments, coordinating club affairs, representative meetings, and major campus events.",
+      "stats": {
+        "clubs": "Student clubs (A-H categories)",
+        "eventsValue": "2x / year",
+        "events": "Representative assembly + club expo",
+        "account": "NCKU campus account only"
+      }
+    },
+    "org": {
+      "title": "About The Organization",
+      "subtitle": "About Club Association of NCKU",
+      "paragraph1": "Founded in 1994, the NCKU Club Association now serves 231 clubs. We coordinate shared operations, integrate resources, and protect club rights across campus.",
+      "paragraph2": "NCA operates through the president team, executive members, six category committees, and advisors. We drive decisions through representative meetings and category councils while managing core services such as club expo planning, venue coordination, and finance.",
+      "readMore": "Read More",
+      "charter": "Charter",
+      "areas": {
+        "governanceTitle": "Governance",
+        "governanceDesc": "Representative assembly and executive collaboration",
+        "expoTitle": "Club Expo",
+        "expoDesc": "Planning and execution every semester",
+        "resourceTitle": "Resources & Finance",
+        "resourceDesc": "Membership fees, budgeting, and asset rentals",
+        "venueTitle": "Venue Coordination",
+        "venueDesc": "Student Activity Center and Yunqingxuan venue support"
+      }
+    },
+    "news": {
+      "title": "Latest News",
+      "subtitle": "Latest News",
+      "defaultCategory": "Announcement",
+      "emptyTitle": "No published news yet",
+      "emptyExcerpt": "Admins can publish a news post from the dashboard."
+    },
+    "activity": {
+      "title": "Activity Review",
+      "subtitle": "Activity Review",
+      "defaultTag": "Activity",
+      "empty": "No published activity reviews yet."
+    },
+    "forms": {
+      "title": "Open Forms",
+      "subtitle": "Open Forms",
+      "noDeadline": "No deadline",
+      "deadline": "Deadline: {date}",
+      "goFill": "Fill Out"
+    }
+  },
+  "appSelect": {
+    "placeholder": "Please select",
+    "searchPlaceholder": "Search...",
+    "noMatchingOptions": "No matching options"
+  },
+  "clubSearchSelect": {
+    "placeholder": "Search clubs...",
+    "loadingPlaceholder": "Loading...",
+    "searchPlaceholder": "Search clubs by keyword...",
+    "clearLabel": "— None —"
+  },
+  "dataTable": {
+    "empty": "No data"
+  },
+  "adminSidebar": {
+    "brand": "NCKU Club Association",
+    "defaultAdmin": "Admin",
+    "defaultAdminInitial": "A",
+    "backToSite": "Back to site",
+    "logout": "Sign out",
+    "nav": {
+      "dashboard": "Dashboard",
+      "content": "Site Content",
+      "posts": "Posts",
+      "forms": "Forms",
+      "deposit": "Deposit",
+      "attendance": "Attendance",
+      "clubs": "Clubs",
+      "users": "Users"
+    }
+  },
+  "formTemplatePicker": {
+    "title": "Choose a template",
+    "description": "Start quickly with a preset template, or choose a blank form to configure everything yourself.",
+    "fieldCount": "{count} fields",
+    "withDeposit": "Includes deposit",
+    "blankForm": "Blank form (no template)",
+    "useTemplate": "Use this template"
+  },
+  "attendancePage": {
+    "title": "Event Check-in",
+    "subtitle": "Please complete check-in before the deadline; each club can check in only once.",
+    "empty": "There is no open attendance event right now.",
+    "deadlineLabel": "Deadline: ",
+    "loginRequired": "You need to sign in before check-in.",
+    "goLogin": "Sign in",
+    "attendee": "Attendee",
+    "clubLabel": "Club",
+    "clubPlaceholder": "Search and select your club",
+    "clubHint": "If you cannot find your club, please verify the club name.",
+    "passcodeLabel": "Attendance passcode",
+    "passcodePlaceholder": "Enter the passcode provided by admins",
+    "submitting": "Submitting...",
+    "submit": "Confirm check-in",
+    "backHome": "Back to Home",
+    "success": {
+      "checkedIn": "Check-in successful. Thank you."
+    },
+    "error": {
+      "noOpenEvent": "There is no open attendance event right now.",
+      "selectClub": "Please select your club.",
+      "enterPasscode": "Please enter the attendance passcode.",
+      "submitFailed": "Check-in failed",
+      "network": "Network error, please try again later."
+    }
+  },
+  "profilePage": {
+    "title": "Profile",
+    "subtitle": "This information can auto-fill attendance and form submissions; you can edit it anytime.",
+    "loginPrompt": "Please sign in to set up your profile.",
+    "goLogin": "Sign in",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter your name",
+    "clubLabel": "Club",
+    "clubPlaceholder": "Search and select your club",
+    "clubHint": "Search for your club name. If you are not in any club, choose \"None\".",
+    "positionLabel": "Position (Role)",
+    "positionPlaceholder": "Example: Events Deputy Director",
+    "departmentGradeLabel": "Department and grade (optional, e.g. Accounting 116)",
+    "departmentGradePlaceholder": "Enter your department and grade",
+    "saved": "Saved",
+    "saving": "Saving...",
+    "save": "Save",
+    "backHome": "Back to Home",
+    "error": {
+      "loadFailed": "Unable to load profile",
+      "loginFirst": "Please sign in before saving.",
+      "invalidClub": "Selected club is invalid or inactive",
+      "network": "Network error, please try again later."
+    }
+  },
+  "loginPage": {
+    "brand": "NCKU Club Association",
+    "platform": "NCKU CA Digital Platform",
+    "title": "Sign In",
+    "subtitle": "Sign in with your NCKU Google account",
+    "redirecting": "Redirecting...",
+    "loggingIn": "Signing in...",
+    "loginWithGoogle": "Sign in with Google",
+    "domainOnly": "Only",
+    "domainSuffix": "accounts",
+    "backHome": "Back to Home",
+    "error": {
+      "loginFailed": "Sign-in failed, please try again later"
+    }
+  },
+  "formActionBar": {
+    "checking": "Checking sign-in status...",
+    "loginFirst": "Please sign in before filling out this form",
+    "loginToSubmit": "Sign in to submit",
+    "loggedInAs": "Signed in as",
+    "submit": "Submit form"
+  },
+  "adminCommon": {
+    "searchPlaceholder": "Search...",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "noData": "No data"
+  },
+  "adminFormModal": {
+    "leaveConfirmTitle": "Are you sure you want to leave?",
+    "leaveConfirmDescription": "Your unsaved changes will be lost.",
+    "continueEditing": "Continue editing",
+    "leaveWithoutSaving": "Leave without saving"
+  },
+  "adminDashboard": {
+    "title": "Dashboard",
+    "subtitle": "NCKU Club Association admin overview",
+    "viewAll": "View all",
+    "common": {
+      "notAvailable": "—"
+    },
+    "error": {
+      "loadFailed": "Failed to load: {error}"
+    },
+    "stats": {
+      "registeredClubs": "Registered clubs",
+      "openForms": "Open forms",
+      "pendingDeposits": "Pending deposits",
+      "todayAttendanceRate": "Today's attendance rate",
+      "unitCount": "items",
+      "unitRecords": "records"
+    },
+    "sections": {
+      "recentResponses": "Latest 5 form responses",
+      "pendingDeposits": "Pending deposit list"
+    },
+    "table": {
+      "club": "Club",
+      "form": "Form",
+      "time": "Time",
+      "amount": "Amount",
+      "view": "View",
+      "goProcess": "Process"
+    },
+    "empty": {
+      "responses": "No form responses yet",
+      "deposits": "No pending deposits"
+    },
+    "relative": {
+      "justNow": "Just now",
+      "minutesAgo": "{count} minutes ago",
+      "hoursAgo": "{count} hours ago",
+      "daysAgo": "{count} days ago"
+    }
+  },
+  "adminUsers": {
+    "title": "User Management",
+    "searchPlaceholder": "Search users...",
+    "empty": "No users match the current filters",
+    "tabs": {
+      "all": "All",
+      "admin": "Admin",
+      "clubMember": "Club Member"
+    },
+    "role": {
+      "admin": "Admin",
+      "clubMember": "Club Member"
+    },
+    "actions": {
+      "setAdmin": "Set as admin",
+      "setClubMember": "Set as club member"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "club": "Club",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "dialogs": {
+      "roleChangeTitle": "Change User Role",
+      "roleChangeDescription": "Are you sure you want to change \"{displayName}\" to \"{newRoleLabel}\"?",
+      "confirmChange": "Confirm",
+      "clubTitleWithName": "Set club for \"{displayName}\"",
+      "clubTitle": "Set Club"
+    },
+    "club": {
+      "label": "Choose club",
+      "placeholder": "Search club name...",
+      "hint": "Select the club this user belongs to. You can search by club name.",
+      "save": "Save",
+      "editTitle": "Click to set club"
+    },
+    "common": {
+      "notAvailable": "—"
+    },
+    "toast": {
+      "roleChanged": "Role updated successfully",
+      "clubUpdated": "Club association updated successfully"
+    },
+    "error": {
+      "loadUsers": "Unable to load users",
+      "updateRole": "Failed to update role. Please try again later.",
+      "updateClub": "Failed to update club association"
+    }
+  },
+  "adminContent": {
+    "title": "Site Content",
+    "subtitle": "Manage static pages with Markdown editor",
+    "empty": "No site content yet",
+    "savedBadge": "Saved",
+    "updatedAt": "Updated at",
+    "updatedBy": "By",
+    "actions": { "edit": "Edit" },
+    "modal": { "title": "Edit Page Content", "submit": "Save Changes" },
+    "form": {
+      "titleLabel": "Title",
+      "titlePlaceholder": "Page title",
+      "pageIdLabel": "pageId",
+      "pageIdPlaceholder": "e.g. about / charter / members"
+    },
+    "error": {
+      "loadFailed": "Failed to load content data",
+      "loadFailedToast": "Failed to load content",
+      "pageIdRequired": "pageId is required",
+      "saveFailed": "Save failed, please try again later"
+    },
+    "toast": { "saved": "Page content saved" }
+  },
+  "adminPosts": {
+    "title": "Posts",
+    "searchPlaceholder": "Search posts...",
+    "empty": "No posts match the current filters",
+    "fallbackTags": "announcement,department,event,lecture,workshop,competition,recruiting,open,deadline",
+    "tabs": { "all": "All", "published": "Published", "draft": "Draft" },
+    "category": { "news": "News", "activityReview": "Activity Review" },
+    "status": { "published": "Published", "draft": "Draft" },
+    "common": { "loading": "Loading...", "notAvailable": "—" },
+    "error": {
+      "loadFailed": "Failed to load posts",
+      "titleRequired": "Title is required",
+      "slugRequired": "Slug is required",
+      "loadPostFailed": "Failed to load post details",
+      "saveFailed": "Failed to save post",
+      "deleteFailed": "Failed to delete post",
+      "statusUpdateFailed": "Failed to update status",
+      "coverUploadFailed": "Failed to upload cover image",
+      "coverDropImageOnly": "Please drag and drop an image file"
+    },
+    "toast": {
+      "updated": "Post updated",
+      "created": "Post created",
+      "deleted": "Post deleted",
+      "statusChanged": "Status changed to {status}",
+      "coverUploaded": "Cover image uploaded"
+    },
+    "table": {
+      "title": "Title",
+      "category": "Category",
+      "status": "Status",
+      "author": "Author",
+      "date": "Date"
+    },
+    "actions": {
+      "toDraft": "Set as draft",
+      "publish": "Publish",
+      "edit": "Edit",
+      "delete": "Delete",
+      "create": "New Post"
+    },
+    "modal": { "editTitle": "Edit Post", "createTitle": "Create Post", "update": "Update", "create": "Create" },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Enter post title",
+      "slug": "Slug",
+      "slugHint": "Use letters, numbers, and hyphens for URL",
+      "category": "Category",
+      "status": "Status",
+      "tags": "Tags",
+      "tagsPlaceholder": "Comma-separated tags",
+      "suggestedTags": "Suggested tags",
+      "loadingSuggestedTags": "Loading popular tags...",
+      "allSuggestedAdded": "All suggested tags are added",
+      "tagsHint": "Use commas to separate tags, or click suggested tags above",
+      "coverImage": "Cover Image",
+      "coverDropAria": "Drag to upload cover image",
+      "coverDropTitle": "Drop image here, or click to choose file",
+      "coverHint": "Images will be automatically compressed and converted to WebP",
+      "coverUploading": "Uploading...",
+      "coverChoose": "Choose Image",
+      "coverPreviewAlt": "Cover preview",
+      "coverUploadDirect": "Please upload an image directly as the cover."
+    },
+    "delete": {
+      "title": "Delete \"{title}\"",
+      "description": "This action cannot be undone. Are you sure you want to delete this post?",
+      "confirm": "Delete"
+    }
+  },
+  "adminForms": {
+    "title": "Forms",
+    "searchPlaceholder": "Search forms...",
+    "empty": "No forms match the current filters",
+    "formType": {
+      "expoRegistration": "Club Expo Registration",
+      "winterAssociationRegistration": "Winter Association Registration",
+      "generalRegistration": "General Registration",
+      "attendanceSurvey": "Attendance Survey",
+      "custom": "Custom Form"
+    },
+    "status": { "draft": "Draft", "open": "Open", "closed": "Closed" },
+    "tabs": { "all": "All", "open": "Open", "closed": "Closed", "draft": "Draft" },
+    "error": {
+      "loadFailed": "Error loading data",
+      "loadFailedToast": "Failed to load data",
+      "loadFormFailed": "Failed to load form",
+      "titleRequired": "Please enter form title",
+      "actionFailed": "Action failed",
+      "deleteFailed": "Delete failed"
+    },
+    "toast": { "updated": "Form updated and list refreshed", "created": "Form created and list refreshed", "deleted": "Form deleted" },
+    "table": {
+      "title": "Form Title",
+      "type": "Type",
+      "status": "Status",
+      "fieldCount": "Fields",
+      "responseCount": "Responses",
+      "closesAt": "Deadline"
+    },
+    "actions": { "view": "View", "edit": "Edit", "delete": "Delete", "create": "Create Form" },
+    "modal": {
+      "editTitle": "Edit Form",
+      "createTitle": "Create Form",
+      "update": "Update",
+      "create": "Create",
+      "tabs": { "basic": "Basic", "fields": "Fields" }
+    },
+    "form": {
+      "title": "Form Title",
+      "titlePlaceholder": "Enter form title",
+      "description": "Description",
+      "descriptionPlaceholder": "Form description (optional)",
+      "formType": "Form Type",
+      "status": "Status",
+      "depositRequired": "Require deposit",
+      "depositAmount": "Deposit amount",
+      "depositAmountPlaceholder": "Enter amount",
+      "depositAmountHint": "Currency: TWD",
+      "depositBindingMode": "Deposit binding mode",
+      "binding": {
+        "linked": "Linked to responses (auto-create)",
+        "independent": "Independent (manual)"
+      },
+      "bindingHint": "Linked mode fits expo/winter association forms; independent mode fits other scenarios",
+      "closesAt": "Deadline",
+      "closesAtHint": "Leave empty for no deadline"
+    },
+    "common": { "yes": "Yes", "no": "No" },
+    "delete": {
+      "title": "Delete \"{title}\"?",
+      "description": "This action cannot be undone. Form and all responses will be permanently removed.",
+      "confirm": "Delete"
+    }
+  },
+  "adminDeposit": {
+    "title": "Deposit",
+    "subtitle": "Pending total ${amount}",
+    "searchPlaceholder": "Search club, code, or form...",
+    "empty": "No deposit records match the current filters",
+    "tabs": { "all": "All", "pending": "Pending", "paid": "Paid", "returned": "Returned" },
+    "status": { "pending": "Pending", "paid": "Paid", "returned": "Returned" },
+    "common": { "independentDeposit": "Independent deposit", "boundUnknown": "Bound (unknown form title)" },
+    "error": {
+      "loadFailed": "Error loading data",
+      "loadFailedToast": "Failed to load data",
+      "actionFailed": "Action failed, please try again later",
+      "batchFailed": "Batch action failed",
+      "notesFailed": "Failed to update notes"
+    },
+    "toast": {
+      "statusUpdated": "Deposit status updated",
+      "batchSuccess": "Batch action succeeded",
+      "notesUpdated": "Notes updated",
+      "csvDownloaded": "CSV downloaded"
+    },
+    "table": {
+      "selectAll": "Select all filtered rows",
+      "selectOne": "Select {club}",
+      "club": "Club",
+      "amount": "Amount",
+      "binding": "Bound Form",
+      "status": "Status",
+      "paidAt": "Paid At",
+      "returnedAt": "Returned At",
+      "notes": "Notes"
+    },
+    "csv": {
+      "club": "Club",
+      "clubId": "Club ID",
+      "bindingForm": "Bound Form",
+      "status": "Status",
+      "amount": "Amount",
+      "paidAt": "Paid At",
+      "returnedAt": "Returned At",
+      "notes": "Notes",
+      "updatedBy": "Updated By"
+    },
+    "actions": {
+      "markPaid": "Mark as paid",
+      "returnDeposit": "Return deposit",
+      "confirmReturn": "Confirm return",
+      "exportCsv": "Export CSV"
+    },
+    "batch": {
+      "selected": "{count} selected",
+      "markPaid": "Batch mark paid ({count})",
+      "returned": "Batch return ({count})",
+      "clear": "Clear selection"
+    },
+    "confirm": {
+      "markPaidTitle": "Confirm mark as paid?",
+      "returnTitle": "Confirm return deposit?",
+      "singleDescription": "You are updating deposit status for \"{club}\"",
+      "batchMarkPaidTitle": "Batch mark {count} records as paid?",
+      "batchReturnTitle": "Batch return {count} records?",
+      "batchDescription": "This will update all selected records at once.",
+      "execute": "Run"
+    },
+    "notes": {
+      "title": "Edit Notes",
+      "save": "Save Notes",
+      "placeholder": "Enter notes...",
+      "ariaLabel": "Notes",
+      "add": "Click to add notes"
+    }
+  },
+  "adminAttendance": {
+    "title": "Attendance",
+    "empty": "No attendance events match the current filters",
+    "tabs": { "all": "All", "open": "Open", "upcoming": "Upcoming", "closed": "Closed" },
+    "status": { "open": "Open", "upcoming": "Upcoming", "closed": "Closed" },
+    "common": { "notAvailable": "—" },
+    "error": {
+      "loadFailed": "Failed to load attendance events",
+      "titleRequired": "Please enter event title",
+      "opensAtRequired": "Please set start time",
+      "closesAtRequired": "Please set end time",
+      "passcodeRequired": "Please set passcode",
+      "actionFailed": "Action failed",
+      "manualFailed": "Manual check-in failed",
+      "loadDetailFailed": "Failed to load attendance details"
+    },
+    "toast": {
+      "updated": "Attendance event updated",
+      "created": "Attendance event created",
+      "manualCheckIn": "Manual check-in completed for {club}",
+      "csvDownloaded": "CSV downloaded"
+    },
+    "csv": {
+      "clubName": "Club Name",
+      "clubId": "Club ID",
+      "category": "Category",
+      "status": "Status",
+      "checkedInAt": "Checked-in At",
+      "filenameSuffix": "attendance-status"
+    },
+    "manual": { "reason": "Manual check-in by admin", "loading": "Checking in...", "action": "Manual check-in" },
+    "actions": { "create": "Create Event", "edit": "Edit", "view": "View", "exportCsv": "Export CSV" },
+    "card": {
+      "expected": "Expected {count} clubs",
+      "checkedIn": "Checked in {checkedIn} / {total}",
+      "passcode": "Passcode: ",
+      "attendanceRate": "Attendance rate",
+      "notStarted": "Not started"
+    },
+    "modal": { "editTitle": "Edit Attendance Event", "createTitle": "Create Attendance Event", "save": "Save Changes", "create": "Create" },
+    "form": {
+      "title": "Event Title",
+      "titlePlaceholder": "e.g. First President Meeting Check-in",
+      "description": "Description",
+      "descriptionPlaceholder": "Event description (optional)",
+      "passcode": "Passcode",
+      "passcodePlaceholder": "Enter passcode",
+      "opensAt": "Start Time",
+      "closesAt": "End Time",
+      "closesAtHint": "Auto fills +2 hours after start time",
+      "expectedCategories": "Expected club categories"
+    },
+    "detail": {
+      "title": "Attendance Details",
+      "loading": "Loading attendance details...",
+      "empty": "No expected clubs are set, or matching club data was not found.",
+      "table": { "clubName": "Club Name", "category": "Category", "checkedInAt": "Checked-in At", "status": "Status" },
+      "status": { "checkedIn": "Checked In", "notCheckedIn": "Not Checked In" },
+      "unknownStatus": "Unknown",
+      "summary": {
+        "eventStatus": "Event status",
+        "progress": "Check-in progress",
+        "attendanceRate": "Attendance rate"
+      },
+      "eventInfo": {
+        "title": "Schedule and details",
+        "opensAt": "Start time",
+        "closesAt": "End time",
+        "passcode": "Passcode",
+        "description": "Description"
+      },
+      "list": {
+        "title": "Attendance status list",
+        "totalClubs": "Total {count} clubs"
+      }
+    }
+  },
+  "adminClubs": {
+    "title": "Clubs",
+    "searchPlaceholder": "Search clubs...",
+    "empty": "No clubs match the current filters",
+    "tabs": { "all": "All" },
+    "common": { "notAvailable": "—" },
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "error": {
+      "unknown": "Unknown error occurred",
+      "loadFailed": "Failed to load clubs",
+      "saveFailed": "Save failed",
+      "exportFailed": "Export failed",
+      "importFailed": "Import failed",
+      "importDataMissing": "No valid clubs array found in file",
+      "importParseFailed": "Failed to parse file. Please check YAML/JSON format"
+    },
+    "toast": { "saved": "Club saved", "yamlDownloaded": "YAML downloaded", "importSuccess": "Club list imported" },
+    "actions": { "edit": "Edit", "exportLoading": "Preparing download...", "exportYaml": "Export YAML", "importList": "Import List" },
+    "table": { "name": "Club Name", "category": "Category", "code": "Club Code", "email": "Email", "status": "Status" },
+    "edit": {
+      "title": "Edit Club",
+      "submit": "Save Changes",
+      "name": "Club Name",
+      "nameEn": "English Name",
+      "category": "Category",
+      "email": "Email",
+      "description": "Description",
+      "website": "Website",
+      "status": "Status"
+    },
+    "import": {
+      "title": "Import Club List",
+      "descriptionPrefix": "Please choose a YAML or JSON club list file. The file can be an array or an object with a",
+      "descriptionSuffix": "field.",
+      "dropzoneTitle": "Drag file here, or click to choose a file",
+      "dropzoneHint": "Supports .yaml .yml .json",
+      "loadedFile": "Loaded file: {name}",
+      "previewSummary": "Format: {format}, {count} club records ready to import",
+      "previewEmpty": "No preview data",
+      "reselect": "Choose another file",
+      "importing": "Importing...",
+      "confirm": "Confirm Import",
+      "done": "Import Complete",
+      "created": "Created clubs",
+      "updated": "Updated clubs",
+      "preview": {
+        "name": "Name",
+        "category": "Category"
+      }
+    }
+  },
+  "adminFormFieldEditor": {
+    "title": "Form Fields",
+    "count": "{count} fields",
+    "empty": "No fields yet. Click the button below to add one.",
+    "unnamed": { "section": "(Section header)", "field": "(Unnamed field)" },
+    "actions": {
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "delete": "Delete",
+      "addOption": "Add option",
+      "addField": "Add field"
+    },
+    "defaults": { "option": "Option {index}" },
+    "types": {
+      "text": "Single-line text",
+      "textarea": "Multi-line text",
+      "number": "Number",
+      "email": "Email",
+      "phone": "Phone",
+      "select": "Select",
+      "radio": "Single choice",
+      "checkbox": "Multiple choice",
+      "date": "Date",
+      "file": "File upload",
+      "club_picker": "Club picker",
+      "section_header": "Section header"
+    },
+    "prefill": {
+      "none": "No prefill",
+      "displayName": "User display name",
+      "email": "User email",
+      "clubName": "Club name",
+      "clubCategory": "Club category"
+    },
+    "operators": {
+      "equals": "Equals",
+      "notEquals": "Not equals",
+      "contains": "Contains",
+      "isEmpty": "Is empty",
+      "isNotEmpty": "Is not empty"
+    },
+    "form": {
+      "label": "Label",
+      "sectionPlaceholder": "Section title",
+      "fieldPlaceholder": "Field display name",
+      "type": "Field type",
+      "id": "Field ID",
+      "idPlaceholder": "field_id",
+      "required": "Required",
+      "lockIfPrefilled": "Lock if prefilled",
+      "placeholder": "Placeholder",
+      "placeholderHint": "e.g. Please enter...",
+      "prefill": "Auto prefill",
+      "prefillHint": "Use user profile value as default",
+      "options": "Options"
+    },
+    "validation": {
+      "title": "Validation",
+      "min": "Min / Min length",
+      "max": "Max / Max length",
+      "customMessage": "Custom error message",
+      "customMessagePlaceholder": "Message shown when validation fails"
+    },
+    "depends": {
+      "title": "Conditional display (depends_on)",
+      "field": "Field",
+      "operator": "Operator",
+      "value": "Value",
+      "action": "Action",
+      "show": "Show",
+      "hide": "Hide"
+    },
+    "badges": {
+      "required": "Required"
+    }
+  },
+  "adminMarkdownEditor": {
+    "label": "Content (Markdown)",
+    "placeholder": "Enter Markdown content...",
+    "renderFailed": "Render failed",
+    "imageAlt": "image",
+    "imageUploadFailed": "Image upload failed",
+    "editor": "Editor",
+    "preview": "Preview",
+    "tableTemplate": "| Header | Header |\n| --- | --- |\n| Cell | Cell |\n",
+    "toolbar": {
+      "h2": "Heading (H2)",
+      "h3": "Heading (H3)",
+      "bold": "Bold",
+      "italic": "Italic",
+      "codeBlock": "Code block",
+      "link": "Link",
+      "bulletList": "Bullet list",
+      "numberList": "Numbered list",
+      "quote": "Quote",
+      "hr": "Horizontal rule",
+      "table": "Table",
+      "image": "Image",
+      "upload": "Upload",
+      "embedForm": "Embed form"
+    },
+    "formMenu": {
+      "title": "Select a form to embed",
+      "empty": "No forms available",
+      "linkPrefix": "Fill Form: "
+    }
+  },
+  "metadata": {
+    "siteName": "NCKU Club Association",
+    "titleDefault": "NCKU Club Association",
+    "titleTemplate": "%s | NCKU Club Association",
+    "description": "Official digital platform for the NCKU Club Association, providing announcements, forms, attendance, and operations management.",
+    "ogSubtitle": "Official NCKU CA Platform",
+    "ogAlt": "NCKU Club Association"
+  }
+}

@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { getOpenForms } from "@/lib/firestore/forms";
 import { anyTimestampToDate } from "@/lib/datetime";
 import { DocumentTextIcon, ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import type { Form } from "@/types";
+import { getDateLocale, normalizeLocale } from "@/lib/i18n-config";
 
 export async function FormPreviewSection({ preFetchedForms }: { preFetchedForms?: Form[] }) {
+  const t = await getTranslations("home.forms");
+  const locale = normalizeLocale(await getLocale());
+  const dateLocale = getDateLocale(locale);
+
   let formsData = preFetchedForms;
 
   if (!formsData) {
@@ -24,12 +30,12 @@ export async function FormPreviewSection({ preFetchedForms }: { preFetchedForms?
       title: f.title,
       description: f.description || "",
       closesAt: closesAt
-        ? closesAt.toLocaleDateString("zh-TW", {
+        ? closesAt.toLocaleDateString(dateLocale, {
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
         })
-        : "無期限",
+        : t("noDeadline"),
     };
   });
 
@@ -41,7 +47,7 @@ export async function FormPreviewSection({ preFetchedForms }: { preFetchedForms?
     <section className="w-full bg-neutral-50">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
-          <SectionHeading title="表單專區" subtitle="Open Forms" />
+          <SectionHeading title={t("title")} subtitle={t("subtitle")} />
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -65,10 +71,10 @@ export async function FormPreviewSection({ preFetchedForms }: { preFetchedForms?
 
               <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
                 <span className="text-[11px] font-medium text-neutral-400">
-                  截止日期：{form.closesAt}
+                  {t("deadline", { date: form.closesAt })}
                 </span>
                 <span className="flex items-center gap-1 text-[13px] font-[550] text-primary">
-                  前往填寫 <ArrowLongRightIcon className="h-4 w-4" />
+                  {t("goFill")} <ArrowLongRightIcon className="h-4 w-4" />
                 </span>
               </div>
             </Link>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { AdminSpinnerLoading } from "./admin-loading-state";
@@ -25,12 +26,17 @@ export function FullPageFormModal({
   onSubmit,
   title,
   children,
-  submitLabel = "儲存",
-  cancelLabel = "取消",
+  submitLabel,
+  cancelLabel,
   loading = false,
   isFetching = false,
   wide = false,
 }: FullPageFormModalProps) {
+  const t = useTranslations("adminCommon");
+
+  const resolvedSubmitLabel = submitLabel ?? t("confirm");
+  const resolvedCancelLabel = cancelLabel ?? t("cancel");
+
   if (!open) return null;
 
   return (
@@ -38,8 +44,8 @@ export function FullPageFormModal({
       onClose={onClose}
       onSubmit={onSubmit}
       title={title}
-      submitLabel={submitLabel}
-      cancelLabel={cancelLabel}
+      submitLabel={resolvedSubmitLabel}
+      cancelLabel={resolvedCancelLabel}
       loading={loading}
       isFetching={isFetching}
       wide={wide}
@@ -60,6 +66,8 @@ function OpenFullPageFormModal({
   isFetching,
   wide,
 }: Omit<FullPageFormModalProps, "open">) {
+  const t = useTranslations("adminCommon");
+  const modalT = useTranslations("adminFormModal");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
@@ -101,7 +109,7 @@ function OpenFullPageFormModal({
           <div className="flex-1 overflow-y-auto px-6 py-5">
             {isFetching ? (
               <div className="flex h-full min-h-[200px] items-center justify-center">
-                <AdminSpinnerLoading message="正在載入資料..." />
+                <AdminSpinnerLoading message={t("loading")} />
               </div>
             ) : (
               <div className="space-y-4">{children}</div>
@@ -118,7 +126,7 @@ function OpenFullPageFormModal({
               {cancelLabel}
             </button>
             <Button type="submit" disabled={loading}>
-              {loading ? "處理中…" : submitLabel}
+              {loading ? t("processing") : submitLabel}
             </Button>
           </div>
         </form>
@@ -127,10 +135,10 @@ function OpenFullPageFormModal({
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} preventClose>
         <div className="flex flex-col items-start pt-6">
           <h3 className="text-lg font-semibold tracking-tight text-neutral-950">
-            確定要離開嗎？
+            {modalT("leaveConfirmTitle")}
           </h3>
           <p className="mt-2 text-sm text-neutral-500">
-            尚未儲存的內容將會遺失。
+            {modalT("leaveConfirmDescription")}
           </p>
           <div className="mt-8 flex w-full justify-end gap-3">
             <button
@@ -138,13 +146,13 @@ function OpenFullPageFormModal({
               onClick={() => setConfirmOpen(false)}
               className="rounded-full border border-border px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
             >
-              繼續編輯
+              {modalT("continueEditing")}
             </button>
             <Button
               onClick={handleConfirmClose}
               className="!bg-red-700 hover:!bg-red-800 active:!bg-red-900 shadow-sm"
             >
-              不儲存並離開
+              {modalT("leaveWithoutSaving")}
             </Button>
           </div>
         </div>

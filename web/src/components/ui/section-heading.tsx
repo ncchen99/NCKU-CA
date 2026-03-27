@@ -1,4 +1,5 @@
 import { ArrowLongRightIcon } from "@heroicons/react/20/solid";
+import { useTranslations } from "next-intl";
 
 interface SectionHeadingProps {
   title: string;
@@ -31,15 +32,18 @@ interface ViewAllLinkProps {
 
 function ViewAllLink({
   href,
-  label = "查看全部",
+  label,
   className = "",
 }: ViewAllLinkProps) {
+  const t = useTranslations("common");
+  const finalLabel = label ?? t("viewAll");
+
   return (
     <a
       href={href}
       className={`group inline-flex items-center gap-1 text-sm font-[450] text-primary transition-colors hover:text-primary-dark ${className}`}
     >
-      {label}
+      {finalLabel}
       <ArrowLongRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
     </a>
   );

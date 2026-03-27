@@ -24,6 +24,7 @@ import {
   TableCellsIcon,
 } from "@heroicons/react/20/solid";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
+import { useTranslations } from "next-intl";
 
 interface MarkdownEditorProps {
   value: string;
@@ -55,10 +56,12 @@ const processor = unified()
 export function MarkdownEditor({
   value,
   onChange,
-  placeholder = "輸入 Markdown 內容…",
+  placeholder,
   minHeight = "320px",
   forms = [],
 }: MarkdownEditorProps) {
+  const t = useTranslations("adminMarkdownEditor");
+  const resolvedPlaceholder = placeholder ?? t("placeholder");
   const [html, setHtml] = useState("");
   const [formMenuOpen, setFormMenuOpen] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -72,9 +75,9 @@ export function MarkdownEditor({
       const result = await processor.process(md);
       setHtml(String(result));
     } catch {
-      setHtml("<p class='text-red-500'>渲染失敗</p>");
+      setHtml(`<p class='text-red-500'>${t("renderFailed")}</p>`);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -123,10 +126,10 @@ export function MarkdownEditor({
     try {
       const data = await uploadAdminImage(file);
 
-      const alt = file.name.replace(/\.[^/.]+$/, "") || "圖片";
+      const alt = file.name.replace(/\.[^/.]+$/, "") || t("imageAlt");
       insertText(`![${alt}](${data.url})`);
     } catch (error) {
-      setImageUploadError(error instanceof Error ? error.message : "圖片上傳失敗");
+      setImageUploadError(error instanceof Error ? error.message : t("imageUploadFailed"));
     } finally {
       setImageUploading(false);
       if (imageInputRef.current) {
@@ -138,7 +141,7 @@ export function MarkdownEditor({
   return (
     <div ref={containerRef}>
       <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-        內容 (Markdown)
+        {t("label")}
       </label>
       <div
         className="grid grid-cols-1 gap-3 md:grid-cols-2"
@@ -147,7 +150,7 @@ export function MarkdownEditor({
         <div className="flex flex-col">
           <div className="mb-1 flex items-center justify-between">
             <div className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-              編輯
+              {t("editor")}
             </div>
           </div>
           <div
@@ -160,7 +163,7 @@ export function MarkdownEditor({
                 onValueChange={onChange}
                 highlight={(code) => Prism.highlight(code, Prism.languages.markdown, "markdown")}
                 textareaId="post-markdown-editor"
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 padding={12}
                 className="markdown-editor h-full min-h-full"
                 style={{
@@ -190,7 +193,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("## ")}
-                  title="大標題 (H2)"
+                  title={t("toolbar.h2")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <span className="text-[14px] font-bold">H2</span>
@@ -198,7 +201,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("### ")}
-                  title="小標題 (H3)"
+                  title={t("toolbar.h3")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <span className="text-[12px] font-bold">H3</span>
@@ -211,7 +214,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("**", "**")}
-                  title="粗體"
+                  title={t("toolbar.bold")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <BoldIcon className="h-4 w-4" />
@@ -219,7 +222,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("*", "*")}
-                  title="斜體"
+                  title={t("toolbar.italic")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <ItalicIcon className="h-4 w-4" />
@@ -227,7 +230,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("```\n", "\n```")}
-                  title="程式碼區塊"
+                  title={t("toolbar.codeBlock")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <CodeBracketIcon className="h-4 w-4" />
@@ -235,7 +238,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("[", "](url)")}
-                  title="連結"
+                  title={t("toolbar.link")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <LinkIcon className="h-4 w-4" />
@@ -248,7 +251,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("- ")}
-                  title="無序列表"
+                  title={t("toolbar.bulletList")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <ListBulletIcon className="h-4 w-4" />
@@ -256,7 +259,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("1. ")}
-                  title="有序列表"
+                  title={t("toolbar.numberList")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <NumberedListIcon className="h-4 w-4" />
@@ -264,7 +267,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("> ")}
-                  title="引用"
+                  title={t("toolbar.quote")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <ChatBubbleBottomCenterTextIcon className="h-4 w-4" />
@@ -277,15 +280,15 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => insertText("\n---\n")}
-                  title="分隔線"
+                  title={t("toolbar.hr")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <MinusIcon className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => insertText("| 標題 | 標題 |\n| --- | --- |\n| 內容 | 內容 |\n")}
-                  title="表格"
+                  onClick={() => insertText(t("tableTemplate"))}
+                  title={t("toolbar.table")}
                   className="flex h-8 w-8 items-center justify-center rounded text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
                 >
                   <TableCellsIcon className="h-4 w-4" />
@@ -293,7 +296,7 @@ export function MarkdownEditor({
                 <button
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
-                  title="圖片"
+                  title={t("toolbar.image")}
                   disabled={imageUploading}
                   className="flex h-8 items-center justify-center gap-1 rounded px-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -301,7 +304,7 @@ export function MarkdownEditor({
                   {imageUploading ? (
                     <ArrowUpTrayIcon className="h-4 w-4 animate-bounce" />
                   ) : (
-                    <span className="text-[11px] font-medium">上傳</span>
+                    <span className="text-[11px] font-medium">{t("toolbar.upload")}</span>
                   )}
                 </button>
               </div>
@@ -316,25 +319,25 @@ export function MarkdownEditor({
                   className={`flex h-8 items-center gap-1 rounded bg-neutral-50 px-2 text-[12px] font-medium transition-colors hover:bg-neutral-100 ${formMenuOpen ? 'bg-neutral-100 text-primary' : 'text-neutral-600'}`}
                 >
                   <SquaresPlusIcon className="h-4 w-4" />
-                  嵌入表單
+                  {t("toolbar.embedForm")}
                   <ChevronDownIcon className={`h-3 w-3 transition-transform ${formMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {formMenuOpen && (
                   <div className="absolute bottom-full left-0 mb-2 w-56 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
                     <div className="border-b border-border bg-neutral-50/50 px-3 py-1.5 text-[11px] font-semibold text-neutral-400">
-                      選擇要嵌入的表單
+                      {t("formMenu.title")}
                     </div>
                     <div className="max-h-48 overflow-y-auto py-1">
                       {forms.length === 0 ? (
-                        <div className="px-3 py-2 text-[12px] text-neutral-400 text-center">尚無表單可供選擇</div>
+                        <div className="px-3 py-2 text-[12px] text-neutral-400 text-center">{t("formMenu.empty")}</div>
                       ) : (
                         forms.map((f) => (
                           <button
                             key={f.id}
                             type="button"
                             onClick={() => {
-                              insertText(`\n\n[填寫表單：${f.title}](/forms/${f.id} "form-embed")\n`);
+                              insertText(`\n\n[${t("formMenu.linkPrefix")}${f.title}](/forms/${f.id} "form-embed")\n`);
                               setFormMenuOpen(false);
                             }}
                             className="flex w-full px-3 py-2 text-left text-[12px] text-neutral-700 hover:bg-neutral-50 hover:text-primary transition-colors"
@@ -357,7 +360,7 @@ export function MarkdownEditor({
         </div>
         <div className="flex flex-col">
           <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-neutral-400">
-            預覽
+            {t("preview")}
           </div>
           <div
             className="markdown-preview flex-1 overflow-y-auto rounded-lg border border-border bg-white px-4 py-3 text-sm leading-relaxed text-neutral-800"

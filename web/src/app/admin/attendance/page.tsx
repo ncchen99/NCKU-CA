@@ -36,6 +36,7 @@ import {
   timestampToMs,
 } from "@/lib/admin-utils";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 type FilterStatus = "all" | "upcoming" | "open" | "closed";
 
@@ -100,22 +101,6 @@ const initialForm: EventFormData = {
   passcode: "",
 };
 
-const tabs: { key: FilterStatus; label: string }[] = [
-  { key: "all", label: "全部" },
-  { key: "open", label: "進行中" },
-  { key: "upcoming", label: "即將開始" },
-  { key: "closed", label: "已結束" },
-];
-
-const statusConfig: Record<
-  string,
-  { variant: "success" | "neutral" | "primary"; label: string }
-> = {
-  open: { variant: "success", label: "進行中" },
-  upcoming: { variant: "primary", label: "即將開始" },
-  closed: { variant: "neutral", label: "已結束" },
-};
-
 function tsToDatetimeLocal(
   ts: { _seconds: number; _nanoseconds?: number } | string | undefined,
 ): string {
@@ -127,13 +112,21 @@ function tsToDatetimeLocal(
   return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}T${p(date.getHours())}:${p(date.getMinutes())}`;
 }
 
-function exportAttendanceCsv(detailData: AttendanceEventDetailResponse) {
-  const headers = ["社團名稱", "社團 ID", "類型", "狀態", "簽到時間"];
+function exportAttendanceCsv(
+  detailData: AttendanceEventDetailResponse,
+  labels: {
+    headers: [string, string, string, string, string];
+    checkedIn: string;
+    notCheckedIn: string;
+    filenameSuffix: string;
+  },
+) {
+  const headers = labels.headers;
   const rows = detailData.clubStatuses.map((club) => [
     club.clubName,
     club.clubId,
     club.category,
-    club.checkedIn ? "已簽到" : "未簽到",
+    club.checkedIn ? labels.checkedIn : labels.notCheckedIn,
     club.checkedIn && club.checkedInAt ? formatDateTime(club.checkedInAt) : "",
   ]);
 
@@ -152,7 +145,7 @@ function exportAttendanceCsv(detailData: AttendanceEventDetailResponse) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${detailData.event.title}_簽到狀態_${new Date()
+  a.download = `${detailData.event.title}_${labels.filenameSuffix}_${new Date()
     .toISOString()
     .slice(0, 10)}.csv`;
   document.body.appendChild(a);
@@ -162,6 +155,7 @@ function exportAttendanceCsv(detailData: AttendanceEventDetailResponse) {
 }
 
 export default function AttendancePage() {
+  const t = useTranslations("adminAttendance");
   const [activeTab, setActiveTab] = useState<FilterStatus>("all");
   const [events, setEvents] = useState<EventWithStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,6 +176,25 @@ export default function AttendancePage() {
     useState<AttendanceEventDetailResponse | null>(null);
   const [detailEvent, setDetailEvent] = useState<EventWithStats | null>(null);
   const [manualCheckingClubId, setManualCheckingClubId] = useState<string | null>(null);
+
+  const tabs: { key: FilterStatus; label: string }[] = useMemo(
+    () => [
+      { key: "all", label: t("tabs.all") },
+      { key: "open", label: t("tabs.open") },
+      { key: "upcoming", label: t("tabs.upcoming") },
+      { key: "closed", label: t("tabs.closed") },
+    ],
+    [t],
+  );
+
+  const statusConfig: Record<string, { variant: "success" | "neutral" | "primary"; label: string }> = useMemo(
+    () => ({
+      open: { variant: "success", label: t("status.open") },
+      upcoming: { variant: "primary", label: t("status.upcoming") },
+      closed: { variant: "neutral", label: t("status.closed") },
+    }),
+    [t],
+  );
 
   const fetchEvents = useCallback(async (background = false) => {
     if (!background) setLoading(true);
@@ -230,14 +243,14 @@ export default function AttendancePage() {
       );
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "載入點名活動失敗");
+        setError(err instanceof Error ? err.message : t("error.loadFailed"));
       } else {
-        toast(err instanceof Error ? err.message : "載入點名活動失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.loadFailed"), "error");
       }
     } finally {
       if (!background) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchEvents();
@@ -277,11 +290,11 @@ export default function AttendancePage() {
     setFormError(null);
 
     if (!form.title.trim()) {
-      setFormError("請輸入活動名稱");
+      setFormError(t("error.titleRequired"));
       return;
     }
     if (!form.opens_at) {
-      setFormError("請設定開始時間");
+      setFormError(t("error.opensAtRequired"));
       return;
     }
 
@@ -293,12 +306,12 @@ export default function AttendancePage() {
     })();
 
     if (!computedClosesAt) {
-      setFormError("請設定結束時間");
+      setFormError(t("error.closesAtRequired"));
       return;
     }
 
     if (!form.passcode.trim()) {
-      setFormError("請設定點名密碼");
+      setFormError(t("error.passcodeRequired"));
       return;
     }
 
@@ -333,10 +346,10 @@ export default function AttendancePage() {
         });
       }
       setModalOpen(false);
-      toast(editingEvent ? "點名活動更新成功" : "點名活動建立成功", "success");
+      toast(editingEvent ? t("toast.updated") : t("toast.created"), "success");
       await fetchEvents(true);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "操作失敗");
+      setFormError(err instanceof Error ? err.message : t("error.actionFailed"));
     } finally {
       setFormLoading(false);
     }
@@ -361,27 +374,27 @@ export default function AttendancePage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               club_id: club.clubId,
-              reason: "管理員手動補點名",
+              reason: t("manual.reason"),
             }),
           },
         );
 
         await Promise.all([fetchDetail(detailEvent.id), fetchEvents(true)]);
-        toast(`已為 ${club.clubName} 補點名`, "success");
+        toast(t("toast.manualCheckIn", { club: club.clubName }), "success");
       } catch (err) {
-        toast(err instanceof Error ? err.message : "補點名失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.manualFailed"), "error");
       } finally {
         setManualCheckingClubId(null);
       }
     },
-    [detailEvent, fetchDetail, fetchEvents],
+    [detailEvent, fetchDetail, fetchEvents, t],
   );
 
   const detailClubColumns = useMemo<ColumnDef<AttendanceClubStatus>[]>(
     () => [
       {
         accessorKey: "clubName",
-        header: ({ column }) => adminSortableHeader(column, "社團名稱"),
+        header: ({ column }) => adminSortableHeader(column, t("detail.table.clubName")),
         sortingFn: (rowA, rowB) =>
           compareZh(rowA.original.clubName, rowB.original.clubName),
         cell: ({ row }) => (
@@ -395,7 +408,7 @@ export default function AttendancePage() {
       },
       {
         accessorKey: "category",
-        header: ({ column }) => adminSortableHeader(column, "類型"),
+        header: ({ column }) => adminSortableHeader(column, t("detail.table.category")),
         sortingFn: (rowA, rowB) =>
           compareZh(rowA.original.category, rowB.original.category),
         cell: ({ row }) => (
@@ -413,13 +426,13 @@ export default function AttendancePage() {
           row.checkedIn && row.checkedInAt
             ? timestampToMs(row.checkedInAt)
             : 0,
-        header: ({ column }) => adminSortableHeader(column, "簽到時間"),
+        header: ({ column }) => adminSortableHeader(column, t("detail.table.checkedInAt")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="text-neutral-500">
             {row.original.checkedIn && row.original.checkedInAt
               ? formatDateTime(row.original.checkedInAt)
-              : "—"}
+              : t("common.notAvailable")}
           </span>
         ),
         meta: {
@@ -431,7 +444,7 @@ export default function AttendancePage() {
       {
         accessorKey: "checkedIn",
         header: ({ column }) =>
-          adminSortableHeader(column, "狀態", "right"),
+          adminSortableHeader(column, t("detail.table.status"), "right"),
         sortingFn: (rowA, rowB) =>
           Number(rowA.original.checkedIn) - Number(rowB.original.checkedIn),
         cell: ({ row }) => (
@@ -439,7 +452,7 @@ export default function AttendancePage() {
             variant={row.original.checkedIn ? "success" : "neutral"}
             className="inline-flex"
           >
-            {row.original.checkedIn ? "已簽到" : "未簽到"}
+            {row.original.checkedIn ? t("detail.status.checkedIn") : t("detail.status.notCheckedIn")}
           </Badge>
         ),
         meta: {
@@ -463,7 +476,7 @@ export default function AttendancePage() {
                 onClick={() => handleManualCheckIn(row.original)}
                 className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-60"
               >
-                {isLoading ? "補點名中..." : "手動補點名"}
+                {isLoading ? t("manual.loading") : t("manual.action")}
               </button>
             </div>
           );
@@ -474,7 +487,7 @@ export default function AttendancePage() {
         },
       },
     ],
-    [handleManualCheckIn, manualCheckingClubId],
+    [handleManualCheckIn, manualCheckingClubId, t],
   );
 
   async function openDetailModal(event: EventWithStats) {
@@ -487,7 +500,7 @@ export default function AttendancePage() {
     try {
       await fetchDetail(event.id);
     } catch (err) {
-      setDetailError(err instanceof Error ? err.message : "載入點名詳情失敗");
+      setDetailError(err instanceof Error ? err.message : t("error.loadDetailFailed"));
     } finally {
       setDetailLoading(false);
     }
@@ -528,12 +541,12 @@ export default function AttendancePage() {
   return (
     <>
       <AdminPageHeader
-        title="點名管理"
+        title={t("title")}
         count={events.length}
         action={
           <Button onClick={openCreateModal}>
             <PlusIcon className="h-4 w-4" />
-            建立點名活動
+            {t("actions.create")}
           </Button>
         }
       />
@@ -600,16 +613,16 @@ export default function AttendancePage() {
                   </div>
                   <div className="flex items-center gap-2 text-neutral-600">
                     <UserGroupIcon className="h-4 w-4 text-neutral-400" />
-                    預計 {total} 社團
+                    {t("card.expected", { count: total })}
                   </div>
                   <div className="flex items-center gap-2 text-neutral-600">
                     <CheckCircleIcon className="h-4 w-4 text-neutral-400" />
-                    已簽到 {event.checkedIn} / {total}
+                    {t("card.checkedIn", { checkedIn: event.checkedIn, total })}
                   </div>
                   {event.passcode && (
                     <div className="flex items-center gap-2 text-neutral-600">
                       <KeyIcon className="h-4 w-4 text-neutral-400" />
-                      密碼：<span className="font-mono font-medium text-neutral-900">{event.passcode}</span>
+                      {t("card.passcode")}<span className="font-mono font-medium text-neutral-900">{event.passcode}</span>
                     </div>
                   )}
                 </div>
@@ -618,7 +631,7 @@ export default function AttendancePage() {
                   {event.status !== "upcoming" ? (
                     <div>
                       <div className="flex items-center justify-between text-[12px]">
-                        <span className="text-neutral-500">出席率</span>
+                        <span className="text-neutral-500">{t("card.attendanceRate")}</span>
                         <span className="font-semibold text-neutral-950">
                           {rate}%
                         </span>
@@ -633,7 +646,7 @@ export default function AttendancePage() {
                   ) : (
                     <div className="flex items-center gap-1.5 pt-1 text-[12px] text-neutral-400">
                       <ClockIcon className="h-3.5 w-3.5" />
-                      尚未開始
+                      {t("card.notStarted")}
                     </div>
                   )}
                 </div>
@@ -643,8 +656,8 @@ export default function AttendancePage() {
                     type="button"
                     onClick={() => openEditModal(event)}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10"
-                    aria-label="編輯點名活動"
-                    title="編輯"
+                    aria-label={t("actions.edit")}
+                    title={t("actions.edit")}
                   >
                     <PencilSquareIcon className="h-4 w-4" />
                   </button>
@@ -654,7 +667,7 @@ export default function AttendancePage() {
                     className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
                   >
                     <EyeIcon className="h-3.5 w-3.5" />
-                    檢視
+                    {t("actions.view")}
                   </button>
                 </div>
               </Card>
@@ -662,7 +675,7 @@ export default function AttendancePage() {
           })}
           {filtered.length === 0 && (
             <div className="col-span-full">
-              <AdminEmptyState message="沒有符合條件的點名活動" />
+              <AdminEmptyState message={t("empty")} />
             </div>
           )}
         </div>
@@ -672,8 +685,8 @@ export default function AttendancePage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
-        title={editingEvent ? "編輯點名活動" : "建立點名活動"}
-        submitLabel={editingEvent ? "儲存變更" : "建立"}
+        title={editingEvent ? t("modal.editTitle") : t("modal.createTitle")}
+        submitLabel={editingEvent ? t("modal.save") : t("modal.create")}
         loading={formLoading}
       >
         {formError && (
@@ -682,46 +695,46 @@ export default function AttendancePage() {
           </div>
         )}
         <FormField
-          label="活動名稱"
+          label={t("form.title")}
           required
           value={form.title}
           onChange={(e) => updateForm("title", e.target.value)}
-          placeholder="例：第一次社長大會出席點名"
+          placeholder={t("form.titlePlaceholder")}
         />
         <FormField
-          label="說明"
+          label={t("form.description")}
           as="textarea"
           value={form.description}
           onChange={(e) => updateForm("description", e.target.value)}
-          placeholder="活動說明（選填）"
+          placeholder={t("form.descriptionPlaceholder")}
         />
         <FormField
-          label="點名密碼"
+          label={t("form.passcode")}
           required
           value={form.passcode || ""}
           onChange={(e) => updateForm("passcode", e.target.value)}
-          placeholder="請輸入點名密碼"
+          placeholder={t("form.passcodePlaceholder")}
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="開始時間"
+            label={t("form.opensAt")}
             required
             type="datetime-local"
             value={form.opens_at}
             onChange={(e) => updateForm("opens_at", e.target.value)}
           />
           <FormField
-            label="結束時間"
+            label={t("form.closesAt")}
             required
             type="datetime-local"
             value={form.closes_at}
             onChange={(e) => updateForm("closes_at", e.target.value)}
-            hint="選擇開始時間後自動填入 +2 小時"
+            hint={t("form.closesAtHint")}
           />
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-neutral-700">
-            預計參加的社團類型
+            {t("form.expectedCategories")}
           </label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {CLUB_CATEGORIES.map((cat) => (
@@ -760,38 +773,38 @@ export default function AttendancePage() {
       <Modal
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
-        title={detailData?.event.title ?? detailEvent?.title ?? "點名詳情"}
+        title={detailData?.event.title ?? detailEvent?.title ?? t("detail.title")}
         size="wide"
       >
         <div className="max-h-[78vh] overflow-y-auto pr-1">
           {detailLoading ? (
-            <AdminSpinnerLoading message="正在載入點名詳情..." />
+            <AdminSpinnerLoading message={t("detail.loading")} />
           ) : detailError ? (
             <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
               {detailError}
             </div>
           ) : detailData ? (
             <div className="space-y-4 py-2">
-              {/* 統計卡片 */}
+              {/* Summary cards */}
               <section className="overflow-hidden rounded-xl border border-border">
                 <div className="grid grid-cols-3 divide-x divide-border">
                   <div className="flex flex-col items-center justify-center bg-primary/5 px-4 py-5 text-center">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-primary/60">活動狀態</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-primary/60">{t("detail.summary.eventStatus")}</span>
                     <div className="mt-2">
                       <Badge variant={statusConfig[detailData.event.status]?.variant ?? "neutral"}>
-                        {statusConfig[detailData.event.status]?.label ?? "未知"}
+                        {statusConfig[detailData.event.status]?.label ?? t("detail.unknownStatus")}
                       </Badge>
                     </div>
                   </div>
                   <div className="flex flex-col items-center justify-center bg-neutral-50 px-4 py-5 text-center">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">簽到進度</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("detail.summary.progress")}</span>
                     <div className="mt-2 flex items-baseline gap-1">
                       <span className="text-2xl font-bold text-neutral-900">{detailData.stats.checkedIn}</span>
                       <span className="text-sm text-neutral-400">/ {detailData.stats.total}</span>
                     </div>
                   </div>
                   <div className="flex flex-col items-center justify-center bg-neutral-50 px-4 py-5 text-center">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">出席率</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("detail.summary.attendanceRate")}</span>
                     <div className="mt-2">
                       <span className="text-2xl font-bold text-neutral-900">
                         {detailData.stats.total > 0
@@ -811,31 +824,31 @@ export default function AttendancePage() {
                 </div>
               </section>
 
-              {/* 活動時間與說明 */}
+              {/* Event schedule and notes */}
               <section className="rounded-xl border border-border bg-neutral-50/30 p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
                   <CalendarDaysIcon className="h-4 w-4 text-neutral-400" />
-                  活動時間與說明
+                  {t("detail.eventInfo.title")}
                 </div>
                 <div className="mt-4 grid gap-4 text-sm md:grid-cols-3">
                   <div className="space-y-1.5">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">開始時間</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("detail.eventInfo.opensAt")}</p>
                     <p className="font-medium text-neutral-700">{formatDateTime(detailData.event.opens_at)}</p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">結束時間</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("detail.eventInfo.closesAt")}</p>
                     <p className="font-medium text-neutral-700">{formatDateTime(detailData.event.closes_at)}</p>
                   </div>
                   {detailData.event.passcode && (
                     <div className="space-y-1.5">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">點名密碼</p>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("detail.eventInfo.passcode")}</p>
                       <p className="font-medium text-neutral-700 font-mono">{detailData.event.passcode}</p>
                     </div>
                   )}
                 </div>
                 {detailData.event.description && (
                   <div className="mt-4 border-t border-border/50 pt-4">
-                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-neutral-400">活動說明</p>
+                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("detail.eventInfo.description")}</p>
                     <p className="text-sm leading-relaxed text-neutral-600">
                       {detailData.event.description}
                     </p>
@@ -843,28 +856,39 @@ export default function AttendancePage() {
                 )}
               </section>
 
-              {/* 簽到狀態清單 */}
+              {/* Attendance status list */}
               <section className="rounded-xl border border-border bg-white p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h4 className="flex items-center gap-2 text-sm font-semibold text-neutral-900">
                     <UserGroupIcon className="h-4 w-4 text-neutral-400" />
-                    簽到狀態清單
+                    {t("detail.list.title")}
                   </h4>
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-500">
-                      共 {detailData.clubStatuses.length} 個社團
+                      {t("detail.list.totalClubs", { count: detailData.clubStatuses.length })}
                     </span>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        exportAttendanceCsv(detailData);
-                        toast("CSV 已下載", "success");
+                        exportAttendanceCsv(detailData, {
+                          headers: [
+                            t("csv.clubName"),
+                            t("csv.clubId"),
+                            t("csv.category"),
+                            t("csv.status"),
+                            t("csv.checkedInAt"),
+                          ],
+                          checkedIn: t("detail.status.checkedIn"),
+                          notCheckedIn: t("detail.status.notCheckedIn"),
+                          filenameSuffix: t("csv.filenameSuffix"),
+                        });
+                        toast(t("toast.csvDownloaded"), "success");
                       }}
                       className="h-8"
                     >
                       <ArrowDownTrayIcon className="h-4 w-4" />
-                      匯出 CSV
+                      {t("actions.exportCsv")}
                     </Button>
                   </div>
                 </div>
@@ -873,7 +897,7 @@ export default function AttendancePage() {
                     data={detailData.clubStatuses}
                     columns={detailClubColumns}
                     getRowId={(row) => row.clubId}
-                    emptyMessage="尚未設定預計社團，或找不到對應社團資料。"
+                    emptyMessage={t("detail.empty")}
                     emptyColSpan={5}
                     classNames={{
                       table: "w-full text-left text-sm",

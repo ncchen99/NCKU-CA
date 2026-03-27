@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 interface AdminErrorStateProps {
@@ -8,12 +9,14 @@ interface AdminErrorStateProps {
 }
 
 export function AdminErrorState({ message, onRetry }: AdminErrorStateProps) {
+  const t = useTranslations("adminCommon");
+
   return (
     <div className="flex h-48 flex-col items-center justify-center gap-3">
       <p className="text-sm text-red-600">{message}</p>
       {onRetry && (
         <Button variant="ghost" size="sm" onClick={onRetry}>
-          重試
+          {t("retry")}
         </Button>
       )}
     </div>

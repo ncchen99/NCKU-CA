@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { AppSelect } from "@/components/ui/app-select";
 import { getActiveClubs } from "@/lib/client-firestore";
+import { useTranslations } from "next-intl";
 
 interface Club {
   id: string;
@@ -34,13 +35,14 @@ export function ClubSearchSelect({
   value,
   onChange,
   disabled,
-  placeholder = "搜尋社團...",
+  placeholder,
   error,
   allowClear = true,
-  clearLabel = "— 無 —",
+  clearLabel,
   className,
   initialClubName,
 }: ClubSearchSelectProps) {
+  const t = useTranslations("clubSearchSelect");
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -113,7 +115,7 @@ export function ClubSearchSelect({
     }));
 
     if (allowClear) {
-      list.unshift({ value: "", label: clearLabel });
+      list.unshift({ value: "", label: clearLabel ?? t("clearLabel") });
     }
 
     // If we have a value but it's not in the loaded list,
@@ -132,10 +134,10 @@ export function ClubSearchSelect({
       options={options}
       onChange={onChange}
       disabled={disabled || (loading && !initialClubName)}
-      placeholder={loading ? "載入中..." : placeholder}
+      placeholder={loading ? t("loadingPlaceholder") : (placeholder ?? t("placeholder"))}
       invalid={error}
       searchable
-      searchPlaceholder="關鍵字搜尋社團..."
+      searchPlaceholder={t("searchPlaceholder")}
       className={className}
     />
   );

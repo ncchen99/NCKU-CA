@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 
@@ -21,11 +22,15 @@ export function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = "確認",
-  cancelLabel = "取消",
+  confirmLabel,
+  cancelLabel,
   variant = "default",
   loading = false,
 }: ConfirmDialogProps) {
+  const t = useTranslations("adminCommon");
+  const resolvedConfirmLabel = confirmLabel ?? t("confirm");
+  const resolvedCancelLabel = cancelLabel ?? t("cancel");
+
   return (
     <Modal open={open} onClose={onClose}>
       <div className="flex flex-col items-start pt-6">
@@ -44,7 +49,7 @@ export function ConfirmDialog({
             disabled={loading}
             className="rounded-full border border-border px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <Button
             onClick={onConfirm}
@@ -55,7 +60,7 @@ export function ConfirmDialog({
                 : ""
             }
           >
-            {loading ? "處理中…" : confirmLabel}
+            {loading ? t("processing") : resolvedConfirmLabel}
           </Button>
         </div>
       </div>

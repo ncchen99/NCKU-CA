@@ -6,7 +6,9 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
+import { useLocale } from "next-intl";
 import { AppSelect } from "@/components/ui/app-select";
+import { normalizeLocale } from "@/lib/i18n-config";
 
 interface BaseFieldProps {
   label: string;
@@ -82,6 +84,7 @@ function SelectFieldInner({
 }
 
 export function FormField(props: FormFieldProps) {
+  const locale = normalizeLocale(useLocale());
   const { label, error, required, hint, as = "input", ...rest } = props;
 
   return (
@@ -98,10 +101,23 @@ export function FormField(props: FormFieldProps) {
       ) : as === "select" ? (
         <SelectFieldInner fieldProps={props as SelectFieldProps} error={!!error} />
       ) : (
-        <input
-          className={`${inputBase} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}
-          {...(rest as InputHTMLAttributes<HTMLInputElement>)}
-        />
+        (() => {
+          const inputProps = rest as InputHTMLAttributes<HTMLInputElement>;
+          const isTemporalInput =
+            inputProps.type === "date" ||
+            inputProps.type === "time" ||
+            inputProps.type === "datetime-local" ||
+            inputProps.type === "month" ||
+            inputProps.type === "week";
+
+          return (
+            <input
+              className={`${inputBase} ${error ? "border-red-400 focus:border-red-500 focus:ring-red-200" : ""}`}
+              {...inputProps}
+              lang={inputProps.lang ?? (isTemporalInput ? locale : undefined)}
+            />
+          );
+        })()
       )}
       {hint && !error && (
         <p className="mt-1 text-xs text-neutral-400">{hint}</p>

@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { SectionHeading, ViewAllLink } from "@/components/ui/section-heading";
 import { getPublishedPosts } from "@/lib/firestore/posts";
 import { anyTimestampToDate } from "@/lib/datetime";
+import { getDateLocale, normalizeLocale } from "@/lib/i18n-config";
 
 function GhostTag({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +14,11 @@ function GhostTag({ children }: { children: React.ReactNode }) {
 }
 
 async function NewsPreviewSection() {
+  const t = await getTranslations("home.news");
+  const commonT = await getTranslations("common");
+  const locale = normalizeLocale(await getLocale());
+  const dateLocale = getDateLocale(locale);
+
   let news: {
     slug: string;
     category: string;
@@ -27,9 +34,9 @@ async function NewsPreviewSection() {
       const d = anyTimestampToDate(p.published_at);
       return {
         slug: p.slug,
-        category: p.tags?.[0] ?? "公告",
+        category: p.tags?.[0] ?? t("defaultCategory"),
         date: d
-          ? d.toLocaleDateString("zh-TW", {
+          ? d.toLocaleDateString(dateLocale, {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -53,10 +60,10 @@ async function NewsPreviewSection() {
     news = [
       {
         slug: "#",
-        category: "公告",
+        category: t("defaultCategory"),
         date: "—",
-        title: "尚無已發布消息",
-        excerpt: "管理員可在後台新增最新消息文章。",
+        title: t("emptyTitle"),
+        excerpt: t("emptyExcerpt"),
         cover_image_url: null,
       },
     ];
@@ -66,8 +73,8 @@ async function NewsPreviewSection() {
     <section className="w-full">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
-          <SectionHeading title="最新消息" subtitle="Latest News" />
-          <ViewAllLink href="/news" />
+          <SectionHeading title={t("title")} subtitle={t("subtitle")} />
+          <ViewAllLink href="/news" label={commonT("viewAll")} />
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">

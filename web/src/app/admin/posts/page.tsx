@@ -29,6 +29,7 @@ import {
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 type PostStatus = "all" | "published" | "draft";
 
@@ -67,35 +68,6 @@ const EMPTY_FORM: PostForm = {
   tags: "",
 };
 
-const tabs: TabItem<PostStatus>[] = [
-  { key: "all", label: "全部" },
-  { key: "published", label: "已發布" },
-  { key: "draft", label: "草稿" },
-];
-
-const categoryMap: Record<string, string> = {
-  news: "最新消息",
-  activity_review: "活動回顧",
-};
-
-const statusBadge: Record<string, { variant: "success" | "neutral"; label: string }> = {
-  published: { variant: "success", label: "已發布" },
-  draft: { variant: "neutral", label: "草稿" },
-};
-
-/** API 失敗或尚無任何標籤時的後備清單 */
-const fallbackTagSuggestions = [
-  "公告",
-  "系學會",
-  "活動",
-  "講座",
-  "工作坊",
-  "競賽",
-  "招生",
-  "報名中",
-  "截止提醒",
-];
-
 function toSlug(title: string): string {
   return title
     .trim()
@@ -112,6 +84,7 @@ function parseTags(tagsText: string): string[] {
 }
 
 export default function PostsPage() {
+  const t = useTranslations("adminPosts");
   const [activeTab, setActiveTab] = useState<PostStatus>("all");
   const [search, setSearch] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
@@ -145,6 +118,36 @@ export default function PostsPage() {
   // Toggle status loading
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
+  const tabs: TabItem<PostStatus>[] = useMemo(
+    () => [
+      { key: "all", label: t("tabs.all") },
+      { key: "published", label: t("tabs.published") },
+      { key: "draft", label: t("tabs.draft") },
+    ],
+    [t],
+  );
+
+  const categoryMap: Record<string, string> = useMemo(
+    () => ({
+      news: t("category.news"),
+      activity_review: t("category.activityReview"),
+    }),
+    [t],
+  );
+
+  const statusBadge: Record<string, { variant: "success" | "neutral"; label: string }> = useMemo(
+    () => ({
+      published: { variant: "success", label: t("status.published") },
+      draft: { variant: "neutral", label: t("status.draft") },
+    }),
+    [t],
+  );
+
+  const fallbackTagSuggestions = useMemo(
+    () => t("fallbackTags").split(",").map((x) => x.trim()).filter(Boolean),
+    [t],
+  );
+
   const fetchPosts = useCallback(async (background = false) => {
     if (!background) setLoading(true);
     if (!background) setError(null);
@@ -155,9 +158,9 @@ export default function PostsPage() {
       setPosts(data.posts ?? []);
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "載入文章失敗");
+        setError(err instanceof Error ? err.message : t("error.loadFailed"));
       } else {
-        toast(err instanceof Error ? err.message : "載入文章失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.loadFailed"), "error");
       }
     } finally {
       if (!background) setLoading(false);
@@ -222,8 +225,8 @@ export default function PostsPage() {
 
   function validate(): boolean {
     const errors: Partial<Record<keyof PostForm, string>> = {};
-    if (!form.title.trim()) errors.title = "標題為必填";
-    if (!form.slug.trim()) errors.slug = "Slug 為必填";
+    if (!form.title.trim()) errors.title = t("error.titleRequired");
+    if (!form.slug.trim()) errors.slug = t("error.slugRequired");
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -261,12 +264,12 @@ export default function PostsPage() {
         tags: Array.isArray(full.tags) ? full.tags.join(", ") : "",
       });
     } catch (err) {
-      toast(err instanceof Error ? err.message : "載入文章資料失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.loadPostFailed"), "error");
       setModalOpen(false);
     } finally {
       setModalLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // --- Submit (create or edit) ---
 
@@ -302,10 +305,10 @@ export default function PostsPage() {
       }
 
       setModalOpen(false);
-      toast(editingId ? "文章已更新" : "文章已建立", "success");
+      toast(editingId ? t("toast.updated") : t("toast.created"), "success");
       await fetchPosts(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "儲存文章失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.saveFailed"), "error");
     } finally {
       setModalLoading(false);
     }
@@ -319,10 +322,10 @@ export default function PostsPage() {
     try {
       await adminFetch(`/api/admin/posts/${deleteTarget.id}`, { method: "DELETE" });
       setDeleteTarget(null);
-      toast("文章已刪除", "success");
+      toast(t("toast.deleted"), "success");
       await fetchPosts(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "刪除文章失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.deleteFailed"), "error");
       setDeleteTarget(null);
     } finally {
       setDeleteLoading(false);
@@ -341,15 +344,20 @@ export default function PostsPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: newStatus }),
         });
-        toast(`已將狀態更改為 ${newStatus === "published" ? "已發布" : "草稿"}`, "success");
+        toast(
+          t("toast.statusChanged", {
+            status: newStatus === "published" ? t("status.published") : t("status.draft"),
+          }),
+          "success",
+        );
         await fetchPosts(true);
       } catch (err) {
-        toast(err instanceof Error ? err.message : "更新狀態失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.statusUpdateFailed"), "error");
       } finally {
         setTogglingId(null);
       }
     },
-    [fetchPosts],
+    [fetchPosts, t],
   );
 
   const selectedTags = parseTags(form.tags);
@@ -363,7 +371,7 @@ export default function PostsPage() {
   const popularTagPool = useMemo(() => {
     if (tagStats.length > 0) return tagStats.map((t) => t.tag);
     return fallbackTagSuggestions;
-  }, [tagStats]);
+  }, [tagStats, fallbackTagSuggestions]);
 
   const availableTagSuggestions = useMemo(
     () =>
@@ -383,9 +391,9 @@ export default function PostsPage() {
     try {
       const data = await uploadAdminImage(file);
       updateForm({ cover_image_url: data.url });
-      toast("封面圖片已上傳", "success");
+      toast(t("toast.coverUploaded"), "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "封面圖片上傳失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.coverUploadFailed"), "error");
     } finally {
       setCoverUploading(false);
       if (coverFileInputRef.current) {
@@ -428,7 +436,7 @@ export default function PostsPage() {
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast("請拖拉圖片檔案", "error");
+      toast(t("error.coverDropImageOnly"), "error");
       return;
     }
     void handleCoverUpload(file);
@@ -438,7 +446,7 @@ export default function PostsPage() {
     () => [
       {
         accessorKey: "title",
-        header: ({ column }) => adminSortableHeader(column, "標題"),
+        header: ({ column }) => adminSortableHeader(column, t("table.title")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.title),
@@ -451,7 +459,7 @@ export default function PostsPage() {
       },
       {
         accessorKey: "category",
-        header: ({ column }) => adminSortableHeader(column, "分類"),
+        header: ({ column }) => adminSortableHeader(column, t("table.category")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             categoryMap[rowA.original.category] ?? rowA.original.category,
@@ -465,7 +473,7 @@ export default function PostsPage() {
       },
       {
         accessorKey: "status",
-        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        header: ({ column }) => adminSortableHeader(column, t("table.status")),
         sortingFn: (rowA, rowB) =>
           compareZh(rowA.original.status, rowB.original.status),
         cell: ({ row }) => {
@@ -477,7 +485,7 @@ export default function PostsPage() {
         id: "author",
         accessorFn: (row) =>
           row.author_display_name ?? row.author_uid ?? "",
-        header: ({ column }) => adminSortableHeader(column, "作者"),
+        header: ({ column }) => adminSortableHeader(column, t("table.author")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("author")),
@@ -485,7 +493,7 @@ export default function PostsPage() {
           ),
         cell: ({ row }) => (
           <span className="text-neutral-600">
-            {row.original.author_display_name ?? row.original.author_uid ?? "—"}
+            {row.original.author_display_name ?? row.original.author_uid ?? t("common.notAvailable")}
           </span>
         ),
       },
@@ -495,7 +503,7 @@ export default function PostsPage() {
           timestampToMs(
             row.status === "published" ? row.published_at : row.updated_at,
           ),
-        header: ({ column }) => adminSortableHeader(column, "日期"),
+        header: ({ column }) => adminSortableHeader(column, t("table.date")),
         sortingFn: "basic",
         cell: ({ row }) => {
           const post = row.original;
@@ -524,7 +532,7 @@ export default function PostsPage() {
                 type="button"
                 disabled={togglingId === post.id}
                 onClick={() => handleToggleStatus(post)}
-                title={post.status === "published" ? "轉為草稿" : "發布"}
+                title={post.status === "published" ? t("actions.toDraft") : t("actions.publish")}
                 className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50"
               >
                 <ArrowPathIcon
@@ -534,7 +542,7 @@ export default function PostsPage() {
               <button
                 type="button"
                 onClick={() => openEdit(post)}
-                title="編輯"
+                title={t("actions.edit")}
                 className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
               >
                 <PencilSquareIcon className="h-4 w-4" />
@@ -542,7 +550,7 @@ export default function PostsPage() {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(post)}
-                title="刪除"
+                title={t("actions.delete")}
                 className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
               >
                 <TrashIcon className="h-4 w-4" />
@@ -553,18 +561,18 @@ export default function PostsPage() {
         meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
       },
     ],
-    [handleToggleStatus, openEdit, togglingId],
+    [categoryMap, handleToggleStatus, openEdit, statusBadge, t, togglingId],
   );
 
   return (
     <>
       <AdminPageHeader
-        title="文章管理"
+        title={t("title")}
         count={posts.length}
         action={
           <Button onClick={openCreate}>
             <PlusIcon className="h-4 w-4" />
-            新增文章
+            {t("actions.create")}
           </Button>
         }
       />
@@ -578,7 +586,7 @@ export default function PostsPage() {
           onTabChange={setActiveTab}
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="搜尋文章..."
+          searchPlaceholder={t("searchPlaceholder")}
         />
 
         {loading ? (
@@ -588,7 +596,7 @@ export default function PostsPage() {
             data={filtered}
             columns={postColumns}
             getRowId={(row) => row.id}
-            emptyMessage="沒有找到符合條件的文章"
+            emptyMessage={t("empty")}
             emptyColSpan={6}
           />
         )}
@@ -599,8 +607,8 @@ export default function PostsPage() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
-        title={editingId ? "編輯文章" : "新增文章"}
-        submitLabel={editingId ? "更新" : "建立"}
+        title={editingId ? t("modal.editTitle") : t("modal.createTitle")}
+        submitLabel={editingId ? t("modal.update") : t("modal.create")}
         loading={modalLoading}
         isFetching={modalLoading && editingId !== null && Object.keys(formErrors).length === 0 && !form.title}
         wide
@@ -608,15 +616,15 @@ export default function PostsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
-              label="標題"
+              label={t("form.title")}
               required
               value={form.title}
               onChange={(e) => updateForm({ title: (e.target as HTMLInputElement).value })}
               error={formErrors.title}
-              placeholder="輸入文章標題"
+              placeholder={t("form.titlePlaceholder")}
             />
             <FormField
-              label="Slug"
+              label={t("form.slug")}
               required
               value={form.slug}
               onChange={(e) => {
@@ -624,33 +632,33 @@ export default function PostsPage() {
                 setForm((prev) => ({ ...prev, slug: (e.target as HTMLInputElement).value }));
               }}
               error={formErrors.slug}
-              hint="網址的文字，建議用英文、數字和連字號"
+              hint={t("form.slugHint")}
             />
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <FormField
-              label="分類"
+              label={t("form.category")}
               as="select"
               value={form.category}
               onChange={(e) => updateForm({ category: (e.target as HTMLSelectElement).value as PostForm["category"] })}
               options={[
-                { value: "news", label: "最新消息" },
-                { value: "activity_review", label: "活動回顧" },
+                { value: "news", label: t("category.news") },
+                { value: "activity_review", label: t("category.activityReview") },
               ]}
             />
             <FormField
-              label="狀態"
+              label={t("form.status")}
               as="select"
               value={form.status}
               onChange={(e) => updateForm({ status: (e.target as HTMLSelectElement).value as PostForm["status"] })}
               options={[
-                { value: "draft", label: "草稿" },
-                { value: "published", label: "已發布" },
+                { value: "draft", label: t("status.draft") },
+                { value: "published", label: t("status.published") },
               ]}
             />
             <div>
               <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                標籤
+                {t("form.tags")}
               </label>
               <div
                 ref={tagSuggestRootRef}
@@ -661,7 +669,7 @@ export default function PostsPage() {
                     value={form.tags}
                     onChange={(e) => updateForm({ tags: (e.target as HTMLInputElement).value })}
                     onFocus={() => setTagSuggestionsOpen(true)}
-                    placeholder="以逗號分隔，可自行輸入"
+                    placeholder={t("form.tagsPlaceholder")}
                     className="w-full bg-transparent px-1 text-sm text-neutral-950 outline-none placeholder:text-neutral-400"
                   />
                   <button
@@ -669,22 +677,22 @@ export default function PostsPage() {
                     onClick={() => setTagSuggestionsOpen((prev) => !prev)}
                     className="shrink-0 rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-200"
                   >
-                    推薦標籤
+                    {t("form.suggestedTags")}
                   </button>
                 </div>
                 {tagSuggestionsOpen && (
                   <div className="mt-2 border-t border-border/70 pt-2">
                     <div className="mb-1 flex items-center justify-between gap-2 text-xs text-neutral-400">
                       {tagStatsLoading && (
-                        <span className="shrink-0 text-neutral-400">載入中…</span>
+                        <span className="shrink-0 text-neutral-400">{t("common.loading")}</span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {availableTagSuggestions.length === 0 ? (
                         <span className="text-xs text-neutral-400">
                           {tagStatsLoading
-                            ? "正在載入熱門標籤…"
-                            : "已加入所有推薦標籤"}
+                            ? t("form.loadingSuggestedTags")
+                            : t("form.allSuggestedAdded")}
                         </span>
                       ) : (
                         availableTagSuggestions.map((tag) => {
@@ -711,14 +719,14 @@ export default function PostsPage() {
                 )}
               </div>
               <p className="mt-1 text-xs text-neutral-400">
-                多個標籤請用逗號分隔，也可點上方推薦快速加入
+                {t("form.tagsHint")}
               </p>
             </div>
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-              封面圖片
+              {t("form.coverImage")}
             </label>
             <div className="space-y-3">
               <input
@@ -752,26 +760,26 @@ export default function PostsPage() {
                   ? "border-primary bg-primary/5 ring-1 ring-primary/25"
                   : "border-border bg-neutral-50 hover:border-primary/50 hover:bg-primary/5"
                   } ${coverUploading ? "cursor-not-allowed opacity-70" : ""}`}
-                aria-label="拖拉上傳封面圖片"
+                aria-label={t("form.coverDropAria")}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-neutral-700">
-                      拖拉圖片到此處，或點擊選擇檔案
+                      {t("form.coverDropTitle")}
                     </p>
                     <p className="text-xs text-neutral-400">
-                      上傳後會自動壓縮並轉為 WebP
+                      {t("form.coverHint")}
                     </p>
                   </div>
                   <span className="rounded-md bg-white px-2.5 py-1 text-xs font-medium text-neutral-500 shadow-sm ring-1 ring-border">
-                    {coverUploading ? "上傳中..." : "選擇圖片"}
+                    {coverUploading ? t("form.coverUploading") : t("form.coverChoose")}
                   </span>
                 </div>
                 {form.cover_image_url && (
                   <div className="mt-3 overflow-hidden rounded-lg border border-border bg-white">
                     <Image
                       src={form.cover_image_url}
-                      alt="封面預覽"
+                      alt={t("form.coverPreviewAlt")}
                       width={960}
                       height={480}
                       unoptimized
@@ -782,7 +790,7 @@ export default function PostsPage() {
               </div>
             </div>
             <p className="mt-1 text-xs text-neutral-400">
-              請直接上傳圖片作為封面。
+              {t("form.coverUploadDirect")}
             </p>
           </div>
 
@@ -801,9 +809,9 @@ export default function PostsPage() {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title={`刪除「${deleteTarget?.title ?? ""}」`}
-        description="此操作無法復原，確定要刪除這篇文章嗎？"
-        confirmLabel="刪除"
+        title={t("delete.title", { title: deleteTarget?.title ?? "" })}
+        description={t("delete.description")}
+        confirmLabel={t("delete.confirm")}
         variant="danger"
         loading={deleteLoading}
       />

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Bars3Icon,
   XMarkIcon,
@@ -14,15 +15,11 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { createLoginHref } from "@/lib/login-redirect";
 import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
-
-const NAV_LINKS = [
-  { label: "關於我們", href: "/about" },
-  { label: "幹部成員", href: "/members" },
-  { label: "最新消息", href: "/news" },
-  { label: "活動回顧", href: "/activities" },
-];
+import { I18N_ENABLED } from "@/lib/i18n-config";
+import { LanguageSwitcher } from "./language-switcher";
 
 export function Navbar() {
+  const t = useTranslations("layout.navbar");
   const { user, firebaseUser, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -39,6 +36,12 @@ export function Navbar() {
   const userName =
     user?.display_name || firebaseUser?.displayName || "";
   const avatarInitial = userName?.charAt(0) || "U";
+  const navLinks = [
+    { label: t("about"), href: "/about" },
+    { label: t("members"), href: "/members" },
+    { label: t("news"), href: "/news" },
+    { label: t("activities"), href: "/activities" },
+  ];
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -74,7 +77,7 @@ export function Navbar() {
           <img src="/logo.svg" alt="NCA Logo" className="h-8 w-8 shrink-0" />
           <div className="flex items-baseline gap-2">
             <span className="text-[15px] font-[650] tracking-tight text-neutral-950 sm:text-[16px]">
-              成大社聯會
+              {t("brand")}
             </span>
             <span className="font-mono text-[14px] font-[700] uppercase tracking-wider text-neutral-400 sm:text-[15px]">
               NCKU CA
@@ -85,10 +88,10 @@ export function Navbar() {
         {/* Desktop nav links */}
         <div className="hidden items-center gap-1 lg:flex">
           <Link
-            href={NAV_LINKS[0].href}
+            href={navLinks[0].href}
             className="rounded-full px-3 py-1.5 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-950"
           >
-            {NAV_LINKS[0].label}
+            {navLinks[0].label}
           </Link>
 
           <div ref={charterRef} className="relative">
@@ -99,7 +102,7 @@ export function Navbar() {
               aria-expanded={charterOpen}
               aria-haspopup="true"
             >
-              組織章程
+              {t("charter")}
             </button>
             {charterOpen && (
               <div className="absolute left-0 top-full z-50 mt-1 w-max min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-neutral-950/8">
@@ -117,7 +120,7 @@ export function Navbar() {
             )}
           </div>
 
-          {NAV_LINKS.slice(1).map((link) => (
+          {navLinks.slice(1).map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -130,6 +133,7 @@ export function Navbar() {
 
         {/* Desktop right section */}
         <div className="hidden items-center gap-2 lg:flex">
+          {I18N_ENABLED && <LanguageSwitcher />}
           {loading ? (
             <div className="h-8 w-20 animate-pulse rounded-full bg-neutral-100" />
           ) : isLoggedIn ? (
@@ -140,7 +144,7 @@ export function Navbar() {
                   className="flex h-8 items-center gap-1.5 rounded-full bg-neutral-900 px-3 text-[13px] font-medium text-white transition-colors hover:bg-neutral-800"
                 >
                   <Cog6ToothIcon className="h-3.5 w-3.5" />
-                  後台管理
+                  {t("admin")}
                 </Link>
               )}
 
@@ -173,14 +177,14 @@ export function Navbar() {
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <UserCircleIcon className="h-4 w-4 text-neutral-400" />
-                      個人資料
+                      {t("profile")}
                     </Link>
                     <button
                       onClick={handleSignOut}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-red-600 transition-colors hover:bg-red-50"
                     >
                       <ArrowRightStartOnRectangleIcon className="h-4 w-4" />
-                      登出
+                      {t("logout")}
                     </button>
                   </div>
                 )}
@@ -191,7 +195,7 @@ export function Navbar() {
               href={loginHref}
               className="flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-neutral-600 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
             >
-              以 Google 登入
+              {t("login")}
             </Link>
           )}
         </div>
@@ -200,7 +204,7 @@ export function Navbar() {
         <button
           onClick={() => setMobileOpen((v) => !v)}
           className="flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8 lg:hidden"
-          aria-label={mobileOpen ? "關閉選單" : "開啟選單"}
+          aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
         >
           {mobileOpen ? (
             <XMarkIcon className="h-5 w-5 text-neutral-700" />
@@ -215,12 +219,12 @@ export function Navbar() {
         <div className="border-t border-border bg-white px-4 pb-4 pt-2 lg:hidden">
           <div className="flex flex-col gap-0.5">
             <Link
-              key={NAV_LINKS[0].href}
-              href={NAV_LINKS[0].href}
+              key={navLinks[0].href}
+              href={navLinks[0].href}
               className="rounded-lg px-3 py-2.5 text-[13px] font-[450] text-neutral-600 transition-colors hover:bg-neutral-50"
               onClick={() => setMobileOpen(false)}
             >
-              {NAV_LINKS[0].label}
+              {navLinks[0].label}
             </Link>
 
             <button
@@ -228,7 +232,7 @@ export function Navbar() {
               onClick={() => setMobileCharterOpen((v) => !v)}
               className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-[13px] font-[450] text-neutral-600"
             >
-              組織章程
+              {t("charter")}
             </button>
             {mobileCharterOpen && (
               <div className="ml-2 flex flex-col border-l border-border pl-3">
@@ -245,7 +249,7 @@ export function Navbar() {
               </div>
             )}
 
-            {NAV_LINKS.slice(1).map((link) => (
+            {navLinks.slice(1).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -258,6 +262,11 @@ export function Navbar() {
           </div>
 
           <div className="mt-3 border-t border-border pt-3">
+            {I18N_ENABLED && (
+              <div className="mb-3">
+                <LanguageSwitcher />
+              </div>
+            )}
             {loading ? (
               <div className="flex h-10 items-center justify-center">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -271,7 +280,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                   >
                     <Cog6ToothIcon className="h-4 w-4" />
-                    後台管理
+                    {t("admin")}
                   </Link>
                 )}
                 <Link
@@ -280,7 +289,7 @@ export function Navbar() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <UserCircleIcon className="h-4 w-4" />
-                  個人資料
+                  {t("profile")}
                 </Link>
                 <div className="flex items-center gap-3 rounded-lg bg-neutral-50 px-3 py-2.5">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white">
@@ -300,7 +309,7 @@ export function Navbar() {
                   className="flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium text-red-600 ring-1 ring-red-200 transition-colors hover:bg-red-50"
                 >
                   <ArrowRightStartOnRectangleIcon className="h-4 w-4" />
-                  登出
+                  {t("logout")}
                 </button>
               </div>
             ) : (
@@ -309,7 +318,7 @@ export function Navbar() {
                 className="flex h-10 w-full items-center justify-center rounded-full text-[13px] font-medium text-neutral-600 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
                 onClick={() => setMobileOpen(false)}
               >
-                以 Google 登入
+                {t("login")}
               </Link>
             )}
           </div>

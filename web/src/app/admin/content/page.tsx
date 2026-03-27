@@ -14,6 +14,7 @@ import {
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 interface SiteContent {
   id: string;
@@ -35,6 +36,7 @@ function getDescription(page: SiteContent): string {
 }
 
 export default function ContentPage() {
+  const t = useTranslations("adminContent");
   const [pages, setPages] = useState<SiteContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +61,9 @@ export default function ContentPage() {
       setPages(data.content || []);
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "無法載入內容資料");
+        setError(err instanceof Error ? err.message : t("error.loadFailed"));
       } else {
-        toast(err instanceof Error ? err.message : "載入內容失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.loadFailedToast"), "error");
       }
     } finally {
       if (!background) setLoading(false);
@@ -85,7 +87,7 @@ export default function ContentPage() {
     if (!editTarget) return;
     const pageId = editTarget.id.trim();
     if (!pageId) {
-      setEditError("pageId 為必填，請手動輸入");
+      setEditError(t("error.pageIdRequired"));
       return;
     }
     setEditLoading(true);
@@ -103,10 +105,10 @@ export default function ContentPage() {
       setEditTarget(null);
       setSuccessId(pageId);
       setTimeout(() => setSuccessId(null), 2500);
-      toast("頁面內容已儲存", "success");
+      toast(t("toast.saved"), "success");
       await fetchContent(true);
     } catch (err) {
-      setEditError(err instanceof Error ? err.message : "儲存失敗，請稍後再試");
+      setEditError(err instanceof Error ? err.message : t("error.saveFailed"));
     } finally {
       setEditLoading(false);
     }
@@ -115,8 +117,8 @@ export default function ContentPage() {
   return (
     <>
       <AdminPageHeader
-        title="網站內容"
-        subtitle="管理網站靜態頁面內容，使用 Markdown 編輯器"
+        title={t("title")}
+        subtitle={t("subtitle")}
         count={!loading && !error ? pages.length : undefined}
       />
 
@@ -141,7 +143,7 @@ export default function ContentPage() {
         </div>
       ) : pages.length === 0 ? (
         <div className="mt-6">
-          <AdminEmptyState message="尚無網站內容" />
+          <AdminEmptyState message={t("empty")} />
         </div>
       ) : (
         <div className="mt-6 space-y-3">
@@ -158,7 +160,7 @@ export default function ContentPage() {
                     </h3>
                     {successId === page.id && (
                       <span className="rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-600">
-                        已儲存
+                        {t("savedBadge")}
                       </span>
                     )}
                   </div>
@@ -168,13 +170,13 @@ export default function ContentPage() {
                 </div>
                 <div className="hidden text-right sm:block">
                   <p className="text-[12px] text-neutral-400">
-                    更新於{" "}
+                    {t("updatedAt")} {" "}
                     {formatTimestamp(
                       page.updated_at as Parameters<typeof formatTimestamp>[0],
                     )}
                   </p>
                   <p className="text-[12px] text-neutral-400">
-                    由{" "}
+                    {t("updatedBy")} {" "}
                     {page.updated_by_display_name ?? page.updated_by}
                   </p>
                 </div>
@@ -183,7 +185,7 @@ export default function ContentPage() {
                   className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
                 >
                   <PencilSquareIcon className="h-3.5 w-3.5" />
-                  編輯
+                  {t("actions.edit")}
                 </button>
               </div>
             </Card>
@@ -196,15 +198,15 @@ export default function ContentPage() {
         open={!!editTarget}
         onClose={() => setEditTarget(null)}
         onSubmit={handleEditSave}
-        title="編輯頁面內容"
-        submitLabel="儲存變更"
+        title={t("modal.title")}
+        submitLabel={t("modal.submit")}
         loading={editLoading}
         wide
       >
         {editError && <AdminErrorBanner message={editError} />}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="標題"
+            label={t("form.titleLabel")}
             required
             value={editTarget?.title ?? ""}
             onChange={(e) =>
@@ -212,10 +214,10 @@ export default function ContentPage() {
                 prev ? { ...prev, title: e.target.value } : null,
               )
             }
-            placeholder="頁面標題"
+            placeholder={t("form.titlePlaceholder")}
           />
           <FormField
-            label="pageId"
+            label={t("form.pageIdLabel")}
             required
             value={editTarget?.id ?? ""}
             onChange={(e) =>
@@ -223,7 +225,7 @@ export default function ContentPage() {
                 prev ? { ...prev, id: e.target.value } : null,
               )
             }
-            placeholder="例如：about / charter / members"
+            placeholder={t("form.pageIdPlaceholder")}
           />
         </div>
         <MarkdownEditor

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/loading";
 
 interface AdminTableSkeletonProps {
@@ -29,11 +32,14 @@ export function AdminTableSkeleton({
   );
 }
 
-export function AdminSpinnerLoading({ message = "載入中…" }: { message?: string }) {
+export function AdminSpinnerLoading({ message }: { message?: string }) {
+  const t = useTranslations("adminCommon");
+  const resolvedMessage = message ?? t("loading");
+
   return (
     <div className="flex h-48 items-center justify-center">
       <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-      <span className="ml-3 text-sm text-neutral-500">{message}</span>
+      <span className="ml-3 text-sm text-neutral-500">{resolvedMessage}</span>
     </div>
   );
 }

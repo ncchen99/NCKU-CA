@@ -1,5 +1,6 @@
 import { extractMarkdownToc } from "@/lib/extract-markdown-toc";
 import { renderMarkdownToHtml } from "@/lib/render-markdown";
+import { getTranslations } from "next-intl/server";
 
 interface CmsMarkdownWithTocProps {
   markdown: string;
@@ -18,6 +19,7 @@ function extractHeadingIdsFromHtml(html: string): string[] {
 }
 
 export async function CmsMarkdownWithToc({ markdown }: CmsMarkdownWithTocProps) {
+  const t = await getTranslations("common");
   const [html, markdownToc] = await Promise.all([
     renderMarkdownToHtml(markdown),
     Promise.resolve(extractMarkdownToc(markdown)),
@@ -41,11 +43,11 @@ export async function CmsMarkdownWithToc({ markdown }: CmsMarkdownWithTocProps) 
       <nav className="hidden w-56 shrink-0 lg:block">
         <div className="sticky top-20">
           <h2 className="font-mono text-[11px] font-semibold uppercase tracking-wide text-neutral-950">
-            目錄
+            {t("tocTitle")}
           </h2>
           {toc.length === 0 ? (
             <p className="mt-4 text-[13px] text-neutral-500">
-              請在內容中使用 ##、### 標題以產生目錄。
+              {t("tocEmpty")}
             </p>
           ) : (
             <ul className="mt-4 flex flex-col gap-1">

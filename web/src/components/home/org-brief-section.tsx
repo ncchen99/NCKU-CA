@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { useTranslations } from "next-intl";
 import {
   BuildingLibraryIcon,
   TicketIcon,
@@ -7,28 +8,37 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
-const areas = [
-  {
-    icon: BuildingLibraryIcon,
-    title: "組織治理",
-    desc: "代表大會、主席團與行政團隊分工運作",
-  },
-  { icon: TicketIcon, title: "社博管理", desc: "每學期社團博覽會策劃執行" },
-  {
-    icon: ClipboardDocumentCheckIcon,
-    title: "資源與財務",
-    desc: "會費、預決算與社團會產租借管理",
-  },
-  { icon: UserGroupIcon, title: "場地協調", desc: "學生活動中心與芸青軒場地管理" },
-];
-
 function OrgBriefSection() {
+  const t = useTranslations("home.org");
+  const areas = [
+    {
+      icon: BuildingLibraryIcon,
+      title: t("areas.governanceTitle"),
+      desc: t("areas.governanceDesc"),
+    },
+    {
+      icon: TicketIcon,
+      title: t("areas.expoTitle"),
+      desc: t("areas.expoDesc"),
+    },
+    {
+      icon: ClipboardDocumentCheckIcon,
+      title: t("areas.resourceTitle"),
+      desc: t("areas.resourceDesc"),
+    },
+    {
+      icon: UserGroupIcon,
+      title: t("areas.venueTitle"),
+      desc: t("areas.venueDesc"),
+    },
+  ];
+
   return (
     <section className="w-full bg-neutral-50">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <SectionHeading
-          title="關於組織"
-          subtitle="About Club Association of NCKU"
+          title={t("title")}
+          subtitle={t("subtitle")}
           className="mb-12"
         />
 
@@ -36,17 +46,12 @@ function OrgBriefSection() {
           {/* Left — Mission */}
           <div className="flex flex-col gap-8">
             <div className="max-w-[52ch] space-y-5 text-pretty leading-7 text-neutral-600 sm:leading-[28px]">
-              <p>
-                成功大學社團聯合會（Club Association of National Cheng Kung University，簡稱 NCA）成立於 1994
-                年，目前共有 231 個社團。我們是校內社團的自治聯合組織，負責協調共同事務、整合資源並維護社團權益。
-              </p>
-              <p>
-                社聯會由正副會長、行政團隊、六性質主席團與顧問團共同運作，並透過社團代表大會與性質會議推動決策，執行社團博覽會、場地協調與財務管理等核心業務。
-              </p>
+              <p>{t("paragraph1")}</p>
+              <p>{t("paragraph2")}</p>
             </div>
             <div className="flex flex-row items-center gap-3">
-              <Button variant="primary" href="/about">閱讀更多</Button>
-              <Button variant="ghost" href="/charter/charter">組織章程</Button>
+              <Button variant="primary" href="/about">{t("readMore")}</Button>
+              <Button variant="ghost" href="/charter/charter">{t("charter")}</Button>
             </div>
           </div>
 

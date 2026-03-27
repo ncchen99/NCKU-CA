@@ -32,6 +32,7 @@ import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 import { toast } from "@/components/ui/use-toast";
 import type { FormField as FormFieldType } from "@/types";
 import type { FormTemplate } from "@/lib/form-templates";
+import { useTranslations } from "next-intl";
 
 type FormStatus = "all" | "open" | "closed" | "draft";
 
@@ -93,42 +94,8 @@ const EMPTY_DRAFT: FormDraft = {
   fields: [],
 };
 
-const formTypeLabels: Record<string, string> = {
-  expo_registration: "社團博覽會報名",
-  winter_association_registration: "寒假場協報名",
-  general_registration: "一般報名",
-  attendance_survey: "出席調查",
-  custom: "自訂表單",
-};
-
-const formTypeOptions = Object.entries(formTypeLabels).map(([value, label]) => ({
-  value,
-  label,
-}));
-
-const statusOptions = [
-  { value: "draft", label: "草稿" },
-  { value: "open", label: "開放中" },
-  { value: "closed", label: "已關閉" },
-];
-
-const tabs: TabItem<FormStatus>[] = [
-  { key: "all", label: "全部" },
-  { key: "open", label: "開放中" },
-  { key: "closed", label: "已關閉" },
-  { key: "draft", label: "草稿" },
-];
-
-const statusConfig: Record<
-  string,
-  { variant: "success" | "neutral" | "warning"; label: string }
-> = {
-  open: { variant: "success", label: "開放中" },
-  closed: { variant: "neutral", label: "已關閉" },
-  draft: { variant: "warning", label: "草稿" },
-};
-
 export default function FormsPage() {
+  const t = useTranslations("adminForms");
   const [activeTab, setActiveTab] = useState<FormStatus>("all");
   const [search, setSearch] = useState("");
   const [forms, setForms] = useState<Form[]>([]);
@@ -152,6 +119,50 @@ export default function FormsPage() {
 
   /* ── Active tab for form modal ── */
   const [formModalTab, setFormModalTab] = useState<"basic" | "fields">("basic");
+
+  const formTypeLabels: Record<string, string> = useMemo(
+    () => ({
+      expo_registration: t("formType.expoRegistration"),
+      winter_association_registration: t("formType.winterAssociationRegistration"),
+      general_registration: t("formType.generalRegistration"),
+      attendance_survey: t("formType.attendanceSurvey"),
+      custom: t("formType.custom"),
+    }),
+    [t],
+  );
+
+  const formTypeOptions = useMemo(
+    () => Object.entries(formTypeLabels).map(([value, label]) => ({ value, label })),
+    [formTypeLabels],
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      { value: "draft", label: t("status.draft") },
+      { value: "open", label: t("status.open") },
+      { value: "closed", label: t("status.closed") },
+    ],
+    [t],
+  );
+
+  const tabs: TabItem<FormStatus>[] = useMemo(
+    () => [
+      { key: "all", label: t("tabs.all") },
+      { key: "open", label: t("tabs.open") },
+      { key: "closed", label: t("tabs.closed") },
+      { key: "draft", label: t("tabs.draft") },
+    ],
+    [t],
+  );
+
+  const statusConfig: Record<string, { variant: "success" | "neutral" | "warning"; label: string }> = useMemo(
+    () => ({
+      open: { variant: "success", label: t("status.open") },
+      closed: { variant: "neutral", label: t("status.closed") },
+      draft: { variant: "warning", label: t("status.draft") },
+    }),
+    [t],
+  );
 
   const fetchForms = useCallback(async (background = false) => {
     if (!background) setLoading(true);
@@ -178,15 +189,15 @@ export default function FormsPage() {
       setForms(formsWithCounts);
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "載入資料時發生錯誤");
+        setError(err instanceof Error ? err.message : t("error.loadFailed"));
       } else {
-        toast(err instanceof Error ? err.message : "載入資料失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.loadFailedToast"), "error");
       }
       throw err;
     } finally {
       if (!background) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchForms().catch(() => {
@@ -280,11 +291,11 @@ export default function FormsPage() {
         fields: typedFields,
       });
     } catch (err) {
-      setModalError(err instanceof Error ? err.message : "載入表單資料失敗");
+      setModalError(err instanceof Error ? err.message : t("error.loadFormFailed"));
     } finally {
       setFormFetching(false);
     }
-  }, []);
+  }, [t]);
 
   function closesAtToInput(ts: unknown): string {
     if (!ts) return "";
@@ -308,7 +319,7 @@ export default function FormsPage() {
 
   async function handleSubmit() {
     if (!draft.title.trim()) {
-      setModalError("請輸入表單名稱");
+      setModalError(t("error.titleRequired"));
       return;
     }
     setModalLoading(true);
@@ -356,9 +367,9 @@ export default function FormsPage() {
 
       setModalOpen(false);
       setEditingForm(null);
-      toast(editingForm ? "表單已更新，列表已同步" : "表單已建立，列表已同步", "success");
+      toast(editingForm ? t("toast.updated") : t("toast.created"), "success");
     } catch (err) {
-      setModalError(err instanceof Error ? err.message : "操作失敗");
+      setModalError(err instanceof Error ? err.message : t("error.actionFailed"));
     } finally {
       setModalLoading(false);
     }
@@ -372,10 +383,10 @@ export default function FormsPage() {
         method: "DELETE",
       });
       setDeleteTarget(null);
-      toast("表單已刪除", "success");
+      toast(t("toast.deleted"), "success");
       await fetchForms(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "刪除失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.deleteFailed"), "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -389,7 +400,7 @@ export default function FormsPage() {
     () => [
       {
         accessorKey: "title",
-        header: ({ column }) => adminSortableHeader(column, "表單名稱"),
+        header: ({ column }) => adminSortableHeader(column, t("table.title")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.title),
@@ -402,7 +413,7 @@ export default function FormsPage() {
       },
       {
         accessorKey: "form_type",
-        header: ({ column }) => adminSortableHeader(column, "類型"),
+        header: ({ column }) => adminSortableHeader(column, t("table.type")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             formTypeLabels[rowA.original.form_type] ?? rowA.original.form_type,
@@ -416,7 +427,7 @@ export default function FormsPage() {
       },
       {
         accessorKey: "status",
-        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        header: ({ column }) => adminSortableHeader(column, t("table.status")),
         sortingFn: (rowA, rowB) =>
           compareZh(rowA.original.status, rowB.original.status),
         cell: ({ row }) => {
@@ -426,7 +437,7 @@ export default function FormsPage() {
       },
       {
         id: "fieldCount",
-        header: ({ column }) => adminSortableHeader(column, "欄位數"),
+        header: ({ column }) => adminSortableHeader(column, t("table.fieldCount")),
         accessorFn: (row) => row.fields?.length ?? 0,
         sortingFn: "basic",
         cell: ({ row }) => (
@@ -437,7 +448,7 @@ export default function FormsPage() {
       },
       {
         accessorKey: "responseCount",
-        header: ({ column }) => adminSortableHeader(column, "回覆數"),
+        header: ({ column }) => adminSortableHeader(column, t("table.responseCount")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="font-mono text-neutral-600">
@@ -448,7 +459,7 @@ export default function FormsPage() {
       {
         id: "closes_at",
         accessorFn: (row) => timestampToMs(row.closes_at),
-        header: ({ column }) => adminSortableHeader(column, "截止日期"),
+        header: ({ column }) => adminSortableHeader(column, t("table.closesAt")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="text-neutral-400">
@@ -468,7 +479,7 @@ export default function FormsPage() {
             <div className="inline-flex items-center gap-1">
               <Link
                 href={`/admin/forms/${form.id}`}
-                title="檢視"
+                title={t("actions.view")}
                 className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
               >
                 <EyeIcon className="h-4 w-4" />
@@ -476,7 +487,7 @@ export default function FormsPage() {
               <button
                 type="button"
                 onClick={() => openEditModal(form)}
-                title="編輯"
+                title={t("actions.edit")}
                 className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
               >
                 <PencilSquareIcon className="h-4 w-4" />
@@ -484,7 +495,7 @@ export default function FormsPage() {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(form)}
-                title="刪除"
+                title={t("actions.delete")}
                 className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
               >
                 <TrashIcon className="h-4 w-4" />
@@ -495,18 +506,18 @@ export default function FormsPage() {
         meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
       },
     ],
-    [openEditModal],
+    [formTypeLabels, openEditModal, statusConfig, t],
   );
 
   return (
     <>
       <AdminPageHeader
-        title="表單管理"
+        title={t("title")}
         count={loading ? undefined : forms.length}
         action={
           <Button onClick={openCreateModal}>
             <PlusIcon className="h-4 w-4" />
-            建立表單
+            {t("actions.create")}
           </Button>
         }
       />
@@ -520,7 +531,7 @@ export default function FormsPage() {
           onTabChange={setActiveTab}
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="搜尋表單..."
+          searchPlaceholder={t("searchPlaceholder")}
         />
 
         {loading ? (
@@ -534,7 +545,7 @@ export default function FormsPage() {
             data={filtered}
             columns={formColumns}
             getRowId={(row) => row.id}
-            emptyMessage="沒有找到符合條件的表單"
+            emptyMessage={t("empty")}
             emptyColSpan={7}
           />
         )}
@@ -563,8 +574,8 @@ export default function FormsPage() {
           setEditingForm(null);
         }}
         onSubmit={handleSubmit}
-        title={editingForm ? "編輯表單" : "建立表單"}
-        submitLabel={editingForm ? "更新" : "建立"}
+        title={editingForm ? t("modal.editTitle") : t("modal.createTitle")}
+        submitLabel={editingForm ? t("modal.update") : t("modal.create")}
         loading={modalLoading}
         isFetching={formFetching}
         wide
@@ -581,7 +592,7 @@ export default function FormsPage() {
               : "text-neutral-500 hover:text-neutral-700"
               }`}
           >
-            基本設定
+            {t("modal.tabs.basic")}
           </button>
           <button
             type="button"
@@ -591,7 +602,7 @@ export default function FormsPage() {
               : "text-neutral-500 hover:text-neutral-700"
               }`}
           >
-            欄位編輯
+            {t("modal.tabs.fields")}
             {draft.fields.length > 0 && (
               <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
                 {draft.fields.length}
@@ -603,7 +614,7 @@ export default function FormsPage() {
         {formModalTab === "basic" ? (
           <>
             <FormField
-              label="表單名稱"
+              label={t("form.title")}
               required
               value={draft.title}
               onChange={(e) =>
@@ -611,25 +622,25 @@ export default function FormsPage() {
                   title: (e.target as HTMLInputElement).value,
                 })
               }
-              placeholder="請輸入表單名稱"
+              placeholder={t("form.titlePlaceholder")}
             />
 
             <FormField
               as="textarea"
-              label="描述"
+              label={t("form.description")}
               value={draft.description}
               onChange={(e) =>
                 updateDraft({
                   description: (e.target as HTMLTextAreaElement).value,
                 })
               }
-              placeholder="表單說明（選填）"
+              placeholder={t("form.descriptionPlaceholder")}
             />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 as="select"
-                label="表單類型"
+                label={t("form.formType")}
                 required
                 value={draft.form_type}
                 onChange={(e) =>
@@ -643,7 +654,7 @@ export default function FormsPage() {
 
               <FormField
                 as="select"
-                label="狀態"
+                label={t("form.status")}
                 required
                 value={draft.status}
                 onChange={(e) =>
@@ -659,7 +670,7 @@ export default function FormsPage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 as="select"
-                label="需要保證金"
+                label={t("form.depositRequired")}
                 value={draft.deposit_required ? "yes" : "no"}
                 onChange={(e) =>
                   updateDraft({
@@ -668,14 +679,14 @@ export default function FormsPage() {
                   })
                 }
                 options={[
-                  { value: "no", label: "否" },
-                  { value: "yes", label: "是" },
+                  { value: "no", label: t("common.no") },
+                  { value: "yes", label: t("common.yes") },
                 ]}
               />
 
               {draft.deposit_required && (
                 <FormField
-                  label="保證金金額"
+                  label={t("form.depositAmount")}
                   type="number"
                   min={0}
                   value={draft.deposit_amount}
@@ -684,8 +695,8 @@ export default function FormsPage() {
                       deposit_amount: (e.target as HTMLInputElement).value,
                     })
                   }
-                  placeholder="輸入金額"
-                  hint="單位：新台幣"
+                  placeholder={t("form.depositAmountPlaceholder")}
+                  hint={t("form.depositAmountHint")}
                 />
               )}
             </div>
@@ -693,7 +704,7 @@ export default function FormsPage() {
             {draft.deposit_required && (
               <FormField
                 as="select"
-                label="保證金綁定模式"
+                label={t("form.depositBindingMode")}
                 value={draft.deposit_binding_mode}
                 onChange={(e) =>
                   updateDraft({
@@ -702,15 +713,15 @@ export default function FormsPage() {
                   })
                 }
                 options={[
-                  { value: "linked_to_response", label: "綁定表單回覆（自動建立）" },
-                  { value: "independent", label: "獨立管理（手動建立）" },
+                  { value: "linked_to_response", label: t("form.binding.linked") },
+                  { value: "independent", label: t("form.binding.independent") },
                 ]}
-                hint="「綁定表單回覆」適合社團博覽會/寒假場協；「獨立管理」適合其他情境"
+                hint={t("form.bindingHint")}
               />
             )}
 
             <FormField
-              label="截止時間"
+              label={t("form.closesAt")}
               type="datetime-local"
               value={draft.closes_at}
               onChange={(e) =>
@@ -718,7 +729,7 @@ export default function FormsPage() {
                   closes_at: (e.target as HTMLInputElement).value,
                 })
               }
-              hint="留空表示無截止日期"
+              hint={t("form.closesAtHint")}
             />
           </>
         ) : (
@@ -734,9 +745,9 @@ export default function FormsPage() {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title={`確定要刪除「${deleteTarget?.title}」嗎？`}
-        description="此操作無法復原，表單及其所有回覆資料將被永久刪除。"
-        confirmLabel="刪除"
+        title={t("delete.title", { title: deleteTarget?.title ?? "" })}
+        description={t("delete.description")}
+        confirmLabel={t("delete.confirm")}
         variant="danger"
         loading={deleteLoading}
       />

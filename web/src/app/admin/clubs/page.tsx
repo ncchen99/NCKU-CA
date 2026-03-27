@@ -31,6 +31,7 @@ import {
 import { adminFetch } from "@/lib/admin-utils";
 import { toast } from "@/components/ui/use-toast";
 import { getAdminClubs } from "@/lib/client-firestore";
+import { useTranslations } from "next-intl";
 
 interface Club {
   id: string;
@@ -88,6 +89,7 @@ interface ImportResult {
 }
 
 export default function ClubsPage() {
+  const t = useTranslations("adminClubs");
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [clubs, setClubs] = useState<Club[]>([]);
@@ -122,14 +124,14 @@ export default function ClubsPage() {
       setClubs(data as Club[]);
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "發生未知錯誤");
+        setError(err instanceof Error ? err.message : t("error.unknown"));
       } else {
-        toast(err instanceof Error ? err.message : "載入社團失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.loadFailed"), "error");
       }
     } finally {
       if (!background) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchClubs();
@@ -138,10 +140,10 @@ export default function ClubsPage() {
   const categoryTabs: TabItem[] = useMemo(() => {
     const cats = Array.from(new Set(clubs.map((c) => c.category))).sort();
     return [
-      { key: "all", label: "全部" },
+      { key: "all", label: t("tabs.all") },
       ...cats.map((c) => ({ key: c, label: c })),
     ];
-  }, [clubs]);
+  }, [clubs, t]);
 
   const filtered = clubs.filter((c) => {
     if (activeTab !== "all" && c.category !== activeTab) return false;
@@ -189,10 +191,10 @@ export default function ClubsPage() {
         }),
       });
       closeEdit();
-      toast("社團儲存成功", "success");
+      toast(t("toast.saved"), "success");
       await fetchClubs(true);
     } catch (err) {
-      setEditError(err instanceof Error ? err.message : "儲存失敗");
+      setEditError(err instanceof Error ? err.message : t("error.saveFailed"));
     } finally {
       setEditLoading(false);
     }
@@ -233,14 +235,14 @@ export default function ClubsPage() {
           : (JSON.parse(text) as Record<string, unknown> | Record<string, unknown>[]);
       const arr = Array.isArray(parsed) ? parsed : parsed.clubs;
       if (!Array.isArray(arr) || arr.length === 0) {
-        setImportError("檔案中找不到有效的社團資料陣列（clubs）");
+        setImportError(t("error.importDataMissing"));
         return;
       }
       setImportFormat(format);
       setImportData(arr);
       setImportStep("preview");
     } catch {
-      setImportError("檔案解析失敗，請確認 YAML/JSON 格式正確");
+      setImportError(t("error.importParseFailed"));
     }
   };
 
@@ -273,7 +275,7 @@ export default function ClubsPage() {
       const res = await fetch("/api/admin/clubs/export?format=yaml");
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(body.error ?? "匯出失敗");
+        throw new Error(body.error ?? t("error.exportFailed"));
       }
 
       const blob = await res.blob();
@@ -285,9 +287,9 @@ export default function ClubsPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast("YAML 已下載", "success");
+      toast(t("toast.yamlDownloaded"), "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "匯出失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.exportFailed"), "error");
     } finally {
       setExportLoading(false);
     }
@@ -297,7 +299,7 @@ export default function ClubsPage() {
     () => [
       {
         accessorKey: "name",
-        header: ({ column }) => adminSortableHeader(column, "社團名稱"),
+        header: ({ column }) => adminSortableHeader(column, t("table.name")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.name),
@@ -310,7 +312,7 @@ export default function ClubsPage() {
       },
       {
         accessorKey: "category",
-        header: ({ column }) => adminSortableHeader(column, "分類"),
+        header: ({ column }) => adminSortableHeader(column, t("table.category")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.category),
@@ -322,7 +324,7 @@ export default function ClubsPage() {
       },
       {
         accessorKey: "category_code",
-        header: ({ column }) => adminSortableHeader(column, "社團代碼"),
+        header: ({ column }) => adminSortableHeader(column, t("table.code")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.category_code),
@@ -337,7 +339,7 @@ export default function ClubsPage() {
       {
         id: "email",
         accessorFn: (row) => row.email ?? "",
-        header: ({ column }) => adminSortableHeader(column, "Email"),
+        header: ({ column }) => adminSortableHeader(column, t("table.email")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("email")),
@@ -345,18 +347,18 @@ export default function ClubsPage() {
           ),
         cell: ({ row }) => (
           <span className="font-mono text-[12px] text-neutral-400">
-            {row.original.email || "—"}
+            {row.original.email || t("common.notAvailable")}
           </span>
         ),
       },
       {
         id: "active",
         accessorFn: (row) => (row.is_active ? 1 : 0),
-        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        header: ({ column }) => adminSortableHeader(column, t("table.status")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <Badge variant={row.original.is_active ? "success" : "neutral"}>
-            {row.original.is_active ? "啟用" : "停用"}
+            {row.original.is_active ? t("status.active") : t("status.inactive")}
           </Badge>
         ),
       },
@@ -369,7 +371,7 @@ export default function ClubsPage() {
             <button
               type="button"
               onClick={() => openEdit(row.original)}
-              title="編輯"
+              title={t("actions.edit")}
               className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-primary/10 hover:text-primary"
             >
               <PencilSquareIcon className="h-4 w-4" />
@@ -379,7 +381,7 @@ export default function ClubsPage() {
         meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
       },
     ],
-    [openEdit],
+    [openEdit, t],
   );
 
   const importPreviewColumns = useMemo<ColumnDef<Record<string, unknown>>[]>(
@@ -395,7 +397,7 @@ export default function ClubsPage() {
       },
       {
         accessorKey: "name",
-        header: ({ column }) => adminSortableHeader(column, "名稱"),
+        header: ({ column }) => adminSortableHeader(column, t("import.preview.name")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("name") ?? ""),
@@ -403,14 +405,14 @@ export default function ClubsPage() {
           ),
         cell: ({ row }) => (
           <span className="text-neutral-700">
-            {(row.original.name as string) || "—"}
+            {(row.original.name as string) || t("common.notAvailable")}
           </span>
         ),
         meta: { thClassName: "px-3 py-2", tdClassName: "px-3 py-1.5" },
       },
       {
         accessorKey: "category",
-        header: ({ column }) => adminSortableHeader(column, "分類"),
+        header: ({ column }) => adminSortableHeader(column, t("import.preview.category")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("category") ?? ""),
@@ -418,13 +420,13 @@ export default function ClubsPage() {
           ),
         cell: ({ row }) => (
           <span className="text-neutral-500">
-            {(row.original.category as string) || "—"}
+            {(row.original.category as string) || t("common.notAvailable")}
           </span>
         ),
         meta: { thClassName: "px-3 py-2", tdClassName: "px-3 py-1.5" },
       },
     ],
-    [],
+    [t],
   );
 
   const handleImportConfirm = async () => {
@@ -441,11 +443,11 @@ export default function ClubsPage() {
       );
       setImportResult(result);
       setImportStep("result");
-      toast("社團名單匯入成功", "success");
+      toast(t("toast.importSuccess"), "success");
       await fetchClubs(true);
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : "匯入失敗");
-      toast(err instanceof Error ? err.message : "匯入失敗", "error");
+      setImportError(err instanceof Error ? err.message : t("error.importFailed"));
+      toast(err instanceof Error ? err.message : t("error.importFailed"), "error");
     } finally {
       setImportLoading(false);
     }
@@ -454,7 +456,7 @@ export default function ClubsPage() {
   return (
     <>
       <AdminPageHeader
-        title="社團名單"
+        title={t("title")}
         count={loading || error ? undefined : clubs.length}
         action={
           <>
@@ -468,11 +470,11 @@ export default function ClubsPage() {
               ) : (
                 <ArrowDownTrayIcon className="h-4 w-4" />
               )}
-              {exportLoading ? "準備下載中…" : "匯出 YAML"}
+              {exportLoading ? t("actions.exportLoading") : t("actions.exportYaml")}
             </Button>
             <Button onClick={openImport}>
               <ArrowUpTrayIcon className="h-4 w-4" />
-              匯入名單
+              {t("actions.importList")}
             </Button>
           </>
         }
@@ -497,14 +499,14 @@ export default function ClubsPage() {
             onTabChange={setActiveTab}
             search={search}
             onSearchChange={setSearch}
-            searchPlaceholder="搜尋社團..."
+            searchPlaceholder={t("searchPlaceholder")}
           />
 
           <AdminDataTable
             data={filtered}
             columns={clubColumns}
             getRowId={(row) => row.id}
-            emptyMessage="沒有找到符合條件的社團"
+            emptyMessage={t("empty")}
             emptyColSpan={6}
           />
         </Card>
@@ -515,8 +517,8 @@ export default function ClubsPage() {
         open={editOpen}
         onClose={closeEdit}
         onSubmit={handleEditSubmit}
-        title="編輯社團"
-        submitLabel="儲存變更"
+        title={t("edit.title")}
+        submitLabel={t("edit.submit")}
         loading={editLoading}
       >
         {editError && (
@@ -526,7 +528,7 @@ export default function ClubsPage() {
         )}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="社團名稱"
+            label={t("edit.name")}
             required
             value={editForm.name}
             onChange={(e) =>
@@ -534,7 +536,7 @@ export default function ClubsPage() {
             }
           />
           <FormField
-            label="英文名稱"
+            label={t("edit.nameEn")}
             value={editForm.name_en}
             onChange={(e) =>
               updateField("name_en", (e.target as HTMLInputElement).value)
@@ -543,7 +545,7 @@ export default function ClubsPage() {
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="分類"
+            label={t("edit.category")}
             required
             value={editForm.category}
             onChange={(e) =>
@@ -551,7 +553,7 @@ export default function ClubsPage() {
             }
           />
           <FormField
-            label="Email"
+            label={t("edit.email")}
             type="email"
             value={editForm.email}
             onChange={(e) =>
@@ -560,7 +562,7 @@ export default function ClubsPage() {
           />
         </div>
         <FormField
-          label="簡介"
+          label={t("edit.description")}
           as="textarea"
           value={editForm.description}
           onChange={(e) =>
@@ -572,7 +574,7 @@ export default function ClubsPage() {
         />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="網站"
+            label={t("edit.website")}
             type="url"
             value={editForm.website_url}
             placeholder="https://..."
@@ -581,12 +583,12 @@ export default function ClubsPage() {
             }
           />
           <FormField
-            label="狀態"
+            label={t("edit.status")}
             as="select"
             value={editForm.is_active}
             options={[
-              { value: "true", label: "啟用" },
-              { value: "false", label: "停用" },
+              { value: "true", label: t("status.active") },
+              { value: "false", label: t("status.inactive") },
             ]}
             onChange={(e) =>
               updateField("is_active", (e.target as HTMLSelectElement).value)
@@ -599,16 +601,16 @@ export default function ClubsPage() {
       <Modal
         open={importOpen}
         onClose={importLoading ? () => { } : closeImport}
-        title="匯入社團名單"
+        title={t("import.title")}
       >
         {importStep === "upload" && (
           <div className="space-y-4">
             <p className="text-sm text-neutral-500">
-              請選擇 YAML 或 JSON 格式的社團名單檔案。檔案格式可為陣列或包含{" "}
+              {t("import.descriptionPrefix")} {" "}
               <code className="rounded bg-neutral-100 px-1 py-0.5 text-xs font-mono">
                 clubs
               </code>{" "}
-              欄位的物件。
+              {t("import.descriptionSuffix")}
             </p>
 
             <input
@@ -635,9 +637,9 @@ export default function ClubsPage() {
                 }`}
             >
               <DocumentArrowUpIcon className="h-10 w-10" />
-              <span className="text-sm font-medium">拖拉檔案到這裡，或點擊選擇檔案</span>
+              <span className="text-sm font-medium">{t("import.dropzoneTitle")}</span>
               <span className="text-xs text-neutral-400">
-                支援 .yaml .yml .json 格式
+                {t("import.dropzoneHint")}
               </span>
             </button>
 
@@ -653,10 +655,13 @@ export default function ClubsPage() {
           <div className="space-y-4">
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
               <p className="text-sm font-medium text-blue-800">
-                已讀取檔案：{importFile?.name}
+                {t("import.loadedFile", { name: importFile?.name ?? "" })}
               </p>
               <p className="mt-1 text-sm text-blue-600">
-                格式：{importFormat.toUpperCase()}，共 {importData.length} 筆社團資料準備匯入
+                {t("import.previewSummary", {
+                  format: importFormat.toUpperCase(),
+                  count: importData.length,
+                })}
               </p>
             </div>
 
@@ -665,7 +670,7 @@ export default function ClubsPage() {
                 data={importData.slice(0, 50)}
                 columns={importPreviewColumns}
                 getRowId={(_, i) => `import-${i}`}
-                emptyMessage="無預覽資料"
+                emptyMessage={t("import.previewEmpty")}
                 emptyColSpan={3}
                 classNames={{
                   table: "w-full text-left text-xs",
@@ -700,10 +705,10 @@ export default function ClubsPage() {
                 disabled={importLoading}
                 className="rounded-full border border-border px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
               >
-                重新選擇
+                {t("import.reselect")}
               </button>
               <Button onClick={handleImportConfirm} disabled={importLoading}>
-                {importLoading ? "匯入中…" : "確認匯入"}
+                {importLoading ? t("import.importing") : t("import.confirm")}
               </Button>
             </div>
           </div>
@@ -714,7 +719,7 @@ export default function ClubsPage() {
             <div className="flex flex-col items-center gap-3 py-4">
               <CheckCircleIcon className="h-12 w-12 text-green-500" />
               <p className="text-lg font-semibold text-neutral-950">
-                匯入完成
+                {t("import.done")}
               </p>
             </div>
 
@@ -723,13 +728,13 @@ export default function ClubsPage() {
                 <p className="text-2xl font-bold text-primary">
                   {importResult.created}
                 </p>
-                <p className="mt-1 text-xs text-neutral-500">新增社團</p>
+                <p className="mt-1 text-xs text-neutral-500">{t("import.created")}</p>
               </div>
               <div className="rounded-lg border border-border bg-neutral-50 px-4 py-3 text-center">
                 <p className="text-2xl font-bold text-amber-600">
                   {importResult.updated}
                 </p>
-                <p className="mt-1 text-xs text-neutral-500">更新社團</p>
+                <p className="mt-1 text-xs text-neutral-500">{t("import.updated")}</p>
               </div>
             </div>
 

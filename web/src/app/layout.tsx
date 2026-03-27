@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { AuthProvider } from "@/lib/auth-context";
 import { ProfileCompletionGate } from "@/components/layout/profile-completion-gate";
 import { buildOgImageUrl, getSiteUrl } from "@/lib/seo";
+import { normalizeLocale } from "@/lib/i18n-config";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,62 +20,81 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: getSiteUrl(),
-  title: {
-    default: "成功大學社團聯合會 NCA",
-    template: "%s | 成大社聯會",
-  },
-  description:
-    "國立成功大學社團聯合會官方數位平台。提供公告資訊、表單報名、點名管理一站式服務。",
-  verification: {
-    google: "cd1s498aORyKCK9CyY0iIXUlHAu2eg0GgdHfAi-mNIE",
-  },
-  alternates: {
-    canonical: "./",
-  },
-  openGraph: {
-    type: "website",
-    locale: "zh_TW",
-    siteName: "成功大學社團聯合會",
-    images: [
-      {
-        url: buildOgImageUrl({
-          title: "成功大學社團聯合會",
-          subtitle: "NCKU CA 官方平台",
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = normalizeLocale(await getLocale());
+  const isEn = locale === "en";
+
+  const title = isEn ? "NCKU Club Association" : "成功大學社團聯合會 NCA";
+  const titleTemplate = isEn ? "%s | NCKU Club Association" : "%s | 成大社聯會";
+  const description = isEn
+    ? "Official digital platform for the NCKU Club Association, providing announcements, forms, attendance, and operations management."
+    : "國立成功大學社團聯合會官方數位平台。提供公告資訊、表單報名、點名管理一站式服務。";
+  const ogSubtitle = isEn ? "Official NCKU CA Platform" : "NCKU CA 官方平台";
+  const siteName = isEn ? "NCKU Club Association" : "成功大學社團聯合會";
+
+  return {
+    metadataBase: getSiteUrl(),
+    title: {
+      default: title,
+      template: titleTemplate,
+    },
+    description,
+    verification: {
+      google: "cd1s498aORyKCK9CyY0iIXUlHAu2eg0GgdHfAi-mNIE",
+    },
+    alternates: {
+      canonical: "./",
+    },
+    openGraph: {
+      type: "website",
+      locale: locale === "en" ? "en_US" : "zh_TW",
+      siteName,
+      images: [
+        {
+          url: buildOgImageUrl({
+            title,
+            subtitle: ogSubtitle,
+            path: "/",
+          }),
+          width: 1200,
+          height: 630,
+          alt: siteName,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [
+        buildOgImageUrl({
+          title,
+          subtitle: ogSubtitle,
           path: "/",
         }),
-        width: 1200,
-        height: 630,
-        alt: "成功大學社團聯合會 NCA",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    images: [buildOgImageUrl({
-      title: "成功大學社團聯合會",
-      subtitle: "NCKU CA 官方平台",
-      path: "/",
-    })],
-  },
-};
+      ],
+    },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = normalizeLocale(await getLocale());
+  const messages = await getMessages();
+
   return (
     <html
-      lang="zh-TW"
+      lang={locale}
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans" suppressHydrationWarning>
-        <AuthProvider>
-          <ProfileCompletionGate>{children}</ProfileCompletionGate>
-        </AuthProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider>
+            <ProfileCompletionGate>{children}</ProfileCompletionGate>
+          </AuthProvider>
+        </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
       </body>

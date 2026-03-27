@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import { SectionHeading, ViewAllLink } from "@/components/ui/section-heading";
 import { getPublishedPosts } from "@/lib/firestore/posts";
 import { anyTimestampToDate } from "@/lib/datetime";
+import { getDateLocale, normalizeLocale } from "@/lib/i18n-config";
 
 function GhostTag({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +14,11 @@ function GhostTag({ children }: { children: React.ReactNode }) {
 }
 
 async function ActivityPreviewSection() {
+  const t = await getTranslations("home.activity");
+  const commonT = await getTranslations("common");
+  const locale = normalizeLocale(await getLocale());
+  const dateLocale = getDateLocale(locale);
+
   let items: {
     slug: string;
     tag: string;
@@ -30,9 +37,9 @@ async function ActivityPreviewSection() {
       const d = anyTimestampToDate(p.published_at);
       return {
         slug: p.slug,
-        tag: p.tags?.[0] ?? "活動",
+        tag: p.tags?.[0] ?? t("defaultTag"),
         date: d
-          ? d.toLocaleDateString("zh-TW", {
+          ? d.toLocaleDateString(dateLocale, {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -86,13 +93,13 @@ async function ActivityPreviewSection() {
     <section className="w-full bg-neutral-50">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
-          <SectionHeading title="活動回顧" subtitle="Activity Review" />
-          <ViewAllLink href="/activities" />
+          <SectionHeading title={t("title")} subtitle={t("subtitle")} />
+          <ViewAllLink href="/activities" label={commonT("viewAll")} />
         </div>
 
         {!featured ? (
           <div className="rounded-xl border border-border bg-white py-10 text-center text-[14px] text-neutral-500">
-            尚無已發布的活動回顧。
+            {t("empty")}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

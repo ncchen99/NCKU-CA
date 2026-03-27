@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   PlusIcon,
   TrashIcon,
@@ -12,42 +12,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { AppSelect } from "@/components/ui/app-select";
 import type { FormField as FormFieldType, DependsOn } from "@/types";
+import { useTranslations } from "next-intl";
 
 /* ─── Constants ─── */
 
-const FIELD_TYPES: { value: FormFieldType["type"]; label: string }[] = [
-  { value: "text", label: "單行文字" },
-  { value: "textarea", label: "多行文字" },
-  { value: "number", label: "數字" },
-  { value: "email", label: "電子信箱" },
-  { value: "phone", label: "電話號碼" },
-  { value: "select", label: "下拉選單" },
-  { value: "radio", label: "單選題" },
-  { value: "checkbox", label: "多選題" },
-  { value: "date", label: "日期" },
-  { value: "file", label: "檔案上傳" },
-  { value: "club_picker", label: "社團選擇" },
-  { value: "section_header", label: "區段標題" },
+const FIELD_TYPES: FormFieldType["type"][] = [
+  "text",
+  "textarea",
+  "number",
+  "email",
+  "phone",
+  "select",
+  "radio",
+  "checkbox",
+  "date",
+  "file",
+  "club_picker",
+  "section_header",
 ];
-
-const PREFILL_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "不預填" },
-  { value: "display_name", label: "使用者姓名" },
-  { value: "email", label: "使用者 Email" },
-  { value: "club_name", label: "社團名稱" },
-  { value: "club_category", label: "社團類別" },
-];
-
-const OPERATOR_OPTIONS: {
-  value: DependsOn["operator"];
-  label: string;
-}[] = [
-    { value: "equals", label: "等於" },
-    { value: "not_equals", label: "不等於" },
-    { value: "contains", label: "包含" },
-    { value: "is_empty", label: "為空" },
-    { value: "is_not_empty", label: "不為空" },
-  ];
 
 const HAS_OPTIONS_TYPES: FormFieldType["type"][] = [
   "select",
@@ -138,9 +120,37 @@ function FieldCard({
   onMoveUp: () => void;
   onMoveDown: () => void;
 }) {
+  const t = useTranslations("adminFormFieldEditor");
   const [expanded, setExpanded] = useState(true);
   const hasOptions = HAS_OPTIONS_TYPES.includes(field.type);
   const isSection = field.type === "section_header";
+
+  const fieldTypeOptions = useMemo(
+    () => FIELD_TYPES.map((value) => ({ value, label: t(`types.${value}`) })),
+    [t],
+  );
+
+  const prefillOptions = useMemo(
+    () => [
+      { value: "", label: t("prefill.none") },
+      { value: "display_name", label: t("prefill.displayName") },
+      { value: "email", label: t("prefill.email") },
+      { value: "club_name", label: t("prefill.clubName") },
+      { value: "club_category", label: t("prefill.clubCategory") },
+    ],
+    [t],
+  );
+
+  const operatorOptions: { value: DependsOn["operator"]; label: string }[] = useMemo(
+    () => [
+      { value: "equals", label: t("operators.equals") },
+      { value: "not_equals", label: t("operators.notEquals") },
+      { value: "contains", label: t("operators.contains") },
+      { value: "is_empty", label: t("operators.isEmpty") },
+      { value: "is_not_empty", label: t("operators.isNotEmpty") },
+    ],
+    [t],
+  );
 
   // Other field ids excluding current, for depends_on
   const otherFieldIds = allFieldIds.filter((id) => id !== field.id);
@@ -154,7 +164,7 @@ function FieldCard({
     if (!HAS_OPTIONS_TYPES.includes(newType)) {
       updates.options = undefined;
     } else if (!field.options?.length) {
-      updates.options = ["選項 1", "選項 2"];
+      updates.options = [t("defaults.option", { index: 1 }), t("defaults.option", { index: 2 })];
     }
     if (newType === "section_header") {
       updates.required = false;
@@ -167,7 +177,7 @@ function FieldCard({
 
   /* ── Options array editor ── */
   function handleAddOption() {
-    const opts = [...(field.options ?? []), `選項 ${(field.options?.length ?? 0) + 1}`];
+    const opts = [...(field.options ?? []), t("defaults.option", { index: (field.options?.length ?? 0) + 1 })];
     patch({ options: opts });
   }
 
@@ -204,8 +214,7 @@ function FieldCard({
     patch({ depends_on: { ...field.depends_on!, ...dp } });
   }
 
-  const typeLabel =
-    FIELD_TYPES.find((t) => t.value === field.type)?.label ?? field.type;
+  const typeLabel = t(`types.${field.type}`);
 
   return (
     <div className="group rounded-xl border border-border bg-white shadow-[0_1px_3px_rgba(10,10,10,0.04)] transition-shadow hover:shadow-[0_2px_8px_rgba(10,10,10,0.06)]">
@@ -218,18 +227,18 @@ function FieldCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-[13px] font-medium text-neutral-950">
-              {field.label || (isSection ? "（區段標題）" : "（未命名欄位）")}
+              {field.label || (isSection ? t("unnamed.section") : t("unnamed.field"))}
             </span>
             <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500">
               {typeLabel}
             </span>
             {field.required && (
               <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-500">
-                必填
+                {t("badges.required")}
               </span>
             )}
             {field.depends_on && (
-              <EyeSlashIcon className="h-3.5 w-3.5 text-amber-500" title="條件顯示" />
+              <EyeSlashIcon className="h-3.5 w-3.5 text-amber-500" title={t("depends.title")} />
             )}
           </div>
         </div>
@@ -242,7 +251,7 @@ function FieldCard({
             }}
             disabled={index === 0}
             className="rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 disabled:opacity-30"
-            title="上移"
+            title={t("actions.moveUp")}
           >
             <ChevronUpIcon className="h-4 w-4" />
           </button>
@@ -254,7 +263,7 @@ function FieldCard({
             }}
             disabled={index === total - 1}
             className="rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 disabled:opacity-30"
-            title="下移"
+            title={t("actions.moveDown")}
           >
             <ChevronDownIcon className="h-4 w-4" />
           </button>
@@ -265,7 +274,7 @@ function FieldCard({
               onDelete();
             }}
             className="rounded p-1 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-500"
-            title="刪除"
+            title={t("actions.delete")}
           >
             <TrashIcon className="h-4 w-4" />
           </button>
@@ -279,40 +288,40 @@ function FieldCard({
             {/* Label */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                標籤名稱 <span className="text-red-500">*</span>
+                {t("form.label")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 className={inputBase}
                 value={field.label}
                 onChange={(e) => patch({ label: e.target.value })}
-                placeholder={isSection ? "區段標題文字" : "欄位顯示名稱"}
+                placeholder={isSection ? t("form.sectionPlaceholder") : t("form.fieldPlaceholder")}
               />
             </div>
 
             {/* Type */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                欄位類型
+                {t("form.type")}
               </label>
               <InlineSelect
                 value={field.type}
                 onChange={(v) => handleTypeChange(v as FormFieldType["type"])}
-                options={FIELD_TYPES}
+                options={fieldTypeOptions}
               />
             </div>
 
             {/* Field ID */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                欄位 ID
+                {t("form.id")}
               </label>
               <input
                 type="text"
                 className={`${inputBase} font-mono text-xs`}
                 value={field.id}
                 onChange={(e) => patch({ id: e.target.value.replace(/\s+/g, "_") })}
-                placeholder="field_id"
+                placeholder={t("form.idPlaceholder")}
               />
             </div>
 
@@ -326,7 +335,7 @@ function FieldCard({
                     onChange={(e) => patch({ required: e.target.checked })}
                     className="h-4 w-4 rounded border-border text-primary accent-primary"
                   />
-                  必填
+                  {t("form.required")}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-neutral-700">
                   <input
@@ -337,7 +346,7 @@ function FieldCard({
                     }
                     className="h-4 w-4 rounded border-border text-primary accent-primary"
                   />
-                  預填後鎖定
+                  {t("form.lockIfPrefilled")}
                 </label>
               </div>
             )}
@@ -347,14 +356,14 @@ function FieldCard({
           {!isSection && (
             <div className="mt-4">
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                輸入提示（Placeholder）
+                {t("form.placeholder")}
               </label>
               <input
                 type="text"
                 className={inputBase}
                 value={field.placeholder ?? ""}
                 onChange={(e) => patch({ placeholder: e.target.value || undefined })}
-                placeholder="如：請輸入..."
+                placeholder={t("form.placeholderHint")}
               />
             </div>
           )}
@@ -363,17 +372,17 @@ function FieldCard({
           {!isSection && (
             <div className="mt-4">
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                自動預填
+                {t("form.prefill")}
               </label>
               <InlineSelect
                 value={field.default_from_user ?? ""}
                 onChange={(v) =>
                   patch({ default_from_user: v || undefined })
                 }
-                options={PREFILL_OPTIONS}
+                options={prefillOptions}
               />
               <p className="mt-1 text-[11px] text-neutral-400">
-                從使用者資料自動帶入欄位預設值
+                {t("form.prefillHint")}
               </p>
             </div>
           )}
@@ -382,7 +391,7 @@ function FieldCard({
           {hasOptions && (
             <div className="mt-4">
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                選項列表
+                {t("form.options")}
               </label>
               <div className="flex flex-col gap-2">
                 {(field.options ?? []).map((opt, idx) => (
@@ -395,7 +404,7 @@ function FieldCard({
                       className={`${inputBase} flex-1`}
                       value={opt}
                       onChange={(e) => handleChangeOption(idx, e.target.value)}
-                      placeholder={`選項 ${idx + 1}`}
+                      placeholder={t("defaults.option", { index: idx + 1 })}
                     />
                     <button
                       type="button"
@@ -412,7 +421,7 @@ function FieldCard({
                   className="mt-1 inline-flex items-center gap-1 self-start rounded-lg px-3 py-1.5 text-[12px] font-medium text-primary transition-colors hover:bg-primary/5"
                 >
                   <PlusIcon className="h-3.5 w-3.5" />
-                  新增選項
+                  {t("actions.addOption")}
                 </button>
               </div>
             </div>
@@ -422,13 +431,13 @@ function FieldCard({
           {!isSection && field.type !== "file" && field.type !== "club_picker" && (
             <div className="mt-4">
               <label className="mb-1.5 block text-xs font-medium text-neutral-600">
-                驗證規則
+                {t("validation.title")}
               </label>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 {(field.type === "number" || field.type === "text" || field.type === "textarea") && (
                   <>
                     <div>
-                      <label className="mb-1 block text-[11px] text-neutral-400">最小值 / 最短</label>
+                      <label className="mb-1 block text-[11px] text-neutral-400">{t("validation.min")}</label>
                       <input
                         type="number"
                         className={inputBase}
@@ -445,7 +454,7 @@ function FieldCard({
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[11px] text-neutral-400">最大值 / 最長</label>
+                      <label className="mb-1 block text-[11px] text-neutral-400">{t("validation.max")}</label>
                       <input
                         type="number"
                         className={inputBase}
@@ -464,7 +473,7 @@ function FieldCard({
                   </>
                 )}
                 <div>
-                  <label className="mb-1 block text-[11px] text-neutral-400">自訂錯誤訊息</label>
+                  <label className="mb-1 block text-[11px] text-neutral-400">{t("validation.customMessage")}</label>
                   <input
                     type="text"
                     className={inputBase}
@@ -477,7 +486,7 @@ function FieldCard({
                         },
                       })
                     }
-                    placeholder="驗證失敗時顯示的訊息"
+                    placeholder={t("validation.customMessagePlaceholder")}
                   />
                 </div>
               </div>
@@ -494,12 +503,12 @@ function FieldCard({
                   onChange={toggleDependsOn}
                   className="h-4 w-4 rounded border-border text-primary accent-primary"
                 />
-                條件顯示（depends_on）
+                {t("depends.title")}
               </label>
               {hasDep && field.depends_on && (
                 <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-4">
                   <div>
-                    <label className="mb-1 block text-[11px] text-neutral-400">依賴欄位</label>
+                    <label className="mb-1 block text-[11px] text-neutral-400">{t("depends.field")}</label>
                     <InlineSelect
                       value={field.depends_on.field_id}
                       onChange={(v) => updateDep({ field_id: v })}
@@ -510,23 +519,23 @@ function FieldCard({
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-neutral-400">運算子</label>
+                    <label className="mb-1 block text-[11px] text-neutral-400">{t("depends.operator")}</label>
                     <InlineSelect
                       value={field.depends_on.operator}
                       onChange={(v) =>
                         updateDep({ operator: v as DependsOn["operator"] })
                       }
-                      options={OPERATOR_OPTIONS}
+                      options={operatorOptions}
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-neutral-400">比對值</label>
+                    <label className="mb-1 block text-[11px] text-neutral-400">{t("depends.value")}</label>
                     <input
                       type="text"
                       className={inputBase}
                       value={String(field.depends_on.value ?? "")}
                       onChange={(e) => updateDep({ value: e.target.value })}
-                      placeholder="比對值"
+                      placeholder={t("depends.value")}
                       disabled={
                         field.depends_on.operator === "is_empty" ||
                         field.depends_on.operator === "is_not_empty"
@@ -534,15 +543,15 @@ function FieldCard({
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-[11px] text-neutral-400">動作</label>
+                    <label className="mb-1 block text-[11px] text-neutral-400">{t("depends.action")}</label>
                     <InlineSelect
                       value={field.depends_on.action}
                       onChange={(v) =>
                         updateDep({ action: v as DependsOn["action"] })
                       }
                       options={[
-                        { value: "show", label: "顯示" },
-                        { value: "hide", label: "隱藏" },
+                        { value: "show", label: t("depends.show") },
+                        { value: "hide", label: t("depends.hide") },
                       ]}
                     />
                   </div>
@@ -562,6 +571,7 @@ export function FormFieldEditor({
   fields,
   onChange,
 }: FormFieldEditorProps) {
+  const t = useTranslations("adminFormFieldEditor");
   const sortedFields = [...fields].sort((a, b) => a.order - b.order);
   const allFieldIds = sortedFields.map((f) => f.id);
 
@@ -610,9 +620,9 @@ export function FormFieldEditor({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-950">
-          表單欄位
+          {t("title")}
           <span className="ml-2 text-[11px] font-normal text-neutral-400">
-            共 {fields.length} 個
+            {t("count", { count: fields.length })}
           </span>
         </h3>
       </div>
@@ -621,7 +631,7 @@ export function FormFieldEditor({
       {sortedFields.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-neutral-50 px-4 py-8 text-center">
           <p className="text-[13px] text-neutral-500">
-            尚無欄位，點擊下方按鈕新增。
+            {t("empty")}
           </p>
         </div>
       ) : (
@@ -651,7 +661,7 @@ export function FormFieldEditor({
           className="w-full justify-center gap-1.5 border-dashed"
         >
           <PlusIcon className="h-4 w-4" />
-          新增欄位
+          {t("actions.addField")}
         </Button>
         {addMenuOpen && (
           <>
@@ -663,12 +673,12 @@ export function FormFieldEditor({
               <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
                 {FIELD_TYPES.map((ft) => (
                   <button
-                    key={ft.value}
+                    key={ft}
                     type="button"
-                    onClick={() => handleAddField(ft.value)}
+                    onClick={() => handleAddField(ft)}
                     className="rounded-lg px-3 py-2 text-left text-[12px] font-medium text-neutral-700 transition-colors hover:bg-primary/5 hover:text-primary"
                   >
-                    {ft.label}
+                    {t(`types.${ft}`)}
                   </button>
                 ))}
               </div>

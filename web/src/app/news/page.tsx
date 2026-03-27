@@ -2,6 +2,8 @@ import { PublicLayout } from "@/components/layout/public-layout";
 import { DEFAULT_PRIMARY_TAG, getPrimaryPostTag, getPublishedPosts } from "@/lib/firestore/posts";
 import { anyTimestampToDate } from "@/lib/datetime";
 import { PostListing } from "@/components/public/post-listing";
+import { getLocale } from "next-intl/server";
+import { normalizeLocale } from "@/lib/i18n-config";
 
 export const revalidate = 31_536_000;
 
@@ -17,6 +19,8 @@ interface PostItem {
 }
 
 export default async function NewsPage() {
+    const locale = normalizeLocale(await getLocale());
+    const isEn = locale === "en";
 
     let allPosts: PostItem[] = [];
 
@@ -37,7 +41,7 @@ export default async function NewsPage() {
                     post.content_markdown?.substring(0, 120)?.replace(/[#*_>\-\[\]`]/g, "") ?? "",
                 cover_image_url: post.cover_image_url ?? null,
                 published_at_display: publishedAt
-                    ? publishedAt.toLocaleDateString("zh-TW", {
+                    ? publishedAt.toLocaleDateString(isEn ? "en" : "zh-TW", {
                         year: "numeric",
                         month: "2-digit",
                         day: "2-digit",
@@ -65,14 +69,14 @@ export default async function NewsPage() {
                             </span>
                         </div>
                         <h1 className="mt-4 text-[40px] font-bold leading-[1.1] tracking-tight text-neutral-950">
-                            最新消息
+                            {isEn ? "News" : "最新消息"}
                         </h1>
                     </div>
 
                     <PostListing
                         posts={allPosts}
                         basePath="/news"
-                        emptyText="目前沒有已發布的消息。"
+                        emptyText={isEn ? "No published news yet." : "目前沒有已發布的消息。"}
                     />
                 </div>
             </section>

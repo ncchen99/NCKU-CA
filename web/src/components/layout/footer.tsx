@@ -1,13 +1,6 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-
-const QUICK_NAV = [
-  { label: "關於我們", href: "/about" },
-  { label: "組織章程", href: "/charter/charter" },
-  { label: "幹部成員", href: "/members" },
-  { label: "最新消息", href: "/news" },
-  { label: "活動回顧", href: "/activities" },
-];
 
 function FacebookIcon({ className }: { className?: string }) {
   return (
@@ -27,6 +20,17 @@ function InstagramIcon({ className }: { className?: string }) {
 
 
 export function Footer() {
+  const t = useTranslations("layout.footer");
+  const navT = useTranslations("layout.navbar");
+
+  const quickNav = [
+    { label: navT("about"), href: "/about" },
+    { label: navT("charter"), href: "/charter/charter" },
+    { label: navT("members"), href: "/members" },
+    { label: navT("news"), href: "/news" },
+    { label: navT("activities"), href: "/activities" },
+  ];
+
   return (
     <footer className="bg-white">
       {/* Main footer content */}
@@ -38,7 +42,7 @@ export function Footer() {
               <img src="/logo.svg" alt="NCA Logo" className="h-7 w-7 shrink-0" />
               <div className="flex items-baseline gap-2">
                 <span className="text-[13px] font-[650] tracking-tight text-neutral-950">
-                  成大社聯會
+                  {navT("brand")}
                 </span>
                 <span className="font-mono text-[13px] font-[700] uppercase tracking-wider text-neutral-400">
                   NCKU CA
@@ -47,7 +51,7 @@ export function Footer() {
             </Link>
 
             <p className="mt-4 max-w-[56ch] text-[13px] leading-6 text-neutral-600">
-              成大學生社團聯合會作為綜理學生社團事務之學生自治組織，對內代表學生社團向校方維護權益，對外則協助爭取引進外部資源
+              {t("brandDescription")}
             </p>
 
             <div className="mt-5 flex items-center gap-2">
@@ -72,10 +76,10 @@ export function Footer() {
           {/* Quick nav column */}
           <div className="lg:col-span-3 lg:justify-self-end text-left">
             <h3 className="text-[12px] font-semibold uppercase tracking-wide text-neutral-950">
-              快速導覽
+              {t("quickNav")}
             </h3>
             <ul className="mt-4 flex flex-col gap-2.5">
-              {QUICK_NAV.map((link) => (
+              {quickNav.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -91,7 +95,7 @@ export function Footer() {
           {/* Contact column */}
           <div className="lg:col-span-3 lg:justify-self-end text-left">
             <h3 className="text-[12px] font-semibold uppercase tracking-wide text-neutral-950">
-              聯繫我們
+              {t("contact")}
             </h3>
             <ul className="mt-4 flex flex-col gap-2.5">
               <li>
@@ -104,7 +108,7 @@ export function Footer() {
               </li>
               <li>
                 <span className="text-[13px] text-neutral-600">
-                  台南市東區大學路 1 號學生活動中心 2 樓社團聯合會辦公室
+                  {t("address")}
                 </span>
               </li>
 
@@ -117,7 +121,7 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-center sm:flex-row sm:text-left lg:px-8">
           <p className="font-mono text-[12px] text-neutral-400">
-            &copy; {new Date().getFullYear()} 國立成功大學社團聯合會
+            &copy; {new Date().getFullYear()} {t("copyright")}
           </p>
           <a
             href="https://github.com/ncchen99/NCKU-CA"

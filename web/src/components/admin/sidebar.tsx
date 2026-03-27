@@ -16,22 +16,23 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/lib/auth-context";
 import type { ComponentType, SVGProps } from "react";
+import { useTranslations } from "next-intl";
 
 interface NavItem {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   href: string;
-  label: string;
+  labelKey: string;
 }
 
 const navItems: NavItem[] = [
-  { icon: HomeIcon, href: "/admin", label: "Dashboard" },
-  { icon: DocumentTextIcon, href: "/admin/content", label: "網站內容" },
-  { icon: NewspaperIcon, href: "/admin/posts", label: "文章管理" },
-  { icon: ClipboardDocumentListIcon, href: "/admin/forms", label: "表單管理" },
-  { icon: BanknotesIcon, href: "/admin/deposit", label: "保證金管理" },
-  { icon: CheckBadgeIcon, href: "/admin/attendance", label: "點名管理" },
-  { icon: TagIcon, href: "/admin/clubs", label: "社團名單" },
-  { icon: UsersIcon, href: "/admin/users", label: "用戶管理" },
+  { icon: HomeIcon, href: "/admin", labelKey: "nav.dashboard" },
+  { icon: DocumentTextIcon, href: "/admin/content", labelKey: "nav.content" },
+  { icon: NewspaperIcon, href: "/admin/posts", labelKey: "nav.posts" },
+  { icon: ClipboardDocumentListIcon, href: "/admin/forms", labelKey: "nav.forms" },
+  { icon: BanknotesIcon, href: "/admin/deposit", labelKey: "nav.deposit" },
+  { icon: CheckBadgeIcon, href: "/admin/attendance", labelKey: "nav.attendance" },
+  { icon: TagIcon, href: "/admin/clubs", labelKey: "nav.clubs" },
+  { icon: UsersIcon, href: "/admin/users", labelKey: "nav.users" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -40,14 +41,15 @@ function isActive(pathname: string, href: string) {
 }
 
 export function AdminSidebar() {
+  const t = useTranslations("adminSidebar");
   const pathname = usePathname();
   const router = useRouter();
   const { user, firebaseUser, signOut } = useAuth();
 
   const displayName =
-    user?.display_name || firebaseUser?.displayName || "管理員";
+    user?.display_name || firebaseUser?.displayName || t("defaultAdmin");
   const displayEmail = user?.email || firebaseUser?.email || "";
-  const avatarInitial = displayName.charAt(0) || "管";
+  const avatarInitial = displayName.charAt(0) || t("defaultAdminInitial");
 
   const handleSignOut = async () => {
     await signOut();
@@ -59,19 +61,19 @@ export function AdminSidebar() {
       <div className="flex h-16 items-center justify-between px-5">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold tracking-tight text-white">
-            成大社聯會
+            {t("brand")}
           </span>
           <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/70">
             Admin
           </span>
         </div>
-        <a
+        <Link
           href="/"
           className="rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
-          title="回到前台"
+          title={t("backToSite")}
         >
           <ArrowLeftIcon className="h-4 w-4" />
-        </a>
+        </Link>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
@@ -87,7 +89,7 @@ export function AdminSidebar() {
                 }`}
             >
               <item.icon className="h-[18px] w-[18px] shrink-0" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
@@ -109,7 +111,7 @@ export function AdminSidebar() {
           <button
             onClick={handleSignOut}
             className="rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
-            title="登出"
+            title={t("logout")}
           >
             <ArrowRightStartOnRectangleIcon className="h-4 w-4" />
           </button>

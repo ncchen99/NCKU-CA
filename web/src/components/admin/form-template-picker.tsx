@@ -7,6 +7,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { FORM_TEMPLATES, type FormTemplate } from "@/lib/form-templates";
+import { useTranslations } from "next-intl";
 
 interface FormTemplatePickerProps {
   onSelect: (template: FormTemplate) => void;
@@ -24,16 +25,17 @@ export function FormTemplatePicker({
   onSelect,
   onSkip,
 }: FormTemplatePickerProps) {
+  const t = useTranslations("formTemplatePicker");
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-[15px] font-semibold text-neutral-950">
-          選擇模板
+          {t("title")}
         </h3>
         <p className="mt-1 text-[13px] text-neutral-500">
-          從預設模板開始可快速建立表單，或選擇「空白表單」自行設定。
+          {t("description")}
         </p>
       </div>
 
@@ -74,11 +76,11 @@ export function FormTemplatePicker({
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500">
-                    {tpl.fields.length} 個欄位
+                    {t("fieldCount", { count: tpl.fields.length })}
                   </span>
                   {tpl.deposit_required && (
                     <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                      含保證金
+                      {t("withDeposit")}
                     </span>
                   )}
                 </div>
@@ -94,7 +96,7 @@ export function FormTemplatePicker({
           onClick={onSkip}
           className="text-[13px] font-medium text-neutral-500 transition-colors hover:text-neutral-700"
         >
-          空白表單（不套用模板）
+          {t("blankForm")}
         </button>
         <button
           type="button"
@@ -105,7 +107,7 @@ export function FormTemplatePicker({
           disabled={!selectedKey}
           className="inline-flex h-[36px] items-center rounded-full bg-primary px-5 text-[13px] font-semibold text-white transition-colors hover:bg-primary-light disabled:opacity-40 disabled:pointer-events-none"
         >
-          使用此模板
+          {t("useTemplate")}
         </button>
       </div>
     </div>

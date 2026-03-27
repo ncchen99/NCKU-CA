@@ -8,9 +8,11 @@ import {
   useRef,
   useState,
   useMemo,
+  type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { useTranslations } from "next-intl";
 
 export interface AppSelectOption {
   value: string;
@@ -31,10 +33,16 @@ export type AppSelectProps = {
   searchable?: boolean;
   searchPlaceholder?: string;
   "aria-invalid"?: boolean;
+  triggerClassName?: string;
+  leadingIcon?: ReactNode;
+  triggerStyle?: "default" | "pill-compact";
+  triggerTone?: "light" | "dark";
+  optionTone?: "default" | "muted";
+  displayLabelClassName?: string;
 };
 
 const triggerBase =
-  "flex w-full min-h-[2.5rem] items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-2 text-left text-sm text-neutral-950 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-500";
+  "flex w-full items-center justify-between gap-2 border text-left outline-none transition-colors disabled:cursor-not-allowed";
 
 function coerceValue(v: AppSelectProps["value"]): string {
   if (v === undefined || v === null) return "";
@@ -49,16 +57,23 @@ export function AppSelect({
   onChange,
   options,
   disabled,
-  placeholder = "請選擇",
+  placeholder,
   className = "",
   invalid,
   id,
   name,
   autoFocus,
   searchable = false,
-  searchPlaceholder = "搜尋...",
+  searchPlaceholder,
   "aria-invalid": ariaInvalid,
+  triggerClassName = "",
+  leadingIcon,
+  triggerStyle = "default",
+  triggerTone = "light",
+  optionTone = "default",
+  displayLabelClassName = "",
 }: AppSelectProps) {
+  const t = useTranslations("appSelect");
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -70,7 +85,9 @@ export function AppSelect({
 
   const stringValue = coerceValue(value);
   const selected = options.find((o) => o.value === stringValue);
-  const displayLabel = selected?.label ?? placeholder;
+  const fallbackPlaceholder = placeholder ?? t("placeholder");
+  const fallbackSearchPlaceholder = searchPlaceholder ?? t("searchPlaceholder");
+  const displayLabel = selected?.label ?? fallbackPlaceholder;
 
   const filteredOptions = useMemo(() => {
     if (!searchable || !searchTerm) return options;
@@ -151,6 +168,25 @@ export function AppSelect({
       ? "border-red-400 focus:border-red-500 focus:ring-red-200"
       : "";
 
+  const styleCls =
+    triggerStyle === "pill-compact"
+      ? "h-8 min-h-0 rounded-full px-3 py-0 text-[13px] font-medium"
+      : "min-h-[2.5rem] rounded-lg px-3 py-2 text-sm";
+
+  const toneCls =
+    triggerTone === "dark"
+      ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800 focus:border-neutral-800 focus:ring-neutral-700/30 disabled:border-neutral-300 disabled:bg-neutral-200 disabled:text-neutral-500"
+      : "border-border bg-white text-neutral-950 focus:border-primary focus:ring-primary/30 disabled:bg-neutral-50 disabled:text-neutral-500";
+
+  const iconColorCls = triggerTone === "dark" ? "text-white/80" : "text-neutral-500";
+
+  const optionSelectedCls =
+    optionTone === "muted"
+      ? "bg-neutral-100 font-medium text-neutral-700"
+      : "bg-primary/10 font-medium text-primary";
+
+  const optionDefaultCls = optionTone === "muted" ? "text-neutral-600" : "text-neutral-800";
+
   const menu =
     open &&
     menuPos &&
@@ -177,7 +213,7 @@ export function AppSelect({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={searchPlaceholder}
+                placeholder={fallbackSearchPlaceholder}
                 className="w-full rounded-md border-none bg-neutral-50 py-1.5 pl-8 pr-3 text-xs text-neutral-900 outline-none placeholder:text-neutral-400 focus:bg-white focus:ring-1 focus:ring-primary/20"
                 onClick={(e) => e.stopPropagation()}
               />
@@ -192,7 +228,7 @@ export function AppSelect({
         >
           {filteredOptions.length === 0 ? (
             <li className="px-3 py-4 text-center text-xs text-neutral-400">
-              沒有相符的選項
+              {t("noMatchingOptions")}
             </li>
           ) : (
             filteredOptions.map((opt) => {
@@ -204,8 +240,8 @@ export function AppSelect({
                     role="option"
                     aria-selected={isSelected}
                     className={`flex w-full items-center px-3 py-2 text-left text-sm transition-colors hover:bg-neutral-50 ${isSelected
-                        ? "bg-primary/10 font-medium text-primary"
-                        : "text-neutral-800"
+                        ? optionSelectedCls
+                        : optionDefaultCls
                       }`}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
@@ -240,11 +276,18 @@ export function AppSelect({
         aria-controls={listboxId}
         data-invalid={invalid || ariaInvalid ? "true" : undefined}
         onClick={() => !disabled && setOpen((o) => !o)}
-        className={`${triggerBase} ${invalidCls}`}
+        className={`${triggerBase} ${styleCls} ${toneCls} ${invalidCls} ${triggerClassName}`}
       >
-        <span className="min-w-0 flex-1 truncate">{displayLabel}</span>
+        <span className="min-w-0 flex flex-1 items-center gap-2 truncate">
+          {leadingIcon ? (
+            <span className={`shrink-0 ${iconColorCls}`} aria-hidden="true">
+              {leadingIcon}
+            </span>
+          ) : null}
+          <span className={`truncate ${displayLabelClassName}`}>{displayLabel}</span>
+        </span>
         <ChevronDownIcon
-          className={`h-4 w-4 shrink-0 text-neutral-500 transition-transform duration-200 ${open ? "rotate-180" : ""
+          className={`h-4 w-4 shrink-0 ${iconColorCls} transition-transform duration-200 ${open ? "rotate-180" : ""
             }`}
           aria-hidden
         />

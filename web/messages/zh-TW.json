@@ -1,0 +1,782 @@
+{
+  "common": {
+    "viewAll": "查看全部",
+    "language": "語言",
+    "languageZh": "繁中",
+    "languageEn": "English",
+    "tocTitle": "目錄",
+    "tocEmpty": "請在內容中使用 ##、### 標題以產生目錄。"
+  },
+  "layout": {
+    "navbar": {
+      "brand": "成大社聯會",
+      "about": "關於我們",
+      "charter": "組織章程",
+      "members": "幹部成員",
+      "news": "最新消息",
+      "activities": "活動回顧",
+      "admin": "後台管理",
+      "profile": "個人資料",
+      "logout": "登出",
+      "login": "以 Google 登入",
+      "openMenu": "開啟選單",
+      "closeMenu": "關閉選單"
+    },
+    "footer": {
+      "brandDescription": "成大學生社團聯合會作為綜理學生社團事務之學生自治組織，對內代表學生社團向校方維護權益，對外則協助爭取引進外部資源",
+      "quickNav": "快速導覽",
+      "contact": "聯繫我們",
+      "address": "台南市東區大學路 1 號學生活動中心 2 樓社團聯合會辦公室",
+      "copyright": "國立成功大學社團聯合會"
+    }
+  },
+  "home": {
+    "hero": {
+      "tagline": "#社團之所在#社聯之所在",
+      "titleLine1": "成功大學",
+      "titleLine2": "社團聯合會",
+      "subtitle": "Club Association of NCKU",
+      "ctaAbout": "認識組織",
+      "ctaNews": "最新消息",
+      "description": "成功大學社團聯合會（Club Association of National Cheng Kung University，簡稱 NCA）是成大各社團與系所的最高自治組織，負責協調社團活動、代表會議及社博等重要事務。",
+      "stats": {
+        "clubs": "學生社團（A–H 類）",
+        "eventsValue": "2 學期",
+        "events": "定期代表大會 + 社博",
+        "account": "僅限成大校內帳號"
+      }
+    },
+    "org": {
+      "title": "關於組織",
+      "subtitle": "About Club Association of NCKU",
+      "paragraph1": "成功大學社團聯合會（Club Association of National Cheng Kung University，簡稱 NCA）成立於 1994 年，目前共有 231 個社團。我們是校內社團的自治聯合組織，負責協調共同事務、整合資源並維護社團權益。",
+      "paragraph2": "社聯會由正副會長、行政團隊、六性質主席團與顧問團共同運作，並透過社團代表大會與性質會議推動決策，執行社團博覽會、場地協調與財務管理等核心業務。",
+      "readMore": "閱讀更多",
+      "charter": "組織章程",
+      "areas": {
+        "governanceTitle": "組織治理",
+        "governanceDesc": "代表大會、主席團與行政團隊分工運作",
+        "expoTitle": "社博管理",
+        "expoDesc": "每學期社團博覽會策劃執行",
+        "resourceTitle": "資源與財務",
+        "resourceDesc": "會費、預決算與社團會產租借管理",
+        "venueTitle": "場地協調",
+        "venueDesc": "學生活動中心與芸青軒場地管理"
+      }
+    },
+    "news": {
+      "title": "最新消息",
+      "subtitle": "Latest News",
+      "defaultCategory": "公告",
+      "emptyTitle": "尚無已發布消息",
+      "emptyExcerpt": "管理員可在後台新增最新消息文章。"
+    },
+    "activity": {
+      "title": "活動回顧",
+      "subtitle": "Activity Review",
+      "defaultTag": "活動",
+      "empty": "尚無已發布的活動回顧。"
+    },
+    "forms": {
+      "title": "表單專區",
+      "subtitle": "Open Forms",
+      "noDeadline": "無期限",
+      "deadline": "截止日期：{date}",
+      "goFill": "前往填寫"
+    }
+  },
+  "appSelect": {
+    "placeholder": "請選擇",
+    "searchPlaceholder": "搜尋...",
+    "noMatchingOptions": "沒有相符的選項"
+  },
+  "clubSearchSelect": {
+    "placeholder": "搜尋社團...",
+    "loadingPlaceholder": "載入中...",
+    "searchPlaceholder": "關鍵字搜尋社團...",
+    "clearLabel": "— 無 —"
+  },
+  "dataTable": {
+    "empty": "暫無資料"
+  },
+  "adminSidebar": {
+    "brand": "成大社聯會",
+    "defaultAdmin": "管理員",
+    "defaultAdminInitial": "管",
+    "backToSite": "回到前台",
+    "logout": "登出",
+    "nav": {
+      "dashboard": "Dashboard",
+      "content": "網站內容",
+      "posts": "文章管理",
+      "forms": "表單管理",
+      "deposit": "保證金管理",
+      "attendance": "點名管理",
+      "clubs": "社團名單",
+      "users": "用戶管理"
+    }
+  },
+  "formTemplatePicker": {
+    "title": "選擇模板",
+    "description": "從預設模板開始可快速建立表單，或選擇「空白表單」自行設定。",
+    "fieldCount": "{count} 個欄位",
+    "withDeposit": "含保證金",
+    "blankForm": "空白表單（不套用模板）",
+    "useTemplate": "使用此模板"
+  },
+  "attendancePage": {
+    "title": "活動簽到",
+    "subtitle": "請於截止時間前完成簽到；每個社團僅能簽到一次。",
+    "empty": "目前沒有開放中的點名活動。",
+    "deadlineLabel": "截止時間：",
+    "loginRequired": "簽到需先登入。",
+    "goLogin": "前往登入",
+    "attendee": "簽到者",
+    "clubLabel": "簽到單位",
+    "clubPlaceholder": "搜尋並選擇您的社團",
+    "clubHint": "若搜尋不到，請確認社團名稱是否正確",
+    "passcodeLabel": "點名密碼",
+    "passcodePlaceholder": "請輸入後台提供的點名密碼",
+    "submitting": "送出中…",
+    "submit": "確認簽到",
+    "backHome": "返回首頁",
+    "success": {
+      "checkedIn": "簽到成功，感謝配合。"
+    },
+    "error": {
+      "noOpenEvent": "目前沒有開放中的點名活動。",
+      "selectClub": "請選擇社團項目和名稱。",
+      "enterPasscode": "請輸入點名密碼。",
+      "submitFailed": "簽到失敗",
+      "network": "網路錯誤，請稍後再試。"
+    }
+  },
+  "profilePage": {
+    "title": "個人資料",
+    "subtitle": "以下資訊可用於點名、報名等表單自動帶入；送出後仍可隨時修改。",
+    "loginPrompt": "請先登入以設定個人資料。",
+    "goLogin": "前往登入",
+    "nameLabel": "姓名",
+    "namePlaceholder": "請輸入姓名",
+    "clubLabel": "所屬社團",
+    "clubPlaceholder": "搜尋並選擇您的社團",
+    "clubHint": "搜尋社團名稱，若不屬於任何社團請選擇「無」",
+    "positionLabel": "職位（幹部名稱）",
+    "positionPlaceholder": "例：活動部副部長",
+    "departmentGradeLabel": "系級（選填，例：會計 116）",
+    "departmentGradePlaceholder": "請輸入系所與年級",
+    "saved": "儲存好囉",
+    "saving": "儲存中…",
+    "save": "儲存",
+    "backHome": "返回首頁",
+    "error": {
+      "loadFailed": "無法載入個人資料",
+      "loginFirst": "請先登入再儲存資料。",
+      "invalidClub": "所選社團無效或已停用",
+      "network": "網路錯誤，請稍後再試。"
+    }
+  },
+  "loginPage": {
+    "brand": "成功大學社團聯合會",
+    "platform": "NCKU CA 數位平台",
+    "title": "登入系統",
+    "subtitle": "使用您的成功大學 Google 帳號登入",
+    "redirecting": "正在跳轉...",
+    "loggingIn": "登入中...",
+    "loginWithGoogle": "以 Google 帳號登入",
+    "domainOnly": "僅限",
+    "domainSuffix": "帳號",
+    "backHome": "返回首頁",
+    "error": {
+      "loginFailed": "登入失敗，請稍後再試"
+    }
+  },
+  "formActionBar": {
+    "checking": "登入狀態檢查中...",
+    "loginFirst": "請先登入後再填寫表單",
+    "loginToSubmit": "登入以提交",
+    "loggedInAs": "已登入為",
+    "submit": "送出表單"
+  },
+  "adminCommon": {
+    "searchPlaceholder": "搜尋...",
+    "retry": "重試",
+    "loading": "載入中...",
+    "processing": "處理中...",
+    "confirm": "確認",
+    "cancel": "取消",
+    "noData": "暫無資料"
+  },
+  "adminFormModal": {
+    "leaveConfirmTitle": "確定要離開嗎？",
+    "leaveConfirmDescription": "尚未儲存的內容將會遺失。",
+    "continueEditing": "繼續編輯",
+    "leaveWithoutSaving": "不儲存並離開"
+  },
+  "adminDashboard": {
+    "title": "Dashboard",
+    "subtitle": "成功大學社團聯合會管理後台總覽",
+    "viewAll": "查看全部",
+    "common": {
+      "notAvailable": "—"
+    },
+    "error": {
+      "loadFailed": "載入失敗：{error}"
+    },
+    "stats": {
+      "registeredClubs": "已登記社團",
+      "openForms": "開放中表單",
+      "pendingDeposits": "待繳保證金",
+      "todayAttendanceRate": "今日點名出席率",
+      "unitCount": "個",
+      "unitRecords": "筆"
+    },
+    "sections": {
+      "recentResponses": "最近 5 筆表單回覆",
+      "pendingDeposits": "待繳保證金清單"
+    },
+    "table": {
+      "club": "社團",
+      "form": "表單",
+      "time": "時間",
+      "amount": "金額",
+      "view": "查看",
+      "goProcess": "前往處理"
+    },
+    "empty": {
+      "responses": "尚無表單回覆",
+      "deposits": "目前沒有待繳保證金"
+    },
+    "relative": {
+      "justNow": "剛剛",
+      "minutesAgo": "{count} 分鐘前",
+      "hoursAgo": "{count} 小時前",
+      "daysAgo": "{count} 天前"
+    }
+  },
+  "adminUsers": {
+    "title": "用戶管理",
+    "searchPlaceholder": "搜尋用戶...",
+    "empty": "沒有找到符合條件的用戶",
+    "tabs": {
+      "all": "全部",
+      "admin": "管理員",
+      "clubMember": "社團成員"
+    },
+    "role": {
+      "admin": "管理員",
+      "clubMember": "社團成員"
+    },
+    "actions": {
+      "setAdmin": "設為管理員",
+      "setClubMember": "設為社團成員"
+    },
+    "table": {
+      "name": "姓名",
+      "email": "Email",
+      "role": "角色",
+      "club": "所屬社團",
+      "createdAt": "建立日期",
+      "actions": "操作"
+    },
+    "dialogs": {
+      "roleChangeTitle": "變更用戶角色",
+      "roleChangeDescription": "確定要將「{displayName}」的角色變更為「{newRoleLabel}」嗎？",
+      "confirmChange": "確認變更",
+      "clubTitleWithName": "設定「{displayName}」的所屬社團",
+      "clubTitle": "設定所屬社團"
+    },
+    "club": {
+      "label": "選擇社團",
+      "placeholder": "搜尋社團名稱...",
+      "hint": "選擇此用戶所屬的社團，可搜尋社團名稱",
+      "save": "儲存",
+      "editTitle": "點擊設定社團"
+    },
+    "common": {
+      "notAvailable": "—"
+    },
+    "toast": {
+      "roleChanged": "變更角色成功",
+      "clubUpdated": "社團關聯更新成功"
+    },
+    "error": {
+      "loadUsers": "無法載入用戶資料",
+      "updateRole": "角色更新失敗，請稍後再試",
+      "updateClub": "社團關聯更新失敗"
+    }
+  },
+  "adminContent": {
+    "title": "網站內容",
+    "subtitle": "管理網站靜態頁面內容，使用 Markdown 編輯器",
+    "empty": "尚無網站內容",
+    "savedBadge": "已儲存",
+    "updatedAt": "更新於",
+    "updatedBy": "由",
+    "actions": { "edit": "編輯" },
+    "modal": { "title": "編輯頁面內容", "submit": "儲存變更" },
+    "form": {
+      "titleLabel": "標題",
+      "titlePlaceholder": "頁面標題",
+      "pageIdLabel": "pageId",
+      "pageIdPlaceholder": "例如：about / charter / members"
+    },
+    "error": {
+      "loadFailed": "無法載入內容資料",
+      "loadFailedToast": "載入內容失敗",
+      "pageIdRequired": "pageId 為必填，請手動輸入",
+      "saveFailed": "儲存失敗，請稍後再試"
+    },
+    "toast": { "saved": "頁面內容已儲存" }
+  },
+  "adminPosts": {
+    "title": "文章管理",
+    "searchPlaceholder": "搜尋文章...",
+    "empty": "沒有找到符合條件的文章",
+    "fallbackTags": "公告,系學會,活動,講座,工作坊,競賽,招生,報名中,截止提醒",
+    "tabs": { "all": "全部", "published": "已發布", "draft": "草稿" },
+    "category": { "news": "最新消息", "activityReview": "活動回顧" },
+    "status": { "published": "已發布", "draft": "草稿" },
+    "common": { "loading": "載入中…", "notAvailable": "—" },
+    "error": {
+      "loadFailed": "載入文章失敗",
+      "titleRequired": "標題為必填",
+      "slugRequired": "Slug 為必填",
+      "loadPostFailed": "載入文章資料失敗",
+      "saveFailed": "儲存文章失敗",
+      "deleteFailed": "刪除文章失敗",
+      "statusUpdateFailed": "更新狀態失敗",
+      "coverUploadFailed": "封面圖片上傳失敗",
+      "coverDropImageOnly": "請拖拉圖片檔案"
+    },
+    "toast": {
+      "updated": "文章已更新",
+      "created": "文章已建立",
+      "deleted": "文章已刪除",
+      "statusChanged": "已將狀態更改為 {status}",
+      "coverUploaded": "封面圖片已上傳"
+    },
+    "table": {
+      "title": "標題",
+      "category": "分類",
+      "status": "狀態",
+      "author": "作者",
+      "date": "日期"
+    },
+    "actions": {
+      "toDraft": "轉為草稿",
+      "publish": "發布",
+      "edit": "編輯",
+      "delete": "刪除",
+      "create": "新增文章"
+    },
+    "modal": { "editTitle": "編輯文章", "createTitle": "新增文章", "update": "更新", "create": "建立" },
+    "form": {
+      "title": "標題",
+      "titlePlaceholder": "輸入文章標題",
+      "slug": "Slug",
+      "slugHint": "網址的文字，建議用英文、數字和連字號",
+      "category": "分類",
+      "status": "狀態",
+      "tags": "標籤",
+      "tagsPlaceholder": "以逗號分隔，可自行輸入",
+      "suggestedTags": "推薦標籤",
+      "loadingSuggestedTags": "正在載入熱門標籤…",
+      "allSuggestedAdded": "已加入所有推薦標籤",
+      "tagsHint": "多個標籤請用逗號分隔，也可點上方推薦快速加入",
+      "coverImage": "封面圖片",
+      "coverDropAria": "拖拉上傳封面圖片",
+      "coverDropTitle": "拖拉圖片到此處，或點擊選擇檔案",
+      "coverHint": "上傳後會自動壓縮並轉為 WebP",
+      "coverUploading": "上傳中...",
+      "coverChoose": "選擇圖片",
+      "coverPreviewAlt": "封面預覽",
+      "coverUploadDirect": "請直接上傳圖片作為封面。"
+    },
+    "delete": {
+      "title": "刪除「{title}」",
+      "description": "此操作無法復原，確定要刪除這篇文章嗎？",
+      "confirm": "刪除"
+    }
+  },
+  "adminForms": {
+    "title": "表單管理",
+    "searchPlaceholder": "搜尋表單...",
+    "empty": "沒有找到符合條件的表單",
+    "formType": {
+      "expoRegistration": "社團博覽會報名",
+      "winterAssociationRegistration": "寒假場協報名",
+      "generalRegistration": "一般報名",
+      "attendanceSurvey": "出席調查",
+      "custom": "自訂表單"
+    },
+    "status": { "draft": "草稿", "open": "開放中", "closed": "已關閉" },
+    "tabs": { "all": "全部", "open": "開放中", "closed": "已關閉", "draft": "草稿" },
+    "error": {
+      "loadFailed": "載入資料時發生錯誤",
+      "loadFailedToast": "載入資料失敗",
+      "loadFormFailed": "載入表單資料失敗",
+      "titleRequired": "請輸入表單名稱",
+      "actionFailed": "操作失敗",
+      "deleteFailed": "刪除失敗"
+    },
+    "toast": { "updated": "表單已更新，列表已同步", "created": "表單已建立，列表已同步", "deleted": "表單已刪除" },
+    "table": {
+      "title": "表單名稱",
+      "type": "類型",
+      "status": "狀態",
+      "fieldCount": "欄位數",
+      "responseCount": "回覆數",
+      "closesAt": "截止日期"
+    },
+    "actions": { "view": "檢視", "edit": "編輯", "delete": "刪除", "create": "建立表單" },
+    "modal": {
+      "editTitle": "編輯表單",
+      "createTitle": "建立表單",
+      "update": "更新",
+      "create": "建立",
+      "tabs": { "basic": "基本設定", "fields": "欄位編輯" }
+    },
+    "form": {
+      "title": "表單名稱",
+      "titlePlaceholder": "請輸入表單名稱",
+      "description": "描述",
+      "descriptionPlaceholder": "表單說明（選填）",
+      "formType": "表單類型",
+      "status": "狀態",
+      "depositRequired": "需要保證金",
+      "depositAmount": "保證金金額",
+      "depositAmountPlaceholder": "輸入金額",
+      "depositAmountHint": "單位：新台幣",
+      "depositBindingMode": "保證金綁定模式",
+      "binding": {
+        "linked": "綁定表單回覆（自動建立）",
+        "independent": "獨立管理（手動建立）"
+      },
+      "bindingHint": "「綁定表單回覆」適合社團博覽會/寒假場協；「獨立管理」適合其他情境",
+      "closesAt": "截止時間",
+      "closesAtHint": "留空表示無截止日期"
+    },
+    "common": { "yes": "是", "no": "否" },
+    "delete": {
+      "title": "確定要刪除「{title}」嗎？",
+      "description": "此操作無法復原，表單及其所有回覆資料將被永久刪除。",
+      "confirm": "刪除"
+    }
+  },
+  "adminDeposit": {
+    "title": "保證金管理",
+    "subtitle": "待繳總額 ${amount}",
+    "searchPlaceholder": "搜尋社團、代碼或表單...",
+    "empty": "沒有找到符合條件的保證金紀錄",
+    "tabs": { "all": "全部", "pending": "待繳", "paid": "已繳", "returned": "已退還" },
+    "status": { "pending": "待繳", "paid": "已繳", "returned": "已退還" },
+    "common": { "independentDeposit": "獨立保證金", "boundUnknown": "已綁定（表單名稱未知）" },
+    "error": {
+      "loadFailed": "載入資料時發生錯誤",
+      "loadFailedToast": "載入資料失敗",
+      "actionFailed": "操作失敗，請稍後再試",
+      "batchFailed": "批次操作失敗",
+      "notesFailed": "備註更新失敗"
+    },
+    "toast": {
+      "statusUpdated": "保證金狀態已更新",
+      "batchSuccess": "批次操作成功",
+      "notesUpdated": "備註已更新",
+      "csvDownloaded": "CSV 已下載"
+    },
+    "table": {
+      "selectAll": "全選目前篩選結果",
+      "selectOne": "選取 {club}",
+      "club": "社團",
+      "amount": "金額",
+      "binding": "綁定表單",
+      "status": "狀態",
+      "paidAt": "繳費日期",
+      "returnedAt": "退還日期",
+      "notes": "備註"
+    },
+    "csv": {
+      "club": "社團",
+      "clubId": "社團 ID",
+      "bindingForm": "綁定表單",
+      "status": "狀態",
+      "amount": "金額",
+      "paidAt": "繳費日期",
+      "returnedAt": "退還日期",
+      "notes": "備註",
+      "updatedBy": "更新者"
+    },
+    "actions": {
+      "markPaid": "標記已繳",
+      "returnDeposit": "退還保證金",
+      "confirmReturn": "確認退還",
+      "exportCsv": "匯出 CSV"
+    },
+    "batch": {
+      "selected": "已選取 {count} 筆",
+      "markPaid": "批次標記已繳 ({count})",
+      "returned": "批次退還 ({count})",
+      "clear": "取消選取"
+    },
+    "confirm": {
+      "markPaidTitle": "確認標記已繳？",
+      "returnTitle": "確認退還保證金？",
+      "singleDescription": "即將更新社團「{club}」的保證金狀態",
+      "batchMarkPaidTitle": "批次標記 {count} 筆為已繳？",
+      "batchReturnTitle": "批次退還 {count} 筆保證金？",
+      "batchDescription": "此操作將一次更新所選取的所有紀錄，請確認無誤",
+      "execute": "確認執行"
+    },
+    "notes": {
+      "title": "編輯備註",
+      "save": "儲存備註",
+      "placeholder": "輸入備註內容...",
+      "ariaLabel": "備註",
+      "add": "點擊新增備註"
+    }
+  },
+  "adminAttendance": {
+    "title": "點名管理",
+    "empty": "沒有符合條件的點名活動",
+    "tabs": { "all": "全部", "open": "進行中", "upcoming": "即將開始", "closed": "已結束" },
+    "status": { "open": "進行中", "upcoming": "即將開始", "closed": "已結束" },
+    "common": { "notAvailable": "—" },
+    "error": {
+      "loadFailed": "載入點名活動失敗",
+      "titleRequired": "請輸入活動名稱",
+      "opensAtRequired": "請設定開始時間",
+      "closesAtRequired": "請設定結束時間",
+      "passcodeRequired": "請設定點名密碼",
+      "actionFailed": "操作失敗",
+      "manualFailed": "補點名失敗",
+      "loadDetailFailed": "載入點名詳情失敗"
+    },
+    "toast": {
+      "updated": "點名活動更新成功",
+      "created": "點名活動建立成功",
+      "manualCheckIn": "已為 {club} 補點名",
+      "csvDownloaded": "CSV 已下載"
+    },
+    "csv": {
+      "clubName": "社團名稱",
+      "clubId": "社團 ID",
+      "category": "類型",
+      "status": "狀態",
+      "checkedInAt": "簽到時間",
+      "filenameSuffix": "簽到狀態"
+    },
+    "manual": { "reason": "管理員手動補點名", "loading": "補點名中...", "action": "手動補點名" },
+    "actions": { "create": "建立點名活動", "edit": "編輯", "view": "檢視", "exportCsv": "匯出 CSV" },
+    "card": {
+      "expected": "預計 {count} 社團",
+      "checkedIn": "已簽到 {checkedIn} / {total}",
+      "passcode": "密碼：",
+      "attendanceRate": "出席率",
+      "notStarted": "尚未開始"
+    },
+    "modal": { "editTitle": "編輯點名活動", "createTitle": "建立點名活動", "save": "儲存變更", "create": "建立" },
+    "form": {
+      "title": "活動名稱",
+      "titlePlaceholder": "例：第一次社長大會出席點名",
+      "description": "說明",
+      "descriptionPlaceholder": "活動說明（選填）",
+      "passcode": "點名密碼",
+      "passcodePlaceholder": "請輸入點名密碼",
+      "opensAt": "開始時間",
+      "closesAt": "結束時間",
+      "closesAtHint": "選擇開始時間後自動填入 +2 小時",
+      "expectedCategories": "預計參加的社團類型"
+    },
+    "detail": {
+      "title": "點名詳情",
+      "loading": "正在載入點名詳情...",
+      "empty": "尚未設定預計社團，或找不到對應社團資料。",
+      "table": { "clubName": "社團名稱", "category": "類型", "checkedInAt": "簽到時間", "status": "狀態" },
+      "status": { "checkedIn": "已簽到", "notCheckedIn": "未簽到" },
+      "unknownStatus": "未知",
+      "summary": {
+        "eventStatus": "活動狀態",
+        "progress": "簽到進度",
+        "attendanceRate": "出席率"
+      },
+      "eventInfo": {
+        "title": "活動時間與說明",
+        "opensAt": "開始時間",
+        "closesAt": "結束時間",
+        "passcode": "點名密碼",
+        "description": "活動說明"
+      },
+      "list": {
+        "title": "簽到狀態清單",
+        "totalClubs": "共 {count} 個社團"
+      }
+    }
+  },
+  "adminClubs": {
+    "title": "社團名單",
+    "searchPlaceholder": "搜尋社團...",
+    "empty": "沒有找到符合條件的社團",
+    "tabs": { "all": "全部" },
+    "common": { "notAvailable": "—" },
+    "status": { "active": "啟用", "inactive": "停用" },
+    "error": {
+      "unknown": "發生未知錯誤",
+      "loadFailed": "載入社團失敗",
+      "saveFailed": "儲存失敗",
+      "exportFailed": "匯出失敗",
+      "importFailed": "匯入失敗",
+      "importDataMissing": "檔案中找不到有效的社團資料陣列（clubs）",
+      "importParseFailed": "檔案解析失敗，請確認 YAML/JSON 格式正確"
+    },
+    "toast": { "saved": "社團儲存成功", "yamlDownloaded": "YAML 已下載", "importSuccess": "社團名單匯入成功" },
+    "actions": { "edit": "編輯", "exportLoading": "準備下載中…", "exportYaml": "匯出 YAML", "importList": "匯入名單" },
+    "table": { "name": "社團名稱", "category": "分類", "code": "社團代碼", "email": "Email", "status": "狀態" },
+    "edit": {
+      "title": "編輯社團",
+      "submit": "儲存變更",
+      "name": "社團名稱",
+      "nameEn": "英文名稱",
+      "category": "分類",
+      "email": "Email",
+      "description": "簡介",
+      "website": "網站",
+      "status": "狀態"
+    },
+    "import": {
+      "title": "匯入社團名單",
+      "descriptionPrefix": "請選擇 YAML 或 JSON 格式的社團名單檔案。檔案格式可為陣列或包含",
+      "descriptionSuffix": "欄位的物件。",
+      "dropzoneTitle": "拖拉檔案到這裡，或點擊選擇檔案",
+      "dropzoneHint": "支援 .yaml .yml .json 格式",
+      "loadedFile": "已讀取檔案：{name}",
+      "previewSummary": "格式：{format}，共 {count} 筆社團資料準備匯入",
+      "previewEmpty": "無預覽資料",
+      "reselect": "重新選擇",
+      "importing": "匯入中…",
+      "confirm": "確認匯入",
+      "done": "匯入完成",
+      "created": "新增社團",
+      "updated": "更新社團",
+      "preview": {
+        "name": "名稱",
+        "category": "分類"
+      }
+    }
+  },
+  "adminFormFieldEditor": {
+    "title": "表單欄位",
+    "count": "共 {count} 個",
+    "empty": "尚無欄位，點擊下方按鈕新增。",
+    "unnamed": { "section": "（區段標題）", "field": "（未命名欄位）" },
+    "actions": {
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "delete": "刪除",
+      "addOption": "新增選項",
+      "addField": "新增欄位"
+    },
+    "defaults": { "option": "選項 {index}" },
+    "types": {
+      "text": "單行文字",
+      "textarea": "多行文字",
+      "number": "數字",
+      "email": "電子信箱",
+      "phone": "電話號碼",
+      "select": "下拉選單",
+      "radio": "單選題",
+      "checkbox": "多選題",
+      "date": "日期",
+      "file": "檔案上傳",
+      "club_picker": "社團選擇",
+      "section_header": "區段標題"
+    },
+    "prefill": {
+      "none": "不預填",
+      "displayName": "使用者姓名",
+      "email": "使用者 Email",
+      "clubName": "社團名稱",
+      "clubCategory": "社團類別"
+    },
+    "operators": {
+      "equals": "等於",
+      "notEquals": "不等於",
+      "contains": "包含",
+      "isEmpty": "為空",
+      "isNotEmpty": "不為空"
+    },
+    "form": {
+      "label": "標籤名稱",
+      "sectionPlaceholder": "區段標題文字",
+      "fieldPlaceholder": "欄位顯示名稱",
+      "type": "欄位類型",
+      "id": "欄位 ID",
+      "idPlaceholder": "field_id",
+      "required": "必填",
+      "lockIfPrefilled": "預填後鎖定",
+      "placeholder": "輸入提示（Placeholder）",
+      "placeholderHint": "如：請輸入...",
+      "prefill": "自動預填",
+      "prefillHint": "從使用者資料自動帶入欄位預設值",
+      "options": "選項列表"
+    },
+    "validation": {
+      "title": "驗證規則",
+      "min": "最小值 / 最短",
+      "max": "最大值 / 最長",
+      "customMessage": "自訂錯誤訊息",
+      "customMessagePlaceholder": "驗證失敗時顯示的訊息"
+    },
+    "depends": {
+      "title": "條件顯示（depends_on）",
+      "field": "依賴欄位",
+      "operator": "運算子",
+      "value": "比對值",
+      "action": "動作",
+      "show": "顯示",
+      "hide": "隱藏"
+    },
+    "badges": {
+      "required": "必填"
+    }
+  },
+  "adminMarkdownEditor": {
+    "label": "內容 (Markdown)",
+    "placeholder": "輸入 Markdown 內容…",
+    "renderFailed": "渲染失敗",
+    "imageAlt": "圖片",
+    "imageUploadFailed": "圖片上傳失敗",
+    "editor": "編輯",
+    "preview": "預覽",
+    "tableTemplate": "| 標題 | 標題 |\n| --- | --- |\n| 內容 | 內容 |\n",
+    "toolbar": {
+      "h2": "大標題 (H2)",
+      "h3": "小標題 (H3)",
+      "bold": "粗體",
+      "italic": "斜體",
+      "codeBlock": "程式碼區塊",
+      "link": "連結",
+      "bulletList": "無序列表",
+      "numberList": "有序列表",
+      "quote": "引用",
+      "hr": "分隔線",
+      "table": "表格",
+      "image": "圖片",
+      "upload": "上傳",
+      "embedForm": "嵌入表單"
+    },
+    "formMenu": {
+      "title": "選擇要嵌入的表單",
+      "empty": "尚無表單可供選擇",
+      "linkPrefix": "填寫表單："
+    }
+  },
+  "metadata": {
+    "siteName": "成功大學社團聯合會",
+    "titleDefault": "成功大學社團聯合會 NCA",
+    "titleTemplate": "%s | 成大社聯會",
+    "description": "國立成功大學社團聯合會官方數位平台。提供公告資訊、表單報名、點名管理一站式服務。",
+    "ogSubtitle": "NCKU CA 官方平台",
+    "ogAlt": "成功大學社團聯合會 NCA"
+  }
+}

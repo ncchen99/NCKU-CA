@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 interface Column<T> {
   key: string;
@@ -34,9 +35,11 @@ function DataTable<T extends Record<string, unknown>>({
   rowKey,
   selectable = false,
   onSelectionChange,
-  emptyMessage = "暫無資料",
+  emptyMessage,
   className = "",
 }: DataTableProps<T>) {
+  const t = useTranslations("dataTable");
+  const finalEmptyMessage = emptyMessage ?? t("empty");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const allKeys = data.map((row, i) => getRowKey(row, i, rowKey));
@@ -94,7 +97,7 @@ function DataTable<T extends Record<string, unknown>>({
                 colSpan={columns.length + (selectable ? 1 : 0)}
                 className="px-4 h-12 text-center text-neutral-400"
               >
-                {emptyMessage}
+                {finalEmptyMessage}
               </td>
             </tr>
           ) : (

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import {
   TagIcon,
   ClipboardDocumentListIcon,
@@ -60,34 +61,36 @@ interface StatCardDef {
   href: string;
 }
 
-function formatRelativeTime(ts: FirestoreTimestamp | string | undefined): string {
-  if (!ts) return "—";
-  let date: Date;
-  if (typeof ts === "string") {
-    date = new Date(ts);
-  } else if (ts._seconds) {
-    date = new Date(ts._seconds * 1000);
-  } else {
-    return "—";
-  }
-  if (isNaN(date.getTime())) return "—";
-
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "剛剛";
-  if (diffMin < 60) return `${diffMin} 分鐘前`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr} 小時前`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay} 天前`;
-  return date.toLocaleDateString("zh-TW");
-}
-
 export default function AdminDashboard() {
+  const t = useTranslations("adminDashboard");
+  const locale = useLocale();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const formatRelativeTime = (ts: FirestoreTimestamp | string | undefined): string => {
+    if (!ts) return t("common.notAvailable");
+    let date: Date;
+    if (typeof ts === "string") {
+      date = new Date(ts);
+    } else if (ts._seconds) {
+      date = new Date(ts._seconds * 1000);
+    } else {
+      return t("common.notAvailable");
+    }
+    if (isNaN(date.getTime())) return t("common.notAvailable");
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return t("relative.justNow");
+    if (diffMin < 60) return t("relative.minutesAgo", { count: diffMin });
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return t("relative.hoursAgo", { count: diffHr });
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return t("relative.daysAgo", { count: diffDay });
+    return date.toLocaleDateString(locale === "en" ? "en-US" : "zh-TW");
+  };
 
   useEffect(() => {
     adminFetch<DashboardData>("/api/admin/stats")
@@ -106,25 +109,25 @@ export default function AdminDashboard() {
 
   const stats: StatCardDef[] = [
     {
-      label: "已登記社團",
-      value: `${data?.clubsCount ?? 0} 個`,
+      label: t("stats.registeredClubs"),
+      value: `${data?.clubsCount ?? 0} ${t("stats.unitCount")}`,
       icon: TagIcon,
       href: "/admin/clubs",
     },
     {
-      label: "開放中表單",
-      value: `${data?.openFormsCount ?? 0} 個`,
+      label: t("stats.openForms"),
+      value: `${data?.openFormsCount ?? 0} ${t("stats.unitCount")}`,
       icon: ClipboardDocumentListIcon,
       href: "/admin/forms",
     },
     {
-      label: "待繳保證金",
-      value: `${data?.pendingDeposits?.count ?? 0} 筆`,
+      label: t("stats.pendingDeposits"),
+      value: `${data?.pendingDeposits?.count ?? 0} ${t("stats.unitRecords")}`,
       icon: BanknotesIcon,
       href: "/admin/deposit",
     },
     {
-      label: "今日點名出席率",
+      label: t("stats.todayAttendanceRate"),
       value: `${attendanceRate}%`,
       icon: CheckBadgeIcon,
       href: "/admin/attendance",
@@ -143,7 +146,7 @@ export default function AdminDashboard() {
       {
         id: "club",
         accessorFn: (r) => r.club_name ?? r.club_id ?? "",
-        header: ({ column }) => adminSortableHeader(column, "社團"),
+        header: ({ column }) => adminSortableHeader(column, t("table.club")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("club")),
@@ -151,14 +154,14 @@ export default function AdminDashboard() {
           ),
         cell: ({ row }) => (
           <span className="font-medium text-neutral-950">
-            {row.original.club_name ?? row.original.club_id ?? "—"}
+            {row.original.club_name ?? row.original.club_id ?? t("common.notAvailable")}
           </span>
         ),
         meta: { thClassName: "px-5", tdClassName: "px-5" },
       },
       {
         accessorKey: "form_title",
-        header: ({ column }) => adminSortableHeader(column, "表單"),
+        header: ({ column }) => adminSortableHeader(column, t("table.form")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.form_title ?? ""),
@@ -166,7 +169,7 @@ export default function AdminDashboard() {
           ),
         cell: ({ row }) => (
           <span className="text-neutral-600">
-            {row.original.form_title ?? "—"}
+            {row.original.form_title ?? t("common.notAvailable")}
           </span>
         ),
         meta: { thClassName: "px-5", tdClassName: "px-5" },
@@ -175,7 +178,7 @@ export default function AdminDashboard() {
         id: "submitted_at",
         accessorFn: (r) => timestampToMs(r.submitted_at),
         header: ({ column }) =>
-          adminSortableHeader(column, "時間", "right"),
+          adminSortableHeader(column, t("table.time"), "right"),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="text-neutral-400">
@@ -195,14 +198,14 @@ export default function AdminDashboard() {
               href={`/admin/forms/${row.original.form_id}`}
               className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
             >
-              查看
+              {t("table.view")}
             </Link>
           );
         },
         meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
       },
     ],
-    [],
+    [t],
   );
 
   const dashboardDepositColumns = useMemo<ColumnDef<DepositRecord>[]>(
@@ -210,7 +213,7 @@ export default function AdminDashboard() {
       {
         id: "club",
         accessorFn: (r) => r.club_name ?? r.club_id ?? "",
-        header: ({ column }) => adminSortableHeader(column, "社團"),
+        header: ({ column }) => adminSortableHeader(column, t("table.club")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("club")),
@@ -218,14 +221,14 @@ export default function AdminDashboard() {
           ),
         cell: ({ row }) => (
           <span className="font-medium text-neutral-950">
-            {row.original.club_name ?? row.original.club_id ?? "—"}
+            {row.original.club_name ?? row.original.club_id ?? t("common.notAvailable")}
           </span>
         ),
         meta: { thClassName: "px-5", tdClassName: "px-5" },
       },
       {
         accessorKey: "form_title",
-        header: ({ column }) => adminSortableHeader(column, "表單"),
+        header: ({ column }) => adminSortableHeader(column, t("table.form")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.form_title ?? ""),
@@ -233,7 +236,7 @@ export default function AdminDashboard() {
           ),
         cell: ({ row }) => (
           <span className="text-neutral-600">
-            {row.original.form_title ?? "—"}
+            {row.original.form_title ?? t("common.notAvailable")}
           </span>
         ),
         meta: { thClassName: "px-5", tdClassName: "px-5" },
@@ -242,7 +245,7 @@ export default function AdminDashboard() {
         id: "amount",
         accessorFn: (r) => r.amount ?? 0,
         header: ({ column }) =>
-          adminSortableHeader(column, "金額", "right"),
+          adminSortableHeader(column, t("table.amount"), "right"),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="font-mono text-sm font-semibold text-red-600">
@@ -260,13 +263,13 @@ export default function AdminDashboard() {
             href="/admin/deposit"
             className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
           >
-            前往處理
+            {t("table.goProcess")}
           </Link>
         ),
         meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
       },
     ],
-    [],
+    [t],
   );
 
   const dashboardTableClassNames = {
@@ -281,10 +284,10 @@ export default function AdminDashboard() {
     return (
       <>
         <AdminPageHeader
-          title="Dashboard"
-          subtitle="成功大學社團聯合會管理後台總覽"
+          title={t("title")}
+          subtitle={t("subtitle")}
         />
-        <AdminErrorBanner message={`載入失敗：${error}`} />
+        <AdminErrorBanner message={t("error.loadFailed", { error })} />
       </>
     );
   }
@@ -292,8 +295,8 @@ export default function AdminDashboard() {
   return (
     <>
       <AdminPageHeader
-        title="Dashboard"
-        subtitle="成功大學社團聯合會管理後台總覽"
+        title={t("title")}
+        subtitle={t("subtitle")}
       />
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -326,13 +329,13 @@ export default function AdminDashboard() {
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-4">
             <h2 className="text-sm font-semibold text-neutral-950">
-              最近 5 筆表單回覆
+              {t("sections.recentResponses")}
             </h2>
             <Link
               href="/admin/forms"
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
-              查看全部 <ArrowRightIcon className="h-3 w-3" />
+              {t("viewAll")} <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </div>
           <div className="pb-5">
@@ -344,14 +347,14 @@ export default function AdminDashboard() {
               </div>
             ) : recentResponses.length === 0 ? (
               <p className="py-8 text-center text-sm text-neutral-400">
-                尚無表單回覆
+                {t("empty.responses")}
               </p>
             ) : (
               <AdminDataTable
                 data={recentResponses}
                 columns={dashboardResponseColumns}
                 getRowId={(_, i) => `resp-${i}`}
-                emptyMessage="尚無表單回覆"
+                emptyMessage={t("empty.responses")}
                 emptyColSpan={4}
                 classNames={{
                   table: "w-full text-left text-[13px]",
@@ -365,13 +368,13 @@ export default function AdminDashboard() {
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-4">
             <h2 className="text-sm font-semibold text-neutral-950">
-              待繳保證金清單
+              {t("sections.pendingDeposits")}
             </h2>
             <Link
               href="/admin/deposit"
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
-              查看全部 <ArrowRightIcon className="h-3 w-3" />
+              {t("viewAll")} <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </div>
           <div className="pb-5">
@@ -383,14 +386,14 @@ export default function AdminDashboard() {
               </div>
             ) : depositRecords.length === 0 ? (
               <p className="py-8 text-center text-sm text-neutral-400">
-                目前沒有待繳保證金
+                {t("empty.deposits")}
               </p>
             ) : (
               <AdminDataTable
                 data={depositRecords}
                 columns={dashboardDepositColumns}
                 getRowId={(_, i) => `dep-${i}`}
-                emptyMessage="目前沒有待繳保證金"
+                emptyMessage={t("empty.deposits")}
                 emptyColSpan={4}
                 classNames={{
                   table: "w-full text-left text-[13px]",

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { CmsMarkdownWithToc } from "@/components/public/cms-markdown-with-toc";
 import { getSiteContent } from "@/lib/firestore/site-content";
@@ -9,6 +10,7 @@ import {
   type CharterDocumentSlug,
 } from "@/lib/charter-documents";
 import { buildOgImageUrl } from "@/lib/seo";
+import { normalizeLocale } from "@/lib/i18n-config";
 
 export const revalidate = 31_536_000;
 export const dynamicParams = false;
@@ -24,8 +26,10 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const locale = normalizeLocale(await getLocale());
+  const isEn = locale === "en";
   const { slug } = await params;
-  if (!isCharterSlug(slug)) return { title: "組織章程" };
+  if (!isCharterSlug(slug)) return { title: isEn ? "Charter" : "組織章程" };
 
   const canonicalPath = `/charter/${slug}`;
   const doc = CHARTER_DOCUMENTS.find((d) => d.slug === slug)!;
@@ -33,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pageTitle = content?.title ?? doc.title;
   const ogImage = buildOgImageUrl({
     title: pageTitle,
-    subtitle: "組織章程",
+    subtitle: isEn ? "Charter" : "組織章程",
     path: canonicalPath,
   });
 
@@ -44,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: canonicalPath,
     },
     openGraph: {
-      title: `${pageTitle} | 成大社聯會`,
+      title: `${pageTitle} | ${isEn ? "NCKU Club Association" : "成大社聯會"}`,
       description: doc.description,
       url: canonicalPath,
       images: [ogImage],
@@ -57,6 +61,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CharterDocumentPage({ params }: Props) {
+  const locale = normalizeLocale(await getLocale());
+  const isEn = locale === "en";
   const { slug } = await params;
   if (!isCharterSlug(slug)) notFound();
 
@@ -89,11 +95,15 @@ export default async function CharterDocumentPage({ params }: Props) {
           {!markdown.trim() ? (
             <div className="rounded-xl border border-border bg-neutral-50 px-6 py-10 text-center">
               <p className="text-[15px] text-neutral-600">
-                此文件尚未於後台發布內容。請管理員至「後台 → 網站內容」建立文件 ID 為{" "}
+                {isEn
+                  ? "This document has not been published yet. Please create a page in Admin > Site Content with document ID "
+                  : "此文件尚未於後台發布內容。請管理員至「後台 → 網站內容」建立文件 ID 為 "}
                 <code className="rounded bg-neutral-200 px-1.5 py-0.5 font-mono text-[13px]">
                   {slug}
-                </code>{" "}
-                的頁面，並使用 Markdown 撰寫（建議以 ##、### 作為章節標題以利目錄）。
+                </code>
+                {isEn
+                  ? " and write the content in Markdown (use ## and ### headings for a better table of contents)."
+                  : " 的頁面，並使用 Markdown 撰寫（建議以 ##、### 作為章節標題以利目錄）。"}
               </p>
             </div>
           ) : (

@@ -10,8 +10,10 @@ import { ArrowLongLeftIcon } from "@heroicons/react/20/solid";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
 import { usePathname } from "next/navigation";
 import { getActiveClubs, getProfileUser, saveProfileUser } from "@/lib/client-firestore";
+import { useTranslations } from "next-intl";
 
 export default function ProfilePage() {
+  const t = useTranslations("profilePage");
   const { firebaseUser, loading: authLoading, refreshUser } = useAuth();
   const pathname = usePathname();
   const loginHref = createLoginHref(pathname);
@@ -47,7 +49,7 @@ export default function ProfilePage() {
         }
       })
       .catch(() => {
-        if (!cancelled) setError("無法載入個人資料");
+        if (!cancelled) setError(t("error.loadFailed"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -65,14 +67,14 @@ export default function ProfilePage() {
     const user = firebaseUser;
     try {
       if (!user) {
-        setError("請先登入再儲存資料。");
+        setError(t("error.loginFirst"));
         return;
       }
 
       const clubs = await getActiveClubs();
       const selectedClub = clubs.find((c) => c.id === clubId);
       if (!selectedClub) {
-        setError("所選社團無效或已停用");
+        setError(t("error.invalidClub"));
         return;
       }
 
@@ -90,7 +92,7 @@ export default function ProfilePage() {
       setSuccess(true);
       await refreshUser();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "網路錯誤，請稍後再試。");
+      setError(err instanceof Error ? err.message : t("error.network"));
     } finally {
       setSaving(false);
     }
@@ -110,12 +112,12 @@ export default function ProfilePage() {
     return (
       <PublicLayout>
         <div className="mx-auto max-w-xl px-6 pt-32 pb-24 text-center">
-          <p className="text-[15px] text-neutral-600">請先登入以設定個人資料。</p>
+          <p className="text-[15px] text-neutral-600">{t("loginPrompt")}</p>
           <Link
             href={loginHref}
             className="mt-4 inline-block text-[14px] font-medium text-primary underline"
           >
-            前往登入
+            {t("goLogin")}
           </Link>
         </div>
       </PublicLayout>
@@ -127,10 +129,10 @@ export default function ProfilePage() {
       <section className="w-full">
         <div className="mx-auto max-w-xl px-6 pt-24 pb-20">
           <h1 className="text-[28px] font-bold tracking-tight text-neutral-950">
-            個人資料
+            {t("title")}
           </h1>
           <p className="mt-2 text-[14px] text-neutral-500">
-            以下資訊可用於點名、報名等表單自動帶入；送出後仍可隨時修改。
+            {t("subtitle")}
           </p>
 
           <form
@@ -138,51 +140,51 @@ export default function ProfilePage() {
             onSubmit={handleSubmit}
           >
             <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-neutral-700">姓名</span>
+              <span className="text-[13px] font-medium text-neutral-700">{t("nameLabel")}</span>
               <input
                 required
                 className="h-10 rounded-lg border border-border px-3 text-[13px] outline-none ring-primary/0 focus:ring-2 focus:ring-primary/30"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="請輸入姓名"
+                placeholder={t("namePlaceholder")}
               />
             </label>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-neutral-700">所屬社團</span>
+              <span className="text-[13px] font-medium text-neutral-700">{t("clubLabel")}</span>
               <ClubSearchSelect
                 value={clubId}
                 onChange={setClubId}
                 disabled={saving}
-                placeholder="搜尋並選擇您的社團"
+                placeholder={t("clubPlaceholder")}
                 initialClubName={clubName}
               />
               <p className="text-[12px] text-neutral-400">
-                搜尋社團名稱，若不屬於任何社團請選擇「無」
+                {t("clubHint")}
               </p>
             </div>
 
             <label className="flex flex-col gap-1.5">
               <span className="text-[13px] font-medium text-neutral-700">
-                職位（幹部名稱）
+                {t("positionLabel")}
               </span>
               <input
                 className="h-10 rounded-lg border border-border px-3 text-[13px] outline-none ring-primary/0 focus:ring-2 focus:ring-primary/30"
                 value={positionTitle}
                 onChange={(e) => setPositionTitle(e.target.value)}
-                placeholder="例：活動部副部長"
+                placeholder={t("positionPlaceholder")}
               />
             </label>
 
             <label className="flex flex-col gap-1.5">
               <span className="text-[13px] font-medium text-neutral-700">
-                系級（選填，例：會計 116）
+                {t("departmentGradeLabel")}
               </span>
               <input
                 className="h-10 rounded-lg border border-border px-3 text-[13px] outline-none ring-primary/0 focus:ring-2 focus:ring-primary/30"
                 value={departmentGrade}
                 onChange={(e) => setDepartmentGrade(e.target.value)}
-                placeholder="請輸入系所與年級"
+                placeholder={t("departmentGradePlaceholder")}
               />
             </label>
 
@@ -191,13 +193,13 @@ export default function ProfilePage() {
             ) : null}
             {success ? (
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[13px] text-emerald-700">
-                儲存好囉
+                {t("saved")}
               </div>
             ) : null}
 
             <div className="flex justify-end">
               <Button type="submit" variant="primary" disabled={saving}>
-                {saving ? "儲存中…" : "儲存"}
+                {saving ? t("saving") : t("save")}
               </Button>
             </div>
           </form>
@@ -208,7 +210,7 @@ export default function ProfilePage() {
               className="group inline-flex items-center gap-1 text-sm font-[450] text-neutral-500 transition-colors hover:text-primary"
             >
               <ArrowLongLeftIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回首頁
+              {t("backHome")}
             </Link>
           </div>
         </div>

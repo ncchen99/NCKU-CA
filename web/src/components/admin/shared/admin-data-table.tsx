@@ -10,6 +10,7 @@ import {
   type SortingState,
   type Column,
 } from "@tanstack/react-table";
+import { useTranslations } from "next-intl";
 import { AdminEmptyState } from "./admin-empty-state";
 
 declare module "@tanstack/react-table" {
@@ -93,7 +94,7 @@ export function AdminDataTable<TData>({
   data,
   columns,
   getRowId,
-  emptyMessage = "暫無資料",
+  emptyMessage,
   emptyColSpan,
   classNames,
 }: {
@@ -104,6 +105,7 @@ export function AdminDataTable<TData>({
   emptyColSpan: number;
   classNames?: AdminDataTableClassNames;
 }) {
+  const t = useTranslations("adminCommon");
   const [sorting, setSorting] = useState<SortingState>([]);
   // TanStack Table returns function instances by design; React Compiler cannot safely memoize this API.
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -120,6 +122,7 @@ export function AdminDataTable<TData>({
 
   const rows = table.getRowModel().rows;
   const tc = { ...defaultClassNames, ...classNames };
+  const resolvedEmptyMessage = emptyMessage ?? t("noData");
 
   return (
     <table className={tc.table}>
@@ -144,7 +147,7 @@ export function AdminDataTable<TData>({
       </thead>
       <tbody className={tc.tbody || undefined}>
         {rows.length === 0 ? (
-          <AdminEmptyState message={emptyMessage} colSpan={emptyColSpan} />
+          <AdminEmptyState message={resolvedEmptyMessage} colSpan={emptyColSpan} />
         ) : (
           rows.map((row) => (
             <tr key={row.id} className={tc.bodyRow}>

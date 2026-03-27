@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -32,21 +33,8 @@ interface User {
   created_at: unknown;
 }
 
-const tabs: TabItem<RoleTab>[] = [
-  { key: "all", label: "全部" },
-  { key: "admin", label: "管理員" },
-  { key: "club_member", label: "社團成員" },
-];
-
-const roleConfig: Record<
-  string,
-  { variant: "primary" | "neutral"; label: string }
-> = {
-  admin: { variant: "primary", label: "管理員" },
-  club_member: { variant: "neutral", label: "社團成員" },
-};
-
 export default function UsersPage() {
+  const t = useTranslations("adminUsers");
   const [activeTab, setActiveTab] = useState<RoleTab>("all");
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState<User[]>([]);
@@ -79,14 +67,14 @@ export default function UsersPage() {
       setUsers(data.users || []);
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "無法載入用戶資料");
+        setError(err instanceof Error ? err.message : t("error.loadUsers"));
       } else {
-        toast(err instanceof Error ? err.message : "無法載入用戶資料", "error");
+        toast(err instanceof Error ? err.message : t("error.loadUsers"), "error");
       }
     } finally {
       if (!background) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchUsers();
@@ -95,7 +83,8 @@ export default function UsersPage() {
   // --- role change ---
   const openRoleConfirm = useCallback((user: User) => {
     const newRole = user.role === "admin" ? "club_member" : "admin";
-    const newRoleLabel = newRole === "admin" ? "管理員" : "社團成員";
+    const newRoleLabel =
+      newRole === "admin" ? t("role.admin") : t("role.clubMember");
     setRoleTarget({
       uid: user.uid,
       displayName: user.display_name,
@@ -103,7 +92,7 @@ export default function UsersPage() {
       newRole,
       newRoleLabel,
     });
-  }, []);
+  }, [t]);
 
   const handleRoleConfirm = async () => {
     if (!roleTarget) return;
@@ -115,10 +104,10 @@ export default function UsersPage() {
         body: JSON.stringify({ uid: roleTarget.uid, role: roleTarget.newRole }),
       });
       setRoleTarget(null);
-      toast("變更角色成功", "success");
+      toast(t("toast.roleChanged"), "success");
       await fetchUsers(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "角色更新失敗，請稍後再試", "error");
+      toast(err instanceof Error ? err.message : t("error.updateRole"), "error");
     } finally {
       setRoleLoading(false);
     }
@@ -146,14 +135,31 @@ export default function UsersPage() {
         }),
       });
       setClubTarget(null);
-      toast("社團關聯更新成功", "success");
+      toast(t("toast.clubUpdated"), "success");
       await fetchUsers(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "社團關聯更新失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.updateClub"), "error");
     } finally {
       setClubLoading(false);
     }
   };
+
+  const tabs: TabItem<RoleTab>[] = useMemo(
+    () => [
+      { key: "all", label: t("tabs.all") },
+      { key: "admin", label: t("tabs.admin") },
+      { key: "club_member", label: t("tabs.clubMember") },
+    ],
+    [t],
+  );
+
+  const roleConfig: Record<string, { variant: "primary" | "neutral"; label: string }> = useMemo(
+    () => ({
+      admin: { variant: "primary", label: t("role.admin") },
+      club_member: { variant: "neutral", label: t("role.clubMember") },
+    }),
+    [t],
+  );
 
   const filtered = users.filter((u) => {
     if (activeTab !== "all" && u.role !== activeTab) return false;
@@ -172,7 +178,7 @@ export default function UsersPage() {
     () => [
       {
         accessorKey: "display_name",
-        header: ({ column }) => adminSortableHeader(column, "姓名"),
+        header: ({ column }) => adminSortableHeader(column, t("table.name")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.display_name ?? ""),
@@ -195,7 +201,7 @@ export default function UsersPage() {
       },
       {
         accessorKey: "email",
-        header: ({ column }) => adminSortableHeader(column, "Email"),
+        header: ({ column }) => adminSortableHeader(column, t("table.email")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.original.email ?? ""),
@@ -209,7 +215,7 @@ export default function UsersPage() {
       },
       {
         accessorKey: "role",
-        header: ({ column }) => adminSortableHeader(column, "角色"),
+        header: ({ column }) => adminSortableHeader(column, t("table.role")),
         sortingFn: (rowA, rowB) =>
           compareZh(rowA.original.role, rowB.original.role),
         cell: ({ row }) => {
@@ -220,7 +226,7 @@ export default function UsersPage() {
       {
         id: "club",
         accessorFn: (row) => row.club_name ?? row.club_id ?? "",
-        header: ({ column }) => adminSortableHeader(column, "所屬社團"),
+        header: ({ column }) => adminSortableHeader(column, t("table.club")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("club")),
@@ -231,16 +237,16 @@ export default function UsersPage() {
             type="button"
             className="text-[12px] text-neutral-600 underline decoration-dashed underline-offset-2 hover:text-neutral-800"
             onClick={() => openClubModal(row.original)}
-            title="點擊設定社團"
+            title={t("club.editTitle")}
           >
-            {row.original.club_name ?? row.original.club_id ?? "—"}
+            {row.original.club_name ?? row.original.club_id ?? t("common.notAvailable")}
           </button>
         ),
       },
       {
         id: "created_at",
         accessorFn: (row) => timestampToMs(row.created_at),
-        header: ({ column }) => adminSortableHeader(column, "建立日期"),
+        header: ({ column }) => adminSortableHeader(column, t("table.createdAt")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="text-neutral-400">
@@ -252,7 +258,7 @@ export default function UsersPage() {
       },
       {
         id: "actions",
-        header: "操作",
+        header: t("table.actions"),
         enableSorting: false,
         cell: ({ row }) => (
           <button
@@ -261,19 +267,19 @@ export default function UsersPage() {
             className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
           >
             {row.original.role === "club_member"
-              ? "設為管理員"
-              : "設為社團成員"}
+              ? t("actions.setAdmin")
+              : t("actions.setClubMember")}
           </button>
         ),
         meta: { thClassName: "px-3", tdClassName: "px-3" },
       },
     ],
-    [openClubModal, openRoleConfirm],
+    [openClubModal, openRoleConfirm, roleConfig, t],
   );
 
   return (
     <>
-      <AdminPageHeader title="用戶管理" count={!loading && !error ? users.length : undefined} />
+      <AdminPageHeader title={t("title")} count={!loading && !error ? users.length : undefined} />
 
       <Card className="mt-6">
         <AdminFilterBar
@@ -282,7 +288,7 @@ export default function UsersPage() {
           onTabChange={setActiveTab}
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="搜尋用戶..."
+          searchPlaceholder={t("searchPlaceholder")}
         />
 
         {loading ? (
@@ -296,7 +302,7 @@ export default function UsersPage() {
             data={filtered}
             columns={userColumns}
             getRowId={(row) => row.uid}
-            emptyMessage="沒有找到符合條件的用戶"
+            emptyMessage={t("empty")}
             emptyColSpan={6}
           />
         )}
@@ -308,13 +314,16 @@ export default function UsersPage() {
         onClose={() => setRoleTarget(null)}
         onConfirm={handleRoleConfirm}
         loading={roleLoading}
-        title="變更用戶角色"
+        title={t("dialogs.roleChangeTitle")}
         description={
           roleTarget
-            ? `確定要將「${roleTarget.displayName}」的角色變更為「${roleTarget.newRoleLabel}」嗎？`
+            ? t("dialogs.roleChangeDescription", {
+              displayName: roleTarget.displayName,
+              newRoleLabel: roleTarget.newRoleLabel,
+            })
             : undefined
         }
-        confirmLabel="確認變更"
+        confirmLabel={t("dialogs.confirmChange")}
       />
 
       <FormModal
@@ -323,24 +332,24 @@ export default function UsersPage() {
         onSubmit={handleClubSave}
         title={
           clubTarget
-            ? `設定「${clubTarget.displayName}」的所屬社團`
-            : "設定所屬社團"
+            ? t("dialogs.clubTitleWithName", { displayName: clubTarget.displayName })
+            : t("dialogs.clubTitle")
         }
-        submitLabel="儲存"
+        submitLabel={t("club.save")}
         loading={clubLoading}
       >
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-700">選擇社團</label>
+          <label className="text-sm font-medium text-neutral-700">{t("club.label")}</label>
           <ClubSearchSelect
             value={clubTarget?.clubId ?? ""}
             onChange={(val) =>
               setClubTarget((prev) => (prev ? { ...prev, clubId: val } : null))
             }
-            placeholder="搜尋社團名稱..."
+            placeholder={t("club.placeholder")}
             initialClubName={users.find(u => u.uid === clubTarget?.uid)?.club_name}
           />
           <p className="text-xs text-neutral-400">
-            選擇此用戶所屬的社團，可搜尋社團名稱
+            {t("club.hint")}
           </p>
         </div>
       </FormModal>

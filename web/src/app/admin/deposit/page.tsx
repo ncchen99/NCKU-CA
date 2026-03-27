@@ -21,6 +21,7 @@ import {
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 type DepositStatus = "all" | "pending_payment" | "paid" | "returned";
 
@@ -39,33 +40,17 @@ interface DepositRecord {
   updated_by: string;
 }
 
-const tabs: TabItem<DepositStatus>[] = [
-  { key: "all", label: "全部" },
-  { key: "pending_payment", label: "待繳" },
-  { key: "paid", label: "已繳" },
-  { key: "returned", label: "已退還" },
-];
-
-const statusConfig: Record<
-  string,
-  { variant: "warning" | "success" | "neutral"; label: string }
-> = {
-  pending_payment: { variant: "warning", label: "待繳" },
-  paid: { variant: "success", label: "已繳" },
-  returned: { variant: "neutral", label: "已退還" },
-};
-
-function downloadDepositCsv(records: DepositRecord[]) {
+function downloadDepositCsv(records: DepositRecord[], statusConfig: Record<string, { variant: "warning" | "success" | "neutral"; label: string }>, t: (key: string) => string) {
   const headers = [
-    "社團",
-    "社團 ID",
-    "綁定表單",
-    "狀態",
-    "金額",
-    "繳費日期",
-    "退還日期",
-    "備註",
-    "更新者",
+    t("csv.club"),
+    t("csv.clubId"),
+    t("csv.bindingForm"),
+    t("csv.status"),
+    t("csv.amount"),
+    t("csv.paidAt"),
+    t("csv.returnedAt"),
+    t("csv.notes"),
+    t("csv.updatedBy"),
   ];
 
   const rows = records.map((record) => {
@@ -73,7 +58,7 @@ function downloadDepositCsv(records: DepositRecord[]) {
     return [
       record.club_name ?? "",
       record.club_id,
-      record.form_title ?? (record.form_id || record.form_response_id ? "已綁定（表單名稱未知）" : "獨立保證金"),
+      record.form_title ?? (record.form_id || record.form_response_id ? t("common.boundUnknown") : t("common.independentDeposit")),
       statusLabel,
       String(record.amount),
       formatTimestamp(record.paid_at as Parameters<typeof formatTimestamp>[0]),
@@ -98,7 +83,7 @@ function downloadDepositCsv(records: DepositRecord[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `保證金紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `deposit_records_${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -106,6 +91,7 @@ function downloadDepositCsv(records: DepositRecord[]) {
 }
 
 export default function DepositPage() {
+  const t = useTranslations("adminDeposit");
   const [activeTab, setActiveTab] = useState<DepositStatus>("all");
   const [search, setSearch] = useState("");
   const [deposits, setDeposits] = useState<DepositRecord[]>([]);
@@ -134,6 +120,25 @@ export default function DepositPage() {
   } | null>(null);
   const [notesLoading, setNotesLoading] = useState(false);
 
+  const tabs: TabItem<DepositStatus>[] = useMemo(
+    () => [
+      { key: "all", label: t("tabs.all") },
+      { key: "pending_payment", label: t("tabs.pending") },
+      { key: "paid", label: t("tabs.paid") },
+      { key: "returned", label: t("tabs.returned") },
+    ],
+    [t],
+  );
+
+  const statusConfig: Record<string, { variant: "warning" | "success" | "neutral"; label: string }> = useMemo(
+    () => ({
+      pending_payment: { variant: "warning", label: t("status.pending") },
+      paid: { variant: "success", label: t("status.paid") },
+      returned: { variant: "neutral", label: t("status.returned") },
+    }),
+    [t],
+  );
+
   const fetchDeposits = useCallback(async (background = false) => {
     if (!background) setLoading(true);
     if (!background) setError(null);
@@ -142,14 +147,14 @@ export default function DepositPage() {
       setDeposits(data);
     } catch (err) {
       if (!background) {
-        setError(err instanceof Error ? err.message : "載入資料時發生錯誤");
+        setError(err instanceof Error ? err.message : t("error.loadFailed"));
       } else {
-        toast(err instanceof Error ? err.message : "載入資料失敗", "error");
+        toast(err instanceof Error ? err.message : t("error.loadFailedToast"), "error");
       }
     } finally {
       if (!background) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchDeposits();
@@ -169,10 +174,10 @@ export default function DepositPage() {
         }),
       });
       setConfirmTarget(null);
-      toast("保證金狀態已更新", "success");
+      toast(t("toast.statusUpdated"), "success");
       await fetchDeposits(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "操作失敗，請稍後再試", "error");
+      toast(err instanceof Error ? err.message : t("error.actionFailed"), "error");
     } finally {
       setConfirmLoading(false);
     }
@@ -193,10 +198,10 @@ export default function DepositPage() {
       });
       setBatchConfirm(null);
       setSelected(new Set());
-      toast("批次操作成功", "success");
+      toast(t("toast.batchSuccess"), "success");
       await fetchDeposits(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "批次操作失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.batchFailed"), "error");
     } finally {
       setBatchLoading(false);
     }
@@ -216,10 +221,10 @@ export default function DepositPage() {
         }),
       });
       setNotesTarget(null);
-      toast("備註已更新", "success");
+      toast(t("toast.notesUpdated"), "success");
       await fetchDeposits(true);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "備註更新失敗", "error");
+      toast(err instanceof Error ? err.message : t("error.notesFailed"), "error");
     } finally {
       setNotesLoading(false);
     }
@@ -277,14 +282,14 @@ export default function DepositPage() {
           <AdminTableCheckbox
             checked={allFilteredSelected}
             onChange={toggleAll}
-            aria-label="全選目前篩選結果"
+            aria-label={t("table.selectAll")}
           />
         ),
         cell: ({ row }) => (
           <AdminTableCheckbox
             checked={selected.has(row.original.id)}
             onChange={() => toggleOne(row.original.id)}
-            aria-label={`選取 ${row.original.club_name ?? row.original.club_id}`}
+            aria-label={t("table.selectOne", { club: row.original.club_name ?? row.original.club_id })}
           />
         ),
         enableSorting: false,
@@ -296,7 +301,7 @@ export default function DepositPage() {
       {
         id: "club",
         accessorFn: (row) => row.club_name ?? row.club_id ?? "",
-        header: ({ column }) => adminSortableHeader(column, "社團"),
+        header: ({ column }) => adminSortableHeader(column, t("table.club")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("club")),
@@ -311,7 +316,7 @@ export default function DepositPage() {
       },
       {
         accessorKey: "amount",
-        header: ({ column }) => adminSortableHeader(column, "金額"),
+        header: ({ column }) => adminSortableHeader(column, t("table.amount")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="font-mono text-sm font-semibold text-neutral-950">
@@ -322,7 +327,7 @@ export default function DepositPage() {
       {
         id: "binding",
         accessorFn: (row) => row.form_title ?? row.form_id ?? "",
-        header: ({ column }) => adminSortableHeader(column, "綁定表單"),
+        header: ({ column }) => adminSortableHeader(column, t("table.binding")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("binding")),
@@ -332,17 +337,17 @@ export default function DepositPage() {
           const dep = row.original;
           const hasBinding = Boolean(dep.form_title || dep.form_id || dep.form_response_id);
           if (!hasBinding) {
-            return <span className="text-neutral-400">獨立保證金</span>;
+            return <span className="text-neutral-400">{t("common.independentDeposit")}</span>;
           }
 
-          const label = dep.form_title ?? "已綁定（表單名稱未知）";
+          const label = dep.form_title ?? t("common.boundUnknown");
 
           return <span className="truncate text-neutral-700">{label}</span>;
         },
       },
       {
         accessorKey: "status",
-        header: ({ column }) => adminSortableHeader(column, "狀態"),
+        header: ({ column }) => adminSortableHeader(column, t("table.status")),
         sortingFn: (rowA, rowB) =>
           compareZh(rowA.original.status, rowB.original.status),
         cell: ({ row }) => {
@@ -353,7 +358,7 @@ export default function DepositPage() {
       {
         id: "paid_at",
         accessorFn: (row) => timestampToMs(row.paid_at),
-        header: ({ column }) => adminSortableHeader(column, "繳費日期"),
+        header: ({ column }) => adminSortableHeader(column, t("table.paidAt")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="text-neutral-400">
@@ -366,7 +371,7 @@ export default function DepositPage() {
       {
         id: "returned_at",
         accessorFn: (row) => timestampToMs(row.returned_at),
-        header: ({ column }) => adminSortableHeader(column, "退還日期"),
+        header: ({ column }) => adminSortableHeader(column, t("table.returnedAt")),
         sortingFn: "basic",
         cell: ({ row }) => (
           <span className="text-neutral-400">
@@ -381,7 +386,7 @@ export default function DepositPage() {
       {
         id: "notes",
         accessorFn: (row) => row.notes ?? "",
-        header: ({ column }) => adminSortableHeader(column, "備註"),
+        header: ({ column }) => adminSortableHeader(column, t("table.notes")),
         sortingFn: (rowA, rowB) =>
           compareZh(
             String(rowA.getValue("notes")),
@@ -393,7 +398,7 @@ export default function DepositPage() {
             <button
               type="button"
               className="max-w-[120px] truncate text-[12px] text-neutral-500 underline decoration-dashed underline-offset-2 hover:text-neutral-700"
-              title={dep.notes || "點擊新增備註"}
+              title={dep.notes || t("notes.add")}
               onClick={() =>
                 setNotesTarget({
                   id: dep.id,
@@ -426,7 +431,7 @@ export default function DepositPage() {
                     })
                   }
                 >
-                  標記已繳
+                  {t("actions.markPaid")}
                 </button>
               )}
               {dep.status === "paid" && (
@@ -441,7 +446,7 @@ export default function DepositPage() {
                     })
                   }
                 >
-                  退還保證金
+                  {t("actions.returnDeposit")}
                 </button>
               )}
             </div>
@@ -450,34 +455,29 @@ export default function DepositPage() {
         meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
       },
     ],
-    [
-      allFilteredSelected,
-      selected,
-      toggleAll,
-      toggleOne,
-    ],
+    [allFilteredSelected, selected, statusConfig, t, toggleAll, toggleOne],
   );
 
   return (
     <>
       <AdminPageHeader
-        title="保證金管理"
+        title={t("title")}
         subtitle={
           !loading && !error
-            ? `待繳總額 $${pendingTotal.toLocaleString()}`
+            ? t("subtitle", { amount: pendingTotal.toLocaleString() })
             : undefined
         }
         action={
           <Button
             variant="ghost"
             onClick={() => {
-              downloadDepositCsv(filtered);
-              toast("CSV 已下載", "success");
+              downloadDepositCsv(filtered, statusConfig, t);
+              toast(t("toast.csvDownloaded"), "success");
             }}
             disabled={loading || !!error || filtered.length === 0}
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
-            匯出 CSV
+            {t("actions.exportCsv")}
           </Button>
         }
       />
@@ -493,21 +493,21 @@ export default function DepositPage() {
             }}
             search={search}
             onSearchChange={setSearch}
-            searchPlaceholder="搜尋社團、代碼或表單..."
+            searchPlaceholder={t("searchPlaceholder")}
           />
 
           {/* batch action toolbar overlays filter bar to avoid layout shift */}
           {selected.size > 0 && (
             <div className="absolute inset-0 z-10 flex items-center gap-3 border-b border-border bg-white px-5 rounded-t-lg">
               <span className="text-sm font-medium text-neutral-700">
-                已選取 {selected.size} 筆
+                {t("batch.selected", { count: selected.size })}
               </span>
               {selectedPendingCount > 0 && (
                 <button
                   className="rounded-full border border-primary/20 bg-white px-3 py-1 text-[12px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
                   onClick={() => setBatchConfirm({ status: "paid" })}
                 >
-                  批次標記已繳 ({selectedPendingCount})
+                  {t("batch.markPaid", { count: selectedPendingCount })}
                 </button>
               )}
               {selectedPaidCount > 0 && (
@@ -515,14 +515,14 @@ export default function DepositPage() {
                   className="rounded-full border border-primary/20 bg-white px-3 py-1 text-[12px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
                   onClick={() => setBatchConfirm({ status: "returned" })}
                 >
-                  批次退還 ({selectedPaidCount})
+                  {t("batch.returned", { count: selectedPaidCount })}
                 </button>
               )}
               <button
                 className="ml-auto text-xs text-neutral-400 hover:text-neutral-600"
                 onClick={() => setSelected(new Set())}
               >
-                取消選取
+                {t("batch.clear")}
               </button>
             </div>
           )}
@@ -539,7 +539,7 @@ export default function DepositPage() {
             data={filtered}
             columns={depositColumns}
             getRowId={(row) => row.id}
-            emptyMessage="沒有找到符合條件的保證金紀錄"
+            emptyMessage={t("empty")}
             emptyColSpan={9}
           />
         )}
@@ -553,16 +553,16 @@ export default function DepositPage() {
         loading={confirmLoading}
         title={
           confirmTarget?.newStatus === "paid"
-            ? "確認標記已繳？"
-            : "確認退還保證金？"
+            ? t("confirm.markPaidTitle")
+            : t("confirm.returnTitle")
         }
         description={
           confirmTarget
-            ? `即將更新社團「${confirmTarget.clubLabel}」的保證金狀態`
+            ? t("confirm.singleDescription", { club: confirmTarget.clubLabel })
             : undefined
         }
         confirmLabel={
-          confirmTarget?.newStatus === "paid" ? "標記已繳" : "確認退還"
+          confirmTarget?.newStatus === "paid" ? t("actions.markPaid") : t("actions.confirmReturn")
         }
       />
 
@@ -574,11 +574,11 @@ export default function DepositPage() {
         loading={batchLoading}
         title={
           batchConfirm?.status === "paid"
-            ? `批次標記 ${selected.size} 筆為已繳？`
-            : `批次退還 ${selected.size} 筆保證金？`
+            ? t("confirm.batchMarkPaidTitle", { count: selected.size })
+            : t("confirm.batchReturnTitle", { count: selected.size })
         }
-        description="此操作將一次更新所選取的所有紀錄，請確認無誤"
-        confirmLabel="確認執行"
+        description={t("confirm.batchDescription")}
+        confirmLabel={t("confirm.execute")}
       />
 
       {/* notes edit modal */}
@@ -586,8 +586,8 @@ export default function DepositPage() {
         open={!!notesTarget}
         onClose={() => setNotesTarget(null)}
         onSubmit={handleNotesSave}
-        title="編輯備註"
-        submitLabel="儲存備註"
+        title={t("notes.title")}
+        submitLabel={t("notes.save")}
         loading={notesLoading}
         className="max-w-3xl"
       >
@@ -598,9 +598,9 @@ export default function DepositPage() {
               prev ? { ...prev, notes: e.target.value } : null,
             )
           }
-          placeholder="輸入備註內容..."
+          placeholder={t("notes.placeholder")}
           className="h-[48vh] w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-sm text-neutral-950 outline-none transition-colors placeholder:text-neutral-400 focus:border-primary focus:ring-1 focus:ring-primary/30"
-          aria-label="備註"
+          aria-label={t("notes.ariaLabel")}
         />
       </FormModal>
     </>

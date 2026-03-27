@@ -6,8 +6,10 @@ import { useAuth } from "@/lib/auth-context";
 import { sanitizeRedirectPath } from "@/lib/login-redirect";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 function LoginContent() {
+  const t = useTranslations("loginPage");
   const { signInWithGoogle, firebaseUser, loading: authLoading } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ function LoginContent() {
       router.replace(redirectTo);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "登入失敗，請稍後再試";
+        err instanceof Error ? err.message : t("error.loginFailed");
       setError(message);
     } finally {
       setSubmitting(false);
@@ -57,7 +59,7 @@ function LoginContent() {
       <div className="flex min-h-screen items-center justify-center bg-neutral-50">
         <div className="text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="mt-4 text-sm text-neutral-500">正在跳轉...</p>
+          <p className="mt-4 text-sm text-neutral-500">{t("redirecting")}</p>
         </div>
       </div>
     );
@@ -76,19 +78,19 @@ function LoginContent() {
             </div>
           </Link>
           <h1 className="mt-5 text-[20px] font-bold tracking-tight text-neutral-950">
-            成功大學社團聯合會
+            {t("brand")}
           </h1>
           <p className="mt-1 text-[13px] text-neutral-500">
-            NCKU CA 數位平台
+            {t("platform")}
           </p>
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow-[0_0_0_1px_rgba(10,10,10,0.08),0_2px_8px_rgba(10,10,10,0.04)]">
           <h2 className="text-center text-[15px] font-semibold text-neutral-950">
-            登入系統
+            {t("title")}
           </h2>
           <p className="mt-1.5 text-center text-[13px] text-neutral-500">
-            使用您的成功大學 Google 帳號登入
+            {t("subtitle")}
           </p>
 
           {error && (
@@ -120,7 +122,7 @@ function LoginContent() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                登入中...
+                {t("loggingIn")}
               </span>
             ) : (
               <>
@@ -134,13 +136,13 @@ function LoginContent() {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62Z" />
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z" />
                 </svg>
-                以 Google 帳號登入
+                {t("loginWithGoogle")}
               </>
             )}
           </button>
 
           <p className="mt-4 text-center text-[12px] text-neutral-400">
-            僅限 <span className="font-mono">@gs.ncku.edu.tw</span> 帳號
+            {t("domainOnly")} <span className="font-mono">@gs.ncku.edu.tw</span> {t("domainSuffix")}
           </p>
         </div>
 
@@ -150,7 +152,7 @@ function LoginContent() {
             className="group inline-flex items-center gap-1 text-[13px] text-neutral-500 transition-colors hover:text-neutral-950"
           >
             <ArrowLongLeftIcon className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-            返回首頁
+            {t("backHome")}
           </Link>
         </div>
       </div>
