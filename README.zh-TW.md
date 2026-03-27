@@ -14,15 +14,7 @@
 - Database：Firebase Firestore
 - Auth：Firebase Session
 - 腳本：TypeScript (tsx) + Python
-
-### 1.2 專案特色（低成本組合）
-
-- 開箱即用：前台網站 + 後台 CMS 功能可直接上線使用。
-- 部署到 Vercel，並使用 Firebase 作為後端服務。
-- 使用 Cloudflare R2 作為圖床儲存。
-
-在基礎用量下，這是一套可達成近乎零成本（free tier）的組合方案。
-當用戶量尚未很大時，以這種方式自架 CMS 是相當可行且低成本的做法。
+- Storage：Cloudflare R2
 
 ### 1.1 介面介紹
 
