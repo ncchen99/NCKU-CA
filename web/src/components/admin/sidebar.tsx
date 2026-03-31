@@ -65,13 +65,13 @@ export function AdminSidebar() {
             Admin
           </span>
         </div>
-        <a
+        <Link
           href="/"
           className="rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
           title="回到前台"
         >
           <ArrowLeftIcon className="h-4 w-4" />
-        </a>
+        </Link>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">

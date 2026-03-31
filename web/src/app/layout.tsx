@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AuthProvider } from "@/lib/auth-context";
 import { ProfileCompletionGate } from "@/components/layout/profile-completion-gate";
+import { Toaster } from "@/components/ui/toaster";
 import { buildOgImageUrl, getSiteUrl } from "@/lib/seo";
 import "./globals.css";
 
@@ -73,6 +74,7 @@ export default function RootLayout({
         <AuthProvider>
           <ProfileCompletionGate>{children}</ProfileCompletionGate>
         </AuthProvider>
+        <Toaster />
         <Analytics />
         <SpeedInsights />
       </body>

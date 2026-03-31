@@ -1,5 +1,4 @@
 import { AdminSidebar } from "@/components/admin/sidebar";
-import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: {
@@ -19,7 +18,6 @@ export default function AdminLayout({
       <main className="ml-60 flex-1 relative">
         <div className="mx-auto max-w-[1200px] px-8 py-8">{children}</div>
       </main>
-      <Toaster />
     </div>
   );
 }
