@@ -82,8 +82,8 @@ export function AdminSidebar() {
               key={item.href}
               href={item.href}
               className={`group flex h-9 items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium transition-colors ${active
-                  ? "border-l-[3px] border-primary bg-white/10 pl-[7px] text-white"
-                  : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                ? "border-l-[3px] border-primary bg-white/10 pl-[7px] text-white"
+                : "text-neutral-400 hover:bg-white/5 hover:text-white"
                 }`}
             >
               <item.icon className="h-[18px] w-[18px] shrink-0" />
