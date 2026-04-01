@@ -54,6 +54,11 @@ export function AdminSidebar() {
     router.push("/login");
   };
 
+  const handleBackToFrontend = () => {
+    // Force a full page load to avoid stale App Router cache after admin edits.
+    window.location.assign("/");
+  };
+
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-60 flex-col bg-neutral-950">
       <div className="flex h-16 items-center justify-between px-5">
@@ -65,13 +70,15 @@ export function AdminSidebar() {
             Admin
           </span>
         </div>
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={handleBackToFrontend}
           className="rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-white/10 hover:text-white"
           title="回到前台"
+          aria-label="回到前台"
         >
           <ArrowLeftIcon className="h-4 w-4" />
-        </Link>
+        </button>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
