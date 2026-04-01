@@ -49,7 +49,7 @@ export async function FormPreviewSection({ preFetchedForms }: { preFetchedForms?
             <Link
               key={form.id}
               href={`/forms/${form.id}`}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-lg bg-white p-6 shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-white p-6 shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
             >
               <div>
                 <div className="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">

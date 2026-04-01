@@ -99,7 +99,7 @@ async function ActivityPreviewSection() {
             {/* Featured card */}
             <Link
               href={`/activities/${featured.slug}`}
-              className={`group block overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${featuredHeightClass}`}
+              className={`group block overflow-hidden rounded-xl bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${featuredHeightClass}`}
             >
               <article className="flex h-full flex-col">
                 <div className={`h-[220px] w-full bg-neutral-200 sm:h-[260px] ${featuredImageHeightClass}`}>
@@ -141,7 +141,7 @@ async function ActivityPreviewSection() {
                 <Link
                   key={item.slug}
                   href={`/activities/${item.slug}`}
-                  className={`group block w-full overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${sideCardHeightClass}`}
+                  className={`group block w-full overflow-hidden rounded-xl bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] ${sideCardHeightClass}`}
                 >
                   <article className="flex h-full w-full flex-col sm:flex-row sm:items-stretch">
                     <div className="relative h-[180px] w-full shrink-0 overflow-hidden bg-neutral-200 sm:h-full sm:w-[120px] sm:self-stretch">

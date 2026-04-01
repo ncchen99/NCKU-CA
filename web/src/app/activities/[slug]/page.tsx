@@ -198,7 +198,7 @@ export default async function ActivityArticlePage({ params }: Props) {
                       <Link
                         key={r.slug}
                         href={`/activities/${r.slug}`}
-                        className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)] hover:-translate-y-0.5"
+                        className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
                       >
                         <div className="aspect-[2/1] overflow-hidden bg-neutral-100">
                           {r.cover ? (

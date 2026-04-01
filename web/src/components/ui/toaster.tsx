@@ -13,7 +13,7 @@ export function Toaster() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="flex items-center gap-3 rounded-lg bg-white px-4 py-3 shadow-lg ring-1 ring-black/5 animate-in slide-in-from-bottom sm:slide-in-from-right"
+          className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-lg ring-1 ring-black/5 animate-in slide-in-from-bottom sm:slide-in-from-right"
         >
           {toast.type === "success" && <CheckCircleIcon className="h-5 w-5 text-green-500" />}
           {toast.type === "error" && <XCircleIcon className="h-5 w-5 text-red-500" />}

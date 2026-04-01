@@ -229,7 +229,7 @@ export function PostListing({
                             <Link
                                 key={item.id}
                                 href={`${basePath}/${item.slug}`}
-                                className="group overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-shadow duration-150 hover:shadow-[0_0_0_1px_rgba(10,10,10,0.12),0_2px_8px_rgba(10,10,10,0.06)]"
+                                className="group overflow-hidden rounded-xl shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-shadow duration-150 hover:shadow-[0_0_0_1px_rgba(10,10,10,0.12),0_2px_8px_rgba(10,10,10,0.06)]"
                             >
                                 <div className="relative h-44 w-full bg-neutral-200">
                                     {item.cover_image_url ? (

@@ -75,7 +75,7 @@ async function NewsPreviewSection() {
             <Link
               key={item.slug}
               href={item.slug === "#" ? "/news" : `/news/${item.slug}`}
-              className="group relative block overflow-hidden rounded-lg shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
+              className="group relative block overflow-hidden rounded-xl shadow-[0_0_0_1px_rgba(10,10,10,0.08)] transition-all hover:shadow-[0_4px_12px_-2px_rgba(10,10,10,0.12),0_0_0_1px_rgba(10,10,10,0.08)]"
             >
               <article>
                 <div className="relative h-44 w-full bg-neutral-200">
