@@ -96,6 +96,7 @@ export function AdminDataTable<TData>({
   emptyMessage = "暫無資料",
   emptyColSpan,
   classNames,
+  onRowClick,
 }: {
   data: TData[];
   columns: ColumnDef<TData, unknown>[];
@@ -103,6 +104,7 @@ export function AdminDataTable<TData>({
   emptyMessage?: string;
   emptyColSpan: number;
   classNames?: AdminDataTableClassNames;
+  onRowClick?: (row: TData) => void;
 }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   // TanStack Table returns function instances by design; React Compiler cannot safely memoize this API.
@@ -147,7 +149,20 @@ export function AdminDataTable<TData>({
           <AdminEmptyState message={emptyMessage} colSpan={emptyColSpan} />
         ) : (
           rows.map((row) => (
-            <tr key={row.id} className={tc.bodyRow}>
+            <tr
+              key={row.id}
+              className={`${tc.bodyRow}${onRowClick ? " cursor-pointer" : ""}`}
+              onClick={
+                onRowClick
+                  ? (e) => {
+                      // Don't trigger row click when clicking buttons/links inside the row
+                      const target = e.target as HTMLElement;
+                      if (target.closest("button, a")) return;
+                      onRowClick(row.original);
+                    }
+                  : undefined
+              }
+            >
               {row.getVisibleCells().map((cell) => (
                 <td
                   key={cell.id}
