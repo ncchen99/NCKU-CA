@@ -74,7 +74,12 @@ const expoRegistration: FormTemplate = {
   key: "expo_registration",
   label: "社團博覽會報名",
   description:
-    "114學年度下學期【社團博覽會】暨【動態舞台】報名表單。報名至 02/09 止，請準時完成。報名費 500 元（已繳社聯會費可免繳），保證金 1500 元。社博日期 2026/03/03-2026/03/04。⚠ 社博期間嚴禁私自使用明火，如有需求需提前通報並完成申請。結果將於截止後公告於粉專與平台。社博團隊信箱：nca.ncku@gmail.com，粉專：成大社團博覽會 NCKU Club Festival。",
+    "114學年度下學期【社團博覽會】暨【動態舞台】報名表單。\n\n" +
+    "📅 報名期間：即日起至 02/09（一）23:59 截止，請準時完成。\n" +
+    "💰 費用說明：報名費 500 元（已繳社聯會費之校內社團免繳），保證金 1500 元。\n" +
+    "🎪 社博日期：2026/03/03（二）- 2026/03/04（三）。\n" +
+    "⚠️ 注意事項：社博期間嚴禁私自使用明火，如有需求需提前通報並完成申請。結果將於截止後公告於粉專與平台。\n" +
+    "✉️ 聯絡管道：社博團隊信箱 nca.ncku@gmail.com，粉專「成大社團博覽會 NCKU Club Festival」。",
   form_type: "expo_registration",
   deposit_required: true,
   deposit_amount: 1500,
@@ -92,6 +97,7 @@ const expoRegistration: FormTemplate = {
     }),
     makeField("club_category", "select", "社團所屬性質", {
       required: true,
+      default_from_user: "club_category",
       options: [
         "綜合性社團",
         "學藝性社團",
@@ -126,7 +132,6 @@ const expoRegistration: FormTemplate = {
       options: ["是", "否"],
     }),
     makeField("booth_special_requirements", "textarea", "攤位特殊需求告知", {
-      required: true,
       placeholder:
         "如場地須平坦、遠離音源、希望與某社團連攤，或第二天需提早離開，請於此說明。",
     }),

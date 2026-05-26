@@ -107,7 +107,7 @@ export default async function FormPage({ params }: Props) {
               <h1 className="mt-4 text-[24px] font-bold tracking-tight text-neutral-950">
                 {form.title}
               </h1>
-              <p className="mt-3 text-[14px] text-neutral-600">{form.description}</p>
+              <p className="mt-3 text-[14px] text-neutral-600 whitespace-pre-wrap">{form.description}</p>
               {closesAt && (
                 <p className="mt-2 text-[13px] text-neutral-500">
                   截止時間：{closesAtStr}
@@ -148,7 +148,7 @@ export default async function FormPage({ params }: Props) {
             <h1 className="mt-4 text-[28px] font-bold tracking-tight text-neutral-950">
               {form.title}
             </h1>
-            <p className="mt-2 w-full text-[14px] leading-[24px] text-neutral-600 text-pretty">
+            <p className="mt-2 w-full text-[14px] leading-[24px] text-neutral-600 text-pretty whitespace-pre-wrap">
               {form.description}
             </p>
             {form.deposit_policy?.required && form.deposit_policy.amount && (

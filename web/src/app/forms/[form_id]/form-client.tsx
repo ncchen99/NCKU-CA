@@ -37,7 +37,28 @@ function resolveDefault(
     club_id: user.club_id || "",
     club_category: user.club_category || "",
   };
-  return map[field.default_from_user] ?? "";
+  const val = map[field.default_from_user] ?? "";
+
+  // 如果是下拉選單，且要自動填入的是社團類別 (club_category)，做智慧對應以符合選單選項
+  if (field.default_from_user === "club_category" && field.type === "select" && field.options && val) {
+    // 1. 完全相符
+    if (field.options.includes(val)) return val;
+    // 2. 加上 "社團" 後綴 (例如 "學藝性" -> "學藝性社團")
+    const withClubSuffix = val + "社團";
+    if (field.options.includes(withClubSuffix)) return withClubSuffix;
+    // 3. 特殊處理自治組織與系學會
+    if (val === "自治組織" || val === "系學會") {
+      const target = field.options.find(
+        (opt) => opt.includes("學生自治組織") || opt.includes("非社團之校內學生團體")
+      );
+      if (target) return target;
+    }
+    // 4. 部分包含
+    const partialMatch = field.options.find((opt) => opt.includes(val) || val.includes(opt));
+    if (partialMatch) return partialMatch;
+  }
+
+  return val;
 }
 
 /* ─── 單一欄位 renderer ─── */

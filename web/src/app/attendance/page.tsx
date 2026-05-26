@@ -137,7 +137,7 @@ export default function AttendancePage() {
               目前沒有開放中的點名活動。
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-border bg-white p-6">
               <h2 className="text-[18px] font-[650] text-neutral-950">
                 {event.title}
               </h2>

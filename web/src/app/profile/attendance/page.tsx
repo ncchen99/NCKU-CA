@@ -77,7 +77,7 @@ export default function MyAttendancePage() {
             您過去所有的簽到紀錄；若同一場活動重複簽到只會記第一筆為有效。
           </p>
 
-          <div className="mt-8 rounded-xl border border-border bg-white shadow-sm">
+          <div className="mt-8 rounded-xl border border-border bg-white">
             {loading ? (
               <div className="flex flex-col divide-y divide-border">
                 {Array.from({ length: 3 }).map((_, i) => (

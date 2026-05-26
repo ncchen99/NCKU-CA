@@ -424,7 +424,7 @@ export default function AdminFormPreviewAndResponsesPage() {
             <Card className="mt-6">
                 <div className="border-b border-border px-5 py-4">
                     <h2 className="text-sm font-semibold text-neutral-950">表單預覽</h2>
-                    {form?.description ? <p className="mt-1 text-[13px] text-neutral-500">{form.description}</p> : null}
+                    {form?.description ? <p className="mt-1 text-[13px] text-neutral-500 whitespace-pre-wrap">{form.description}</p> : null}
                 </div>
                 <div className="space-y-3 px-5 py-4">
                     {sortedFields.length === 0 ? (

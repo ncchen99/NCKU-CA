@@ -134,7 +134,7 @@ export default function ProfilePage() {
           </p>
 
           <form
-            className="mt-8 flex flex-col gap-6 rounded-xl border border-border bg-white p-6 shadow-sm"
+            className="mt-8 flex flex-col gap-6 rounded-xl border border-border bg-white p-6"
             onSubmit={handleSubmit}
           >
             <label className="flex flex-col gap-1.5">

@@ -68,6 +68,22 @@ function toDate(value: unknown): Date | null {
     return null;
 }
 
+function tsValue(obj: unknown, key: string): number {
+    if (!obj || typeof obj !== "object") return 0;
+    return toDate((obj as Record<string, unknown>)[key])?.getTime() ?? 0;
+}
+
+function sortByRecency<T>(a: T, b: T, keys: string[]): number {
+    const pick = (o: T) => {
+        for (const k of keys) {
+            const v = tsValue(o, k);
+            if (v) return v;
+        }
+        return 0;
+    };
+    return pick(b) - pick(a);
+}
+
 export async function getPublicPosts(options: {
     category: PostCategory;
     page: number;
@@ -598,18 +614,21 @@ export async function getAdminPosts(options?: {
     status?: string;
     category?: string;
 }): Promise<AdminPostItem[]> {
-    const { collection, getDocs, orderBy, query, where } = await import(
+    const { collection, getDocs, query, where } = await import(
         "firebase/firestore"
     );
     const db = await getClientDb();
     const clauses: Parameters<typeof query>[1][] = [];
     if (options?.status) clauses.push(where("status", "==", options.status));
     if (options?.category) clauses.push(where("category", "==", options.category));
-    clauses.push(orderBy("created_at", "desc"));
-    const snap = await getDocs(query(collection(db, "posts"), ...clauses));
-    const posts = snap.docs.map(
-        (d) => ({ id: d.id, ...(d.data() as Omit<Post, "id">) }) as Post,
-    );
+    // 不用 orderBy(created_at)：Firestore 會排除缺欄位的舊文件，改為 client 排序。
+    const snap =
+        clauses.length > 0
+            ? await getDocs(query(collection(db, "posts"), ...clauses))
+            : await getDocs(collection(db, "posts"));
+    const posts = snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<Post, "id">) }) as Post)
+        .sort((a, b) => sortByRecency(a, b, ["created_at", "published_at", "updated_at"]));
     const authorIds = posts
         .map((p) => p.author_uid)
         .filter((x): x is string => !!x);
@@ -656,18 +675,20 @@ export async function getAdminForms(options?: {
     status?: string;
     formType?: string;
 }): Promise<Form[]> {
-    const { collection, getDocs, orderBy, query, where } = await import(
+    const { collection, getDocs, query, where } = await import(
         "firebase/firestore"
     );
     const db = await getClientDb();
     const clauses: Parameters<typeof query>[1][] = [];
     if (options?.status) clauses.push(where("status", "==", options.status));
     if (options?.formType) clauses.push(where("form_type", "==", options.formType));
-    clauses.push(orderBy("created_at", "desc"));
-    const snap = await getDocs(query(collection(db, "forms"), ...clauses));
-    return snap.docs.map(
-        (d) => ({ id: d.id, ...(d.data() as Omit<Form, "id">) }) as Form,
-    );
+    const snap =
+        clauses.length > 0
+            ? await getDocs(query(collection(db, "forms"), ...clauses))
+            : await getDocs(collection(db, "forms"));
+    return snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<Form, "id">) }) as Form)
+        .sort((a, b) => sortByRecency(a, b, ["created_at", "opens_at", "updated_at"]));
 }
 
 export async function getAdminFormById(id: string): Promise<Form | null> {
@@ -729,19 +750,23 @@ export async function getAdminDeposits(options?: {
     status?: string;
     clubId?: string;
 }): Promise<AdminDepositItem[]> {
-    const { collection, getDocs, orderBy, query, where } = await import(
+    const { collection, getDocs, query, where } = await import(
         "firebase/firestore"
     );
     const db = await getClientDb();
     const clauses: Parameters<typeof query>[1][] = [];
     if (options?.status) clauses.push(where("status", "==", options.status));
     if (options?.clubId) clauses.push(where("club_id", "==", options.clubId));
-    clauses.push(orderBy("created_at", "desc"));
-    const snap = await getDocs(query(collection(db, "deposit_records"), ...clauses));
-    const records = snap.docs.map(
-        (d) =>
-            ({ id: d.id, ...(d.data() as Omit<DepositRecord, "id">) }) as DepositRecord,
-    );
+    const snap =
+        clauses.length > 0
+            ? await getDocs(query(collection(db, "deposit_records"), ...clauses))
+            : await getDocs(collection(db, "deposit_records"));
+    const records = snap.docs
+        .map(
+            (d) =>
+                ({ id: d.id, ...(d.data() as Omit<DepositRecord, "id">) }) as DepositRecord,
+        )
+        .sort((a, b) => sortByRecency(a, b, ["created_at", "updated_at"]));
     const clubIds = records
         .map((r) => r.club_id)
         .filter((x): x is string => !!x);
@@ -764,20 +789,29 @@ export async function getAdminDeposits(options?: {
 }
 
 export async function getAdminAttendanceEvents(): Promise<AttendanceEvent[]> {
-    const { collection, getDocs, orderBy, query } = await import(
-        "firebase/firestore"
-    );
+    const { collection, getDocs } = await import("firebase/firestore");
     const db = await getClientDb();
-    const snap = await getDocs(
-        query(collection(db, "attendance_events"), orderBy("created_at", "desc")),
-    );
-    return snap.docs.map(
+    // 不用 orderBy(created_at)：Firestore 會過濾掉缺欄位的文件，
+    // 早期建立的點名活動可能沒有 created_at。改為取回全部後在 client 排序。
+    const snap = await getDocs(collection(db, "attendance_events"));
+    const events = snap.docs.map(
         (d) =>
             ({
                 id: d.id,
                 ...(d.data() as Omit<AttendanceEvent, "id">),
             }) as AttendanceEvent,
     );
+    return events.sort((a, b) => {
+        const aTs =
+            toDate((a as unknown as { created_at?: unknown }).created_at)?.getTime() ??
+            toDate((a as unknown as { opens_at?: unknown }).opens_at)?.getTime() ??
+            0;
+        const bTs =
+            toDate((b as unknown as { created_at?: unknown }).created_at)?.getTime() ??
+            toDate((b as unknown as { opens_at?: unknown }).opens_at)?.getTime() ??
+            0;
+        return bTs - aTs;
+    });
 }
 
 export async function getAdminAttendanceEvent(
@@ -903,18 +937,13 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     } = await import("firebase/firestore");
     const db = await getClientDb();
 
-    const [clubsCountSnap, openFormsSnap, pendingDepositsRaw, allFormsSnap, openEventsSnap] =
+    const [clubsCountSnap, openFormsSnap, pendingDepositsRaw, allFormsSnap, allEventsSnap] =
         await Promise.all([
             getCountFromServer(collection(db, "clubs")),
             getDocs(query(collection(db, "forms"), where("status", "==", "open"))),
             getAdminDeposits({ status: "pending_payment" }),
             getDocs(collection(db, "forms")),
-            getDocs(
-                query(
-                    collection(db, "attendance_events"),
-                    where("status", "==", "open"),
-                ),
-            ),
+            getDocs(collection(db, "attendance_events")),
         ]);
 
     const pendingDepositTotal = pendingDepositsRaw.reduce(
@@ -963,7 +992,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
             club_name: r.club_id ? clubNames.get(r.club_id)?.name : undefined,
         }));
 
-    const openEvents = openEventsSnap.docs.map(
+    const allEvents = allEventsSnap.docs.map(
         (d) =>
             ({
                 id: d.id,
@@ -971,8 +1000,37 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
             }) as AttendanceEvent,
     );
 
+    const now = new Date();
+    const isToday = (date: Date | null) => {
+        if (!date) return false;
+        return (
+            date.getFullYear() === now.getFullYear() &&
+            date.getMonth() === now.getMonth() &&
+            date.getDate() === now.getDate()
+        );
+    };
+
+    // Filter events: either the event is currently "open", OR it was held today (opens_at or closes_at is today).
+    const filteredEvents = allEvents.filter((event) => {
+        if (event.status === "open") return true;
+        const opensAt = toDate(event.opens_at);
+        const closesAt = toDate(event.closes_at);
+        return isToday(opensAt) || isToday(closesAt);
+    });
+
+    // Sort events:
+    // 1. "open" events first
+    // 2. then by opens_at descending (latest first)
+    filteredEvents.sort((a, b) => {
+        if (a.status === "open" && b.status !== "open") return -1;
+        if (a.status !== "open" && b.status === "open") return 1;
+        const aTs = toDate(a.opens_at)?.getTime() ?? 0;
+        const bTs = toDate(b.opens_at)?.getTime() ?? 0;
+        return bTs - aTs;
+    });
+
     const eventsWithStats = await Promise.all(
-        openEvents.map(async (event) => ({
+        filteredEvents.map(async (event) => ({
             ...event,
             stats: await getAdminAttendanceStats(event),
         })),

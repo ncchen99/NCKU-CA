@@ -81,7 +81,7 @@ export default function MyFormResponsesPage() {
             您過去送出的所有表單回覆；在截止前仍可點擊「修改」更新內容。
           </p>
 
-          <div className="mt-8 rounded-xl border border-border bg-white shadow-sm">
+          <div className="mt-8 rounded-xl border border-border bg-white">
             {loading ? (
               <div className="flex flex-col divide-y divide-border">
                 {Array.from({ length: 3 }).map((_, i) => (

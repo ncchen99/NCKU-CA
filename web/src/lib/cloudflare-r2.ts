@@ -33,6 +33,11 @@ function getR2Client(): S3Client {
       accessKeyId,
       secretAccessKey,
     },
+    // R2 不支援 AWS SDK v3 預設的 flexible checksum（會在 presigned URL
+    // 塞 x-amz-checksum-crc32 佔位值，browser 上傳時無法補正確值 → 403）。
+    // 改為僅在 API 必填時才送 checksum。
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
   });
 
   return _client;
