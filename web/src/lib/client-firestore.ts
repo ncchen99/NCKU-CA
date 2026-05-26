@@ -323,7 +323,7 @@ export async function saveProfileUser(params: {
     departmentGrade?: string;
     profileCompleted?: boolean;
 }): Promise<void> {
-    const { doc, getDoc, setDoc, updateDoc } = await import("firebase/firestore");
+    const { doc, getDoc, setDoc, updateDoc, serverTimestamp } = await import("firebase/firestore");
     const db = await getClientDb();
     const ref = doc(db, "users", params.uid);
     const existing = await getDoc(ref);
@@ -345,6 +345,7 @@ export async function saveProfileUser(params: {
         uid: params.uid,
         email: params.email,
         role: "club_member",
+        created_at: serverTimestamp(),
         ...commonPatch,
     });
 }

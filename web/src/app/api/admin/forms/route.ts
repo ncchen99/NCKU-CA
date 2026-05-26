@@ -3,6 +3,8 @@ import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
 import { getAllForms, createForm } from "@/lib/firestore";
 import { revalidateFormPaths } from "@/lib/isr";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const session = await verifyAdmin();
   if (!session) return unauthorizedResponse();
@@ -13,7 +15,11 @@ export async function GET(request: NextRequest) {
     const formType = searchParams.get("formType") ?? undefined;
 
     const forms = await getAllForms({ status, formType });
-    return NextResponse.json(forms);
+    return NextResponse.json(forms, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "取得表單失敗" },

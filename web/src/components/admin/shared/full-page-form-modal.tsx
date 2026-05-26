@@ -17,6 +17,8 @@ interface FullPageFormModalProps {
   loading?: boolean;
   isFetching?: boolean;
   wide?: boolean;
+  onDelete?: () => void;
+  deleteLabel?: string;
 }
 
 export function FullPageFormModal({
@@ -30,6 +32,8 @@ export function FullPageFormModal({
   loading = false,
   isFetching = false,
   wide = false,
+  onDelete,
+  deleteLabel,
 }: FullPageFormModalProps) {
   if (!open) return null;
 
@@ -43,6 +47,8 @@ export function FullPageFormModal({
       loading={loading}
       isFetching={isFetching}
       wide={wide}
+      onDelete={onDelete}
+      deleteLabel={deleteLabel}
     >
       {children}
     </OpenFullPageFormModal>
@@ -59,6 +65,8 @@ function OpenFullPageFormModal({
   loading,
   isFetching,
   wide,
+  onDelete,
+  deleteLabel,
 }: Omit<FullPageFormModalProps, "open">) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -108,18 +116,30 @@ function OpenFullPageFormModal({
             )}
           </div>
 
-          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-border px-6 py-4">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={loading}
-              className="rounded-full border border-border px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
-            >
-              {cancelLabel}
-            </button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "處理中…" : submitLabel}
-            </Button>
+          <div className={`flex shrink-0 items-center gap-3 border-t border-border px-6 py-4 ${onDelete ? "justify-between" : "justify-end"}`}>
+            {onDelete && (
+              <Button
+                type="button"
+                onClick={onDelete}
+                disabled={loading}
+                className="!bg-red-700 hover:!bg-red-800 active:!bg-red-900 shadow-sm"
+              >
+                {deleteLabel || "刪除"}
+              </Button>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={loading}
+                className="rounded-full border border-border px-5 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+              >
+                {cancelLabel}
+              </button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "處理中…" : submitLabel}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

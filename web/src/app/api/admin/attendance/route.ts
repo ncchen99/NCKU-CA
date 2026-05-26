@@ -6,13 +6,19 @@ import {
 } from "@/lib/firestore";
 import { revalidateAttendancePaths } from "@/lib/isr";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const admin = await verifyAdmin();
   if (!admin) return unauthorizedResponse();
 
   try {
     const events = await getAllAttendanceEvents();
-    return Response.json({ events });
+    return Response.json({ events }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
+    });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得點名活動列表失敗" },

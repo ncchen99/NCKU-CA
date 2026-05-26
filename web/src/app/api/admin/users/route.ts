@@ -10,6 +10,8 @@ type UpdateUserPayload = {
   club_id?: User["club_id"];
 };
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const admin = await verifyAdmin();
   if (!admin) return unauthorizedResponse();
@@ -26,7 +28,11 @@ export async function GET(req: NextRequest) {
       ...u,
       club_name: u.club_id ? nameByClubId.get(u.club_id) : undefined,
     }));
-    return Response.json({ users: enriched });
+    return Response.json({ users: enriched }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
+    });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得使用者列表失敗" },

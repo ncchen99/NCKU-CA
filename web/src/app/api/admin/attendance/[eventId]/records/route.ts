@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
 import { getAttendanceRecords, checkIn } from "@/lib/firestore";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
@@ -12,7 +14,11 @@ export async function GET(
   try {
     const { eventId } = await params;
     const records = await getAttendanceRecords(eventId);
-    return Response.json({ records });
+    return Response.json({ records }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
+    });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得點名紀錄失敗" },

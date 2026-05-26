@@ -4,6 +4,8 @@ import { getFormResponses, getAllClubs, getUser } from "@/lib/firestore";
 
 type RouteContext = { params: Promise<{ formId: string }> };
 
+export const dynamic = "force-dynamic";
+
 export async function GET(_request: NextRequest, context: RouteContext) {
   const session = await verifyAdmin();
   if (!session) return unauthorizedResponse();
@@ -47,7 +49,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         : undefined,
     }));
 
-    return NextResponse.json(enriched);
+    return NextResponse.json(enriched, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "取得表單回應失敗" },

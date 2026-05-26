@@ -6,8 +6,11 @@ import {
   getAttendanceRecords,
   getAttendanceStats,
   getExpectedClubsForAttendanceEvent,
+  deleteAttendanceEvent,
 } from "@/lib/firestore";
 import { revalidateAttendancePaths } from "@/lib/isr";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
@@ -61,7 +64,11 @@ export async function GET(
       }));
     }
 
-    return Response.json({ event, records, stats, clubStatuses });
+    return Response.json({ event, records, stats, clubStatuses }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      },
+    });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "取得點名活動詳情失敗" },
@@ -86,6 +93,26 @@ export async function PUT(
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "更新點名活動失敗" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
+) {
+  const admin = await verifyAdmin();
+  if (!admin) return unauthorizedResponse();
+
+  try {
+    const { eventId } = await params;
+    await deleteAttendanceEvent(eventId);
+    revalidateAttendancePaths();
+    return Response.json({ success: true });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "刪除點名活動失敗" },
       { status: 500 }
     );
   }

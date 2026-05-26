@@ -178,6 +178,17 @@ export async function updateAttendanceEvent(
   }
 }
 
+export async function deleteAttendanceEvent(eventId: string): Promise<void> {
+  try {
+    const db = getAdminDb();
+    await db.collection(COLLECTION).doc(eventId).delete();
+  } catch (error) {
+    throw new Error(
+      `Failed to delete attendance event "${eventId}": ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
 /* ─── Attendance Records (sub-collection) ─── */
 
 export async function getAttendanceRecords(

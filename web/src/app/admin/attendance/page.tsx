@@ -27,6 +27,7 @@ import {
   AdminDataTable,
   adminSortableHeader,
   compareZh,
+  ConfirmDialog,
 } from "@/components/admin/shared";
 import {
   formatTimestamp,
@@ -174,6 +175,9 @@ export default function AttendancePage() {
   const [form, setForm] = useState<EventFormData>(initialForm);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [deleteTarget, setDeleteTarget] = useState<AttendanceEvent | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -339,6 +343,29 @@ export default function AttendancePage() {
       setFormError(err instanceof Error ? err.message : "操作失敗");
     } finally {
       setFormLoading(false);
+    }
+  }
+
+  function handleDeleteClick() {
+    if (!editingEvent) return;
+    setDeleteTarget(editingEvent);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await adminFetch(`/api/admin/attendance/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      setDeleteTarget(null);
+      setModalOpen(false);
+      toast("點名活動已刪除", "success");
+      await fetchEvents(true);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "刪除失敗，請稍後再試", "error");
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -675,6 +702,8 @@ export default function AttendancePage() {
         title={editingEvent ? "編輯點名活動" : "建立點名活動"}
         submitLabel={editingEvent ? "儲存變更" : "建立"}
         loading={formLoading}
+        onDelete={editingEvent ? handleDeleteClick : undefined}
+        deleteLabel="刪除點名活動"
       >
         {formError && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
@@ -891,6 +920,18 @@ export default function AttendancePage() {
           ) : null}
         </div>
       </Modal>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title={`確定要刪除點名活動「${deleteTarget?.title}」嗎？`}
+        description="此操作無法復原，點名活動及其所有出席簽到紀錄將被永久刪除。"
+        confirmLabel="刪除"
+        variant="danger"
+        loading={deleteLoading}
+      />
     </>
   );
 }
