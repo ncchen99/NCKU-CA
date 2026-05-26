@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { createLoginHref } from "@/lib/login-redirect";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
@@ -221,7 +221,10 @@ export function FormClient({
 }) {
   const { user, loading: authLoading } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const loginHref = createLoginHref(pathname);
+  const responseId = searchParams.get("responseId");
+  const isEditMode = !!responseId;
 
   // 回答 state：{ [field.id]: value }
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -230,9 +233,37 @@ export function FormClient({
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [prefilled, setPrefilled] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(isEditMode);
 
-  // 依據登入使用者自動帶入預設值
+  // 編輯模式：載入既有回覆並覆蓋 answers
   useEffect(() => {
+    if (!isEditMode || !user) return;
+    let cancelled = false;
+    setLoadingExisting(true);
+    fetch(`/api/forms/${formId}/responses/${responseId}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "讀取既有回覆失敗");
+        if (cancelled) return;
+        setAnswers((data.answers ?? {}) as Record<string, unknown>);
+        setPrefilled(true);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setSubmitError(err instanceof Error ? err.message : "讀取既有回覆失敗");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingExisting(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditMode, user, formId, responseId]);
+
+  // 依據登入使用者自動帶入預設值（編輯模式不執行）
+  useEffect(() => {
+    if (isEditMode) return;
     if (!user || prefilled) return;
 
     const defaults: Record<string, unknown> = {};
@@ -263,7 +294,7 @@ export function FormClient({
       });
     }
     setPrefilled(true);
-  }, [user, fields, prefilled]);
+  }, [user, fields, prefilled, isEditMode]);
 
   const setAnswer = useCallback(
     (fieldId: string, value: unknown) => {
@@ -364,18 +395,24 @@ export function FormClient({
         clubId = answers[clubField.id] as string;
       }
 
-      const res = await fetch(`/api/forms/${formId}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          club_id: clubId,
-          answers,
-        }),
-      });
+      const res = isEditMode
+        ? await fetch(`/api/forms/${formId}/responses/${responseId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ answers }),
+          })
+        : await fetch(`/api/forms/${formId}/submit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              club_id: clubId,
+              answers,
+            }),
+          });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "送出表單失敗");
+        throw new Error(data.error || (isEditMode ? "更新表單失敗" : "送出表單失敗"));
       }
 
       setSubmitted(true);
@@ -395,16 +432,20 @@ export function FormClient({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-[20px] font-bold text-neutral-950">表單已送出</h2>
+        <h2 className="text-[20px] font-bold text-neutral-950">
+          {isEditMode ? "已更新表單回覆" : "表單已送出"}
+        </h2>
         <p className="mt-2 text-[14px] text-neutral-600">
-          感謝您的填寫！我們已收到您的回覆。
+          {isEditMode
+            ? "您的更新已儲存；可隨時於表單記錄頁面再次修改。"
+            : "感謝您的填寫！我們已收到您的回覆。"}
         </p>
       </div>
     );
   }
 
-  // 載入中
-  if (authLoading) {
+  // 載入中（含登入檢查與編輯模式取既有回覆）
+  if (authLoading || (isEditMode && loadingExisting && user)) {
     return (
       <div className="rounded-xl bg-white p-6 shadow-[0_0_0_1px_rgba(10,10,10,0.08)]">
         <div className="flex flex-col gap-5">
@@ -549,7 +590,13 @@ export function FormClient({
           disabled={submitting}
           className="inline-flex h-[38px] items-center rounded-full bg-primary px-5 text-[14px] font-[550] text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {submitting ? "送出中..." : "送出表單"}
+          {submitting
+            ? isEditMode
+              ? "更新中..."
+              : "送出中..."
+            : isEditMode
+              ? "更新表單"
+              : "送出表單"}
         </button>
       </div>
     </div>

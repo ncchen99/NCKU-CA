@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { getPublicFormById, getPublicFormIds } from "@/lib/firestore/forms";
 import { anyTimestampToDate, formatDateTimeZhTW } from "@/lib/datetime";
@@ -163,7 +164,22 @@ export default async function FormPage({ params }: Props) {
           </div>
 
           {/* Interactive form */}
-          <FormClient formId={form_id} fields={sortedFields} />
+          <Suspense
+            fallback={
+              <div className="rounded-xl bg-white p-6 shadow-[0_0_0_1px_rgba(10,10,10,0.08)]">
+                <div className="flex flex-col gap-5">
+                  {sortedFields.map((f) => (
+                    <div key={f.id} className="animate-pulse">
+                      <div className="mb-1.5 h-4 w-24 rounded bg-neutral-100" />
+                      <div className="h-10 rounded-lg bg-neutral-50" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            }
+          >
+            <FormClient formId={form_id} fields={sortedFields} />
+          </Suspense>
         </div>
       </section>
     </PublicLayout>

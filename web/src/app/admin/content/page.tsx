@@ -13,6 +13,7 @@ import {
   AdminErrorBanner,
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
+import { getAdminSiteContent } from "@/lib/client-firestore";
 import { toast } from "@/components/ui/use-toast";
 
 interface SiteContent {
@@ -53,10 +54,8 @@ export default function ContentPage() {
     if (!background) setLoading(true);
     if (!background) setError(null);
     try {
-      const data = await adminFetch<{ content: SiteContent[] }>(
-        "/api/admin/content",
-      );
-      setPages(data.content || []);
+      const data = await getAdminSiteContent();
+      setPages(data as unknown as SiteContent[]);
     } catch (err) {
       if (!background) {
         setError(err instanceof Error ? err.message : "無法載入內容資料");

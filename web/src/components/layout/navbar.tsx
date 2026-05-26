@@ -10,6 +10,8 @@ import {
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
   UserCircleIcon,
+  ClipboardDocumentCheckIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/lib/auth-context";
 import { createLoginHref } from "@/lib/login-redirect";
@@ -175,6 +177,22 @@ export function Navbar() {
                       <UserCircleIcon className="h-4 w-4 text-neutral-400" />
                       個人資料
                     </Link>
+                    <Link
+                      href="/profile/attendance"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-neutral-700 transition-colors hover:bg-neutral-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <ClipboardDocumentCheckIcon className="h-4 w-4 text-neutral-400" />
+                      點名記錄
+                    </Link>
+                    <Link
+                      href="/profile/forms"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] text-neutral-700 transition-colors hover:bg-neutral-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <DocumentTextIcon className="h-4 w-4 text-neutral-400" />
+                      表單記錄
+                    </Link>
                     <button
                       onClick={handleSignOut}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-red-600 transition-colors hover:bg-red-50"
@@ -281,6 +299,22 @@ export function Navbar() {
                 >
                   <UserCircleIcon className="h-4 w-4" />
                   個人資料
+                </Link>
+                <Link
+                  href="/profile/attendance"
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium text-neutral-700 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                  點名記錄
+                </Link>
+                <Link
+                  href="/profile/forms"
+                  className="flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-medium text-neutral-700 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <DocumentTextIcon className="h-4 w-4" />
+                  表單記錄
                 </Link>
                 <div className="flex items-center gap-3 rounded-lg bg-neutral-50 px-3 py-2.5">
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white">

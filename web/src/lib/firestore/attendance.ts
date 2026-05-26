@@ -191,6 +191,60 @@ export async function deleteAttendanceEvent(eventId: string): Promise<void> {
 
 /* ─── Attendance Records (sub-collection) ─── */
 
+/**
+ * 查詢單一使用者跨所有 event 的點名記錄。
+ * 需要 Firestore collectionGroup 索引：records.user_uid + records.checked_in_at(desc)。
+ * 首次查詢若 Firestore 回傳 FAILED_PRECONDITION，請點錯誤訊息中的連結建立索引。
+ */
+export async function getMyAttendanceRecords(
+  uid: string,
+): Promise<Array<AttendanceRecord & { event_id: string }>> {
+  try {
+    const db = getAdminDb();
+    const snapshot = await db
+      .collectionGroup(RECORDS_SUB)
+      .where("user_uid", "==", uid)
+      .orderBy("checked_in_at", "desc")
+      .get();
+    return snapshot.docs.map((doc) => {
+      const eventId = doc.ref.parent.parent?.id ?? "";
+      return { id: doc.id, event_id: eventId, ...doc.data() } as AttendanceRecord & {
+        event_id: string;
+      };
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to get attendance records for user "${uid}": ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
+export async function getAttendanceEventsByIds(
+  eventIds: string[],
+): Promise<Map<string, AttendanceEvent>> {
+  const unique = [...new Set(eventIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  try {
+    const db = getAdminDb();
+    const map = new Map<string, AttendanceEvent>();
+    for (let i = 0; i < unique.length; i += 10) {
+      const chunk = unique.slice(i, i + 10);
+      const snapshot = await db
+        .collection(COLLECTION)
+        .where("__name__", "in", chunk)
+        .get();
+      for (const doc of snapshot.docs) {
+        map.set(doc.id, { id: doc.id, ...doc.data() } as AttendanceEvent);
+      }
+    }
+    return map;
+  } catch (error) {
+    throw new Error(
+      `Failed to get attendance events by IDs: ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
 export async function getAttendanceRecords(
   eventId: string
 ): Promise<AttendanceRecord[]> {

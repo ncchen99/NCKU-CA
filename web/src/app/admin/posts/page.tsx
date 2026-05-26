@@ -27,6 +27,12 @@ import {
   type TabItem,
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
+import {
+  getAdminPosts,
+  getAdminPostById,
+  getAdminPostTags,
+  getAdminForms,
+} from "@/lib/client-firestore";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
 import { toast } from "@/components/ui/use-toast";
 
@@ -149,10 +155,10 @@ export default function PostsPage() {
     if (!background) setLoading(true);
     if (!background) setError(null);
     try {
-      const params = new URLSearchParams();
-      if (activeTab !== "all") params.set("status", activeTab);
-      const data = await adminFetch<{ posts: Post[] }>(`/api/admin/posts?${params}`);
-      setPosts(data.posts ?? []);
+      const data = await getAdminPosts(
+        activeTab !== "all" ? { status: activeTab } : undefined,
+      );
+      setPosts(data as unknown as Post[]);
     } catch (err) {
       if (!background) {
         setError(err instanceof Error ? err.message : "載入文章失敗");
@@ -174,12 +180,12 @@ export default function PostsPage() {
     setTagStatsLoading(true);
 
     Promise.all([
-      adminFetch<{ tags: { tag: string; count: number }[] }>("/api/admin/tags").catch(() => ({ tags: [] })),
-      adminFetch<{ id: string; title: string }[]>("/api/admin/forms").catch(() => [])
+      getAdminPostTags().catch(() => []),
+      getAdminForms().catch(() => []),
     ]).then(([tagData, formData]) => {
       if (!cancelled) {
-        setTagStats(tagData.tags ?? []);
-        setForms(Array.isArray(formData) ? formData : []);
+        setTagStats(tagData);
+        setForms(formData.map((f) => ({ id: f.id, title: f.title })));
       }
     }).finally(() => {
       if (!cancelled) setTagStatsLoading(false);
@@ -250,7 +256,8 @@ export default function PostsPage() {
     setModalOpen(true);
 
     try {
-      const full = await adminFetch<Post>(`/api/admin/posts/${post.id}`);
+      const full = (await getAdminPostById(post.id)) as unknown as Post;
+      if (!full) throw new Error("文章不存在或已被刪除");
       setForm({
         title: full.title,
         slug: full.slug,

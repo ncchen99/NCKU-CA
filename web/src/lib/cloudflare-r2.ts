@@ -1,4 +1,5 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 type UploadPublicObjectInput = {
   key: string;
@@ -63,4 +64,58 @@ export async function uploadPublicObjectToR2(input: UploadPublicObjectInput): Pr
   );
 
   return toPublicObjectUrl(input.key);
+}
+
+export type PresignPutOptions = {
+  key: string;
+  contentType: string;
+  /** Cache-Control to apply when the client uploads. */
+  cacheControl?: string;
+  /** Maximum object size in bytes — enforced via Content-Length checksum hint. */
+  maxSizeBytes?: number;
+  /** URL TTL in seconds (default 300). */
+  expiresInSeconds?: number;
+};
+
+export type PresignPutResult = {
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+  expiresInSeconds: number;
+  headers: Record<string, string>;
+};
+
+/**
+ * Returns a short-lived presigned PUT URL the browser can use to upload
+ * directly to R2. Image bytes never traverse the Vercel function.
+ */
+export async function presignPublicObjectPut(
+  input: PresignPutOptions,
+): Promise<PresignPutResult> {
+  const bucket = getRequiredEnv("CLOUDFLARE_R2_BUCKET");
+  const client = getR2Client();
+  const expiresInSeconds = input.expiresInSeconds ?? 300;
+  const cacheControl =
+    input.cacheControl ?? "public, max-age=31536000, immutable";
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: input.key,
+    ContentType: input.contentType,
+    CacheControl: cacheControl,
+    ...(input.maxSizeBytes ? { ContentLength: input.maxSizeBytes } : {}),
+  });
+
+  const uploadUrl = await getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+
+  return {
+    uploadUrl,
+    publicUrl: toPublicObjectUrl(input.key),
+    key: input.key,
+    expiresInSeconds,
+    headers: {
+      "Content-Type": input.contentType,
+      "Cache-Control": cacheControl,
+    },
+  };
 }

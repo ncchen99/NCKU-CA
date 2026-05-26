@@ -27,6 +27,10 @@ import {
     timestampToMs,
     type FirestoreTimestamp,
 } from "@/lib/admin-utils";
+import {
+    getAdminFormById,
+    getAdminFormResponses,
+} from "@/lib/client-firestore";
 import { toast } from "@/components/ui/use-toast";
 
 interface FormFieldDef {
@@ -245,9 +249,10 @@ export default function AdminFormPreviewAndResponsesPage() {
             if (!background) setError(null);
             try {
                 const [formData, responsesData] = await Promise.all([
-                    adminFetch<Form>(`/api/admin/forms/${formId}`),
-                    adminFetch<FormResponseRecord[]>(`/api/admin/forms/${formId}/responses`),
+                    getAdminFormById(formId) as Promise<Form | null>,
+                    getAdminFormResponses(formId) as unknown as Promise<FormResponseRecord[]>,
                 ]);
+                if (!formData) throw new Error("表單不存在或已被刪除");
                 setForm(formData);
                 setResponses(responsesData);
             } catch (err) {

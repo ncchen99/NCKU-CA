@@ -18,6 +18,7 @@ import {
 } from "@/components/admin/shared";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
+import { getAdminUsers } from "@/lib/client-firestore";
 import { toast } from "@/components/ui/use-toast";
 
 type RoleTab = "all" | "admin" | "club_member";
@@ -75,8 +76,8 @@ export default function UsersPage() {
     if (!background) setLoading(true);
     if (!background) setError(null);
     try {
-      const data = await adminFetch<{ users: User[] }>("/api/admin/users");
-      setUsers(data.users || []);
+      const data = await getAdminUsers();
+      setUsers(data as unknown as User[]);
     } catch (err) {
       if (!background) {
         setError(err instanceof Error ? err.message : "無法載入用戶資料");

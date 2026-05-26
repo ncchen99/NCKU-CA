@@ -226,6 +226,79 @@ export async function getFormResponses(
   }
 }
 
+/**
+ * 查詢單一使用者跨所有表單的回覆。
+ * 需要 Firestore collectionGroup 索引：responses.submitted_by_uid + responses.submitted_at(desc)。
+ */
+export async function getMyFormResponses(
+  uid: string,
+): Promise<Array<FormResponse & { response_id: string }>> {
+  try {
+    const db = getAdminDb();
+    const snapshot = await db
+      .collectionGroup(RESPONSES_SUB)
+      .where("submitted_by_uid", "==", uid)
+      .orderBy("submitted_at", "desc")
+      .get();
+    return snapshot.docs.map(
+      (doc) =>
+        ({
+          ...(doc.data() as FormResponse),
+          id: doc.id,
+          response_id: doc.id,
+        }) as FormResponse & { response_id: string },
+    );
+  } catch (error) {
+    throw new Error(
+      `Failed to get form responses for user "${uid}": ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
+export async function getFormResponseById(
+  formId: string,
+  responseId: string,
+): Promise<FormResponse | null> {
+  try {
+    const db = getAdminDb();
+    const doc = await db
+      .collection(COLLECTION)
+      .doc(formId)
+      .collection(RESPONSES_SUB)
+      .doc(responseId)
+      .get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() } as FormResponse;
+  } catch (error) {
+    throw new Error(
+      `Failed to get response "${responseId}" for form "${formId}": ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
+export async function updateFormResponse(
+  formId: string,
+  responseId: string,
+  answers: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const db = getAdminDb();
+    await db
+      .collection(COLLECTION)
+      .doc(formId)
+      .collection(RESPONSES_SUB)
+      .doc(responseId)
+      .update({
+        answers,
+        updated_at: FieldValue.serverTimestamp(),
+      });
+  } catch (error) {
+    throw new Error(
+      `Failed to update response "${responseId}" for form "${formId}": ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
 export async function getFormResponseByClub(
   formId: string,
   clubId: string

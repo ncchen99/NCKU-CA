@@ -1,5 +1,15 @@
 import { getClientDb } from "@/lib/firebase";
-import type { User } from "@/types";
+import type {
+    AttendanceEvent,
+    AttendanceRecord,
+    Club,
+    DepositRecord,
+    Form,
+    FormResponse,
+    Post,
+    SiteContent,
+    User,
+} from "@/types";
 
 type PostCategory = "news" | "activity_review";
 
@@ -348,4 +358,707 @@ export async function saveProfileUser(params: {
         created_at: serverTimestamp(),
         ...commonPatch,
     });
+}
+
+// ─────────────────────────────────────────────
+// 個人歷史頁：直連 Firestore 取代 /api/me/*
+// ─────────────────────────────────────────────
+
+export interface MyAttendanceItem {
+    id: string;
+    event_id: string;
+    event_title: string;
+    club_id: string;
+    club_name: string;
+    checked_in_at_iso: string | null;
+    is_duplicate_attempt: boolean;
+}
+
+export async function getMyAttendanceItems(uid: string): Promise<MyAttendanceItem[]> {
+    const { collectionGroup, getDocs, orderBy, query, where, documentId, collection } =
+        await import("firebase/firestore");
+    const db = await getClientDb();
+
+    const recordsSnap = await getDocs(
+        query(
+            collectionGroup(db, "records"),
+            where("user_uid", "==", uid),
+            orderBy("checked_in_at", "desc"),
+        ),
+    );
+
+    type RecordRow = {
+        id: string;
+        event_id: string;
+        club_id: string;
+        is_duplicate_attempt: boolean;
+        checked_in_at: unknown;
+    };
+    const rows: RecordRow[] = recordsSnap.docs.map((d) => {
+        const data = d.data() as Record<string, unknown>;
+        return {
+            id: d.id,
+            event_id: d.ref.parent.parent?.id ?? "",
+            club_id: typeof data.club_id === "string" ? data.club_id : "",
+            is_duplicate_attempt: Boolean(data.is_duplicate_attempt),
+            checked_in_at: data.checked_in_at,
+        };
+    });
+
+    const eventIds = [...new Set(rows.map((r) => r.event_id).filter(Boolean))];
+    const eventTitles = new Map<string, string>();
+    for (let i = 0; i < eventIds.length; i += 10) {
+        const chunk = eventIds.slice(i, i + 10);
+        if (chunk.length === 0) break;
+        const snap = await getDocs(
+            query(collection(db, "attendance_events"), where(documentId(), "in", chunk)),
+        );
+        for (const doc of snap.docs) {
+            const t = (doc.data() as { title?: unknown }).title;
+            if (typeof t === "string") eventTitles.set(doc.id, t);
+        }
+    }
+
+    const clubsSnap = await getDocs(collection(db, "clubs"));
+    const clubNames = new Map<string, string>();
+    for (const c of clubsSnap.docs) {
+        const n = (c.data() as { name?: unknown }).name;
+        if (typeof n === "string") clubNames.set(c.id, n);
+    }
+
+    return rows.map((r) => ({
+        id: r.id,
+        event_id: r.event_id,
+        event_title: eventTitles.get(r.event_id) ?? "(已刪除的點名)",
+        club_id: r.club_id,
+        club_name: clubNames.get(r.club_id) ?? r.club_id,
+        checked_in_at_iso: toDate(r.checked_in_at)?.toISOString() ?? null,
+        is_duplicate_attempt: r.is_duplicate_attempt,
+    }));
+}
+
+export interface MyFormResponseItem {
+    response_id: string;
+    form_id: string;
+    form_title: string;
+    submitted_at_iso: string | null;
+    closes_at_iso: string | null;
+    editable: boolean;
+}
+
+export async function getMyFormResponseItems(uid: string): Promise<MyFormResponseItem[]> {
+    const { collectionGroup, getDocs, orderBy, query, where, documentId, collection } =
+        await import("firebase/firestore");
+    const db = await getClientDb();
+
+    const responsesSnap = await getDocs(
+        query(
+            collectionGroup(db, "responses"),
+            where("submitted_by_uid", "==", uid),
+            orderBy("submitted_at", "desc"),
+        ),
+    );
+
+    type ResponseRow = {
+        response_id: string;
+        form_id: string;
+        submitted_at: unknown;
+    };
+    const rows: ResponseRow[] = responsesSnap.docs.map((d) => {
+        const data = d.data() as Record<string, unknown>;
+        return {
+            response_id: d.id,
+            form_id: d.ref.parent.parent?.id ?? "",
+            submitted_at: data.submitted_at,
+        };
+    });
+
+    const formIds = [...new Set(rows.map((r) => r.form_id).filter(Boolean))];
+    const formMeta = new Map<
+        string,
+        { title: string; closes_at: unknown; status: string }
+    >();
+    for (let i = 0; i < formIds.length; i += 10) {
+        const chunk = formIds.slice(i, i + 10);
+        if (chunk.length === 0) break;
+        const snap = await getDocs(
+            query(collection(db, "forms"), where(documentId(), "in", chunk)),
+        );
+        for (const doc of snap.docs) {
+            const data = doc.data() as Record<string, unknown>;
+            formMeta.set(doc.id, {
+                title: typeof data.title === "string" ? data.title : "",
+                closes_at: data.closes_at,
+                status: typeof data.status === "string" ? data.status : "draft",
+            });
+        }
+    }
+
+    const now = new Date();
+    return rows.map((r) => {
+        const meta = formMeta.get(r.form_id);
+        const closesAt = toDate(meta?.closes_at);
+        const closed =
+            meta?.status === "closed" || (closesAt ? closesAt < now : false);
+        return {
+            response_id: r.response_id,
+            form_id: r.form_id,
+            form_title: meta?.title || "(已刪除的表單)",
+            submitted_at_iso: toDate(r.submitted_at)?.toISOString() ?? null,
+            closes_at_iso: closesAt?.toISOString() ?? null,
+            editable: !closed,
+        };
+    });
+}
+
+// ─────────────────────────────────────────────
+// Admin GET helpers — 直連 Firestore 取代 /api/admin/* GET
+// 寫入仍走 admin route 以同步觸發 ISR revalidate。
+// ─────────────────────────────────────────────
+
+async function fetchByIdsChunked<T>(
+    collectionName: string,
+    ids: string[],
+    mapper: (id: string, data: Record<string, unknown>) => T,
+): Promise<Map<string, T>> {
+    const unique = [...new Set(ids.filter(Boolean))];
+    const out = new Map<string, T>();
+    if (unique.length === 0) return out;
+
+    const { collection, documentId, getDocs, query, where } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    for (let i = 0; i < unique.length; i += 10) {
+        const chunk = unique.slice(i, i + 10);
+        const snap = await getDocs(
+            query(collection(db, collectionName), where(documentId(), "in", chunk)),
+        );
+        for (const doc of snap.docs) {
+            out.set(doc.id, mapper(doc.id, doc.data() as Record<string, unknown>));
+        }
+    }
+    return out;
+}
+
+export interface AdminUserItem extends User {
+    club_name?: string;
+}
+
+export async function getAdminUsers(role?: string): Promise<AdminUserItem[]> {
+    const { collection, getDocs, query, where } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const baseRef = collection(db, "users");
+    const usersSnap = await getDocs(
+        role ? query(baseRef, where("role", "==", role)) : baseRef,
+    );
+    const users = usersSnap.docs.map(
+        (d) => ({ uid: d.id, ...(d.data() as Omit<User, "uid">) }) as User,
+    );
+    const clubIds = users.map((u) => u.club_id).filter((x): x is string => !!x);
+    const clubNames = await fetchByIdsChunked("clubs", clubIds, (_id, data) =>
+        typeof data.name === "string" ? data.name : "",
+    );
+    return users.map((u) => ({
+        ...u,
+        club_name: u.club_id ? clubNames.get(u.club_id) || undefined : undefined,
+    }));
+}
+
+export interface AdminSiteContentItem extends SiteContent {
+    updated_by_display_name?: string;
+}
+
+export async function getAdminSiteContent(): Promise<AdminSiteContentItem[]> {
+    const { collection, getDocs } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getDocs(collection(db, "site_content"));
+    const pages = snap.docs.map(
+        (d) => ({ id: d.id, ...(d.data() as Omit<SiteContent, "id">) }) as SiteContent,
+    );
+    const editorIds = pages
+        .map((p) => p.updated_by)
+        .filter((x): x is string => !!x);
+    const editorNames = await fetchByIdsChunked("users", editorIds, (_id, data) =>
+        typeof data.display_name === "string" ? data.display_name : "",
+    );
+    return pages.map((p) => ({
+        ...p,
+        updated_by_display_name: p.updated_by
+            ? editorNames.get(p.updated_by) || undefined
+            : undefined,
+    }));
+}
+
+export interface AdminPostItem extends Post {
+    author_display_name?: string;
+}
+
+export async function getAdminPosts(options?: {
+    status?: string;
+    category?: string;
+}): Promise<AdminPostItem[]> {
+    const { collection, getDocs, orderBy, query, where } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    const clauses: Parameters<typeof query>[1][] = [];
+    if (options?.status) clauses.push(where("status", "==", options.status));
+    if (options?.category) clauses.push(where("category", "==", options.category));
+    clauses.push(orderBy("created_at", "desc"));
+    const snap = await getDocs(query(collection(db, "posts"), ...clauses));
+    const posts = snap.docs.map(
+        (d) => ({ id: d.id, ...(d.data() as Omit<Post, "id">) }) as Post,
+    );
+    const authorIds = posts
+        .map((p) => p.author_uid)
+        .filter((x): x is string => !!x);
+    const authorNames = await fetchByIdsChunked("users", authorIds, (_id, data) =>
+        typeof data.display_name === "string" ? data.display_name : "",
+    );
+    return posts.map((p) => ({
+        ...p,
+        author_display_name: p.author_uid
+            ? authorNames.get(p.author_uid) || undefined
+            : undefined,
+    }));
+}
+
+export async function getAdminPostById(id: string): Promise<Post | null> {
+    const { doc, getDoc } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getDoc(doc(db, "posts", id));
+    if (!snap.exists()) return null;
+    return { id: snap.id, ...(snap.data() as Omit<Post, "id">) } as Post;
+}
+
+export async function getAdminPostTags(): Promise<
+    Array<{ tag: string; count: number }>
+> {
+    const { collection, getDocs } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getDocs(collection(db, "posts"));
+    const counter = new Map<string, number>();
+    for (const d of snap.docs) {
+        const tags = (d.data() as { tags?: unknown }).tags;
+        if (!Array.isArray(tags)) continue;
+        for (const t of tags) {
+            if (typeof t !== "string" || !t.trim()) continue;
+            counter.set(t, (counter.get(t) ?? 0) + 1);
+        }
+    }
+    return [...counter.entries()]
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count);
+}
+
+export async function getAdminForms(options?: {
+    status?: string;
+    formType?: string;
+}): Promise<Form[]> {
+    const { collection, getDocs, orderBy, query, where } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    const clauses: Parameters<typeof query>[1][] = [];
+    if (options?.status) clauses.push(where("status", "==", options.status));
+    if (options?.formType) clauses.push(where("form_type", "==", options.formType));
+    clauses.push(orderBy("created_at", "desc"));
+    const snap = await getDocs(query(collection(db, "forms"), ...clauses));
+    return snap.docs.map(
+        (d) => ({ id: d.id, ...(d.data() as Omit<Form, "id">) }) as Form,
+    );
+}
+
+export async function getAdminFormById(id: string): Promise<Form | null> {
+    const { doc, getDoc } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getDoc(doc(db, "forms", id));
+    if (!snap.exists()) return null;
+    return { id: snap.id, ...(snap.data() as Omit<Form, "id">) } as Form;
+}
+
+export interface AdminFormResponseItem extends FormResponse {
+    club_name?: string;
+}
+
+export async function getAdminFormResponses(
+    formId: string,
+): Promise<AdminFormResponseItem[]> {
+    const { collection, getDocs, orderBy, query } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    const snap = await getDocs(
+        query(
+            collection(db, "forms", formId, "responses"),
+            orderBy("submitted_at", "desc"),
+        ),
+    );
+    const responses = snap.docs.map(
+        (d) =>
+            ({ id: d.id, ...(d.data() as Omit<FormResponse, "id">) }) as FormResponse,
+    );
+    const clubIds = responses
+        .map((r) => r.club_id)
+        .filter((x): x is string => !!x);
+    const clubNames = await fetchByIdsChunked("clubs", clubIds, (_id, data) =>
+        typeof data.name === "string" ? data.name : "",
+    );
+    return responses.map((r) => ({
+        ...r,
+        club_name: r.club_id ? clubNames.get(r.club_id) || undefined : undefined,
+    }));
+}
+
+export async function getAdminFormResponseCount(formId: string): Promise<number> {
+    const { collection, getCountFromServer } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getCountFromServer(
+        collection(db, "forms", formId, "responses"),
+    );
+    return snap.data().count;
+}
+
+export interface AdminDepositItem extends DepositRecord {
+    club_name?: string;
+    form_title?: string;
+}
+
+export async function getAdminDeposits(options?: {
+    status?: string;
+    clubId?: string;
+}): Promise<AdminDepositItem[]> {
+    const { collection, getDocs, orderBy, query, where } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    const clauses: Parameters<typeof query>[1][] = [];
+    if (options?.status) clauses.push(where("status", "==", options.status));
+    if (options?.clubId) clauses.push(where("club_id", "==", options.clubId));
+    clauses.push(orderBy("created_at", "desc"));
+    const snap = await getDocs(query(collection(db, "deposit_records"), ...clauses));
+    const records = snap.docs.map(
+        (d) =>
+            ({ id: d.id, ...(d.data() as Omit<DepositRecord, "id">) }) as DepositRecord,
+    );
+    const clubIds = records
+        .map((r) => r.club_id)
+        .filter((x): x is string => !!x);
+    const formIds = records
+        .map((r) => r.form_id)
+        .filter((x): x is string => !!x);
+    const [clubNames, formTitles] = await Promise.all([
+        fetchByIdsChunked("clubs", clubIds, (_id, data) =>
+            typeof data.name === "string" ? data.name : "",
+        ),
+        fetchByIdsChunked("forms", formIds, (_id, data) =>
+            typeof data.title === "string" ? data.title : "",
+        ),
+    ]);
+    return records.map((r) => ({
+        ...r,
+        club_name: r.club_id ? clubNames.get(r.club_id) || undefined : undefined,
+        form_title: r.form_id ? formTitles.get(r.form_id) || undefined : undefined,
+    }));
+}
+
+export async function getAdminAttendanceEvents(): Promise<AttendanceEvent[]> {
+    const { collection, getDocs, orderBy, query } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    const snap = await getDocs(
+        query(collection(db, "attendance_events"), orderBy("created_at", "desc")),
+    );
+    return snap.docs.map(
+        (d) =>
+            ({
+                id: d.id,
+                ...(d.data() as Omit<AttendanceEvent, "id">),
+            }) as AttendanceEvent,
+    );
+}
+
+export async function getAdminAttendanceEvent(
+    eventId: string,
+): Promise<AttendanceEvent | null> {
+    const { doc, getDoc } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getDoc(doc(db, "attendance_events", eventId));
+    if (!snap.exists()) return null;
+    return {
+        id: snap.id,
+        ...(snap.data() as Omit<AttendanceEvent, "id">),
+    } as AttendanceEvent;
+}
+
+export async function getAdminAttendanceRecords(
+    eventId: string,
+): Promise<AttendanceRecord[]> {
+    const { collection, getDocs, orderBy, query } = await import(
+        "firebase/firestore"
+    );
+    const db = await getClientDb();
+    const snap = await getDocs(
+        query(
+            collection(db, "attendance_events", eventId, "records"),
+            orderBy("checked_in_at", "desc"),
+        ),
+    );
+    return snap.docs.map(
+        (d) =>
+            ({
+                id: d.id,
+                ...(d.data() as Omit<AttendanceRecord, "id">),
+            }) as AttendanceRecord,
+    );
+}
+
+export async function getAdminAttendanceRecordCount(
+    eventId: string,
+): Promise<number> {
+    const { collection, getCountFromServer } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getCountFromServer(
+        collection(db, "attendance_events", eventId, "records"),
+    );
+    return snap.data().count;
+}
+
+export interface AdminAttendanceStats {
+    total: number;
+    checkedIn: number;
+}
+
+export interface AdminAttendanceClubStatus {
+    clubId: string;
+    clubName: string;
+    category: string;
+    checkedIn: boolean;
+    checkedInAt?: unknown;
+}
+
+export interface AdminAttendanceEventDetail {
+    event: AttendanceEvent;
+    records: AttendanceRecord[];
+    stats: AdminAttendanceStats;
+    clubStatuses: AdminAttendanceClubStatus[];
+}
+
+export async function getAdminAttendanceStats(
+    event: Pick<AttendanceEvent, "id" | "expected_clubs">,
+): Promise<AdminAttendanceStats> {
+    const { collection, getCountFromServer, getDocs, query, where } =
+        await import("firebase/firestore");
+    const db = await getClientDb();
+
+    const categories = [...new Set(event.expected_clubs ?? [])].filter(Boolean);
+    const expected = new Set<string>();
+    for (const category of categories) {
+        const snap = await getDocs(
+            query(
+                collection(db, "clubs"),
+                where("category", "==", category),
+                where("is_active", "==", true),
+            ),
+        );
+        for (const d of snap.docs) expected.add(d.id);
+    }
+
+    const countSnap = await getCountFromServer(
+        query(
+            collection(db, "attendance_events", event.id, "records"),
+            where("is_duplicate_attempt", "==", false),
+        ),
+    );
+    return { total: expected.size, checkedIn: countSnap.data().count };
+}
+
+export interface AdminDashboardData {
+    clubsCount: number;
+    openFormsCount: number;
+    pendingDeposits: {
+        count: number;
+        total: number;
+        records: AdminDepositItem[];
+    };
+    latestResponses: Array<
+        FormResponse & { form_id: string; form_title?: string; club_name?: string }
+    >;
+    openAttendanceEvents: Array<
+        AttendanceEvent & { stats: AdminAttendanceStats }
+    >;
+}
+
+export async function getAdminDashboardData(): Promise<AdminDashboardData> {
+    const {
+        collection,
+        getCountFromServer,
+        getDocs,
+        limit,
+        orderBy,
+        query,
+        where,
+    } = await import("firebase/firestore");
+    const db = await getClientDb();
+
+    const [clubsCountSnap, openFormsSnap, pendingDepositsRaw, allFormsSnap, openEventsSnap] =
+        await Promise.all([
+            getCountFromServer(collection(db, "clubs")),
+            getDocs(query(collection(db, "forms"), where("status", "==", "open"))),
+            getAdminDeposits({ status: "pending_payment" }),
+            getDocs(collection(db, "forms")),
+            getDocs(
+                query(
+                    collection(db, "attendance_events"),
+                    where("status", "==", "open"),
+                ),
+            ),
+        ]);
+
+    const pendingDepositTotal = pendingDepositsRaw.reduce(
+        (sum, d) => sum + (typeof d.amount === "number" ? d.amount : 0),
+        0,
+    );
+
+    // Latest 5 responses across all forms (best-effort 20 most-recent per form).
+    const responsesByForm = await Promise.all(
+        allFormsSnap.docs.map(async (formDoc) => {
+            const formId = formDoc.id;
+            const formTitle = (formDoc.data() as { title?: unknown }).title;
+            try {
+                const snap = await getDocs(
+                    query(
+                        collection(db, "forms", formId, "responses"),
+                        orderBy("submitted_at", "desc"),
+                        limit(20),
+                    ),
+                );
+                return snap.docs.map((d) => ({
+                    ...(d.data() as FormResponse),
+                    id: d.id,
+                    form_id: formId,
+                    form_title: typeof formTitle === "string" ? formTitle : undefined,
+                }));
+            } catch {
+                return [];
+            }
+        }),
+    );
+
+    const clubNames = await getAllClubLite();
+
+    const allResponses = responsesByForm
+        .flat()
+        .filter((r) => !r.is_duplicate_attempt)
+        .sort(
+            (a, b) =>
+                (toDate(b.submitted_at)?.getTime() ?? 0) -
+                (toDate(a.submitted_at)?.getTime() ?? 0),
+        )
+        .slice(0, 5)
+        .map((r) => ({
+            ...r,
+            club_name: r.club_id ? clubNames.get(r.club_id)?.name : undefined,
+        }));
+
+    const openEvents = openEventsSnap.docs.map(
+        (d) =>
+            ({
+                id: d.id,
+                ...(d.data() as Omit<AttendanceEvent, "id">),
+            }) as AttendanceEvent,
+    );
+
+    const eventsWithStats = await Promise.all(
+        openEvents.map(async (event) => ({
+            ...event,
+            stats: await getAdminAttendanceStats(event),
+        })),
+    );
+
+    return {
+        clubsCount: clubsCountSnap.data().count,
+        openFormsCount: openFormsSnap.size,
+        pendingDeposits: {
+            count: pendingDepositsRaw.length,
+            total: pendingDepositTotal,
+            records: pendingDepositsRaw,
+        },
+        latestResponses: allResponses,
+        openAttendanceEvents: eventsWithStats,
+    };
+}
+
+export async function getAdminAttendanceEventDetail(
+    eventId: string,
+    options?: { includeClubStatuses?: boolean },
+): Promise<AdminAttendanceEventDetail | null> {
+    const event = await getAdminAttendanceEvent(eventId);
+    if (!event) return null;
+    const [records, stats] = await Promise.all([
+        getAdminAttendanceRecords(eventId),
+        getAdminAttendanceStats(event),
+    ]);
+
+    let clubStatuses: AdminAttendanceClubStatus[] = [];
+    if (options?.includeClubStatuses) {
+        const { collection, getDocs, query, where } = await import(
+            "firebase/firestore"
+        );
+        const db = await getClientDb();
+        const categories = [...new Set(event.expected_clubs ?? [])].filter(Boolean);
+        const seenClubs = new Map<string, Club>();
+        for (const category of categories) {
+            const snap = await getDocs(
+                query(
+                    collection(db, "clubs"),
+                    where("category", "==", category),
+                    where("is_active", "==", true),
+                ),
+            );
+            for (const d of snap.docs) {
+                if (seenClubs.has(d.id)) continue;
+                seenClubs.set(d.id, {
+                    id: d.id,
+                    ...(d.data() as Omit<Club, "id">),
+                } as Club);
+            }
+        }
+
+        const nonDup = records.filter((r) => !r.is_duplicate_attempt);
+        const checkedAt = new Map(nonDup.map((r) => [r.club_id, r.checked_in_at]));
+        const checkedSet = new Set(nonDup.map((r) => r.club_id));
+
+        clubStatuses = [...seenClubs.values()].map((c) => ({
+            clubId: c.id,
+            clubName: c.name,
+            category: c.category,
+            checkedIn: checkedSet.has(c.id),
+            checkedInAt: checkedAt.get(c.id),
+        }));
+    }
+
+    return { event, records, stats, clubStatuses };
+}
+
+export interface AdminClubLite {
+    id: string;
+    name: string;
+}
+
+export async function getAllClubLite(): Promise<Map<string, AdminClubLite>> {
+    const { collection, getDocs } = await import("firebase/firestore");
+    const db = await getClientDb();
+    const snap = await getDocs(collection(db, "clubs"));
+    const map = new Map<string, AdminClubLite>();
+    for (const d of snap.docs) {
+        const data = d.data() as Record<string, unknown>;
+        map.set(d.id, {
+            id: d.id,
+            name: typeof data.name === "string" ? data.name : d.id,
+        });
+    }
+    return map;
 }

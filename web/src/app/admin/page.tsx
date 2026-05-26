@@ -24,6 +24,7 @@ import {
   timestampToMs,
   type FirestoreTimestamp,
 } from "@/lib/admin-utils";
+import { getAdminDashboardData } from "@/lib/client-firestore";
 import type { ComponentType, SVGProps } from "react";
 
 interface DepositRecord {
@@ -90,8 +91,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    adminFetch<DashboardData>("/api/admin/stats")
-      .then((json) => setData(json))
+    getAdminDashboardData()
+      .then((json) => setData(json as unknown as DashboardData))
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

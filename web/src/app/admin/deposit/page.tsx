@@ -20,6 +20,7 @@ import {
   type TabItem,
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
+import { getAdminDeposits } from "@/lib/client-firestore";
 import { toast } from "@/components/ui/use-toast";
 
 type DepositStatus = "all" | "pending_payment" | "paid" | "returned";
@@ -138,8 +139,8 @@ export default function DepositPage() {
     if (!background) setLoading(true);
     if (!background) setError(null);
     try {
-      const data = await adminFetch<DepositRecord[]>("/api/admin/deposits");
-      setDeposits(data);
+      const data = await getAdminDeposits();
+      setDeposits(data as unknown as DepositRecord[]);
     } catch (err) {
       if (!background) {
         setError(err instanceof Error ? err.message : "載入資料時發生錯誤");

@@ -36,6 +36,11 @@ import {
   adminFetch,
   timestampToMs,
 } from "@/lib/admin-utils";
+import {
+  getAdminAttendanceEvents,
+  getAdminAttendanceEventDetail,
+  getAdminAttendanceStats,
+} from "@/lib/client-firestore";
 import { toast } from "@/components/ui/use-toast";
 
 type FilterStatus = "all" | "upcoming" | "open" | "closed";
@@ -191,9 +196,7 @@ export default function AttendancePage() {
     if (!background) setLoading(true);
     if (!background) setError(null);
     try {
-      const { events: data } = await adminFetch<{
-        events: AttendanceEvent[];
-      }>("/api/admin/attendance");
+      const data = (await getAdminAttendanceEvents()) as unknown as AttendanceEvent[];
 
       const withStats: EventWithStats[] = data.map((e) => ({
         ...e,
@@ -201,11 +204,7 @@ export default function AttendancePage() {
       }));
 
       const results = await Promise.allSettled(
-        data.map((e) =>
-          adminFetch<{ stats: { total: number; checkedIn: number } }>(
-            `/api/admin/attendance/${e.id}`,
-          ),
-        ),
+        data.map((e) => getAdminAttendanceStats(e)),
       );
 
       const statsMap = new Map<
@@ -216,8 +215,8 @@ export default function AttendancePage() {
         const r = results[i];
         if (r.status === "fulfilled") {
           statsMap.set(e.id, {
-            checkedIn: r.value.stats.checkedIn,
-            total: r.value.stats.total,
+            checkedIn: r.value.checkedIn,
+            total: r.value.total,
           });
         }
       });
@@ -370,10 +369,11 @@ export default function AttendancePage() {
   }
 
   const fetchDetail = useCallback(async (eventId: string) => {
-    const detail = await adminFetch<AttendanceEventDetailResponse>(
-      `/api/admin/attendance/${eventId}?includeClubStatuses=true`,
-    );
-    setDetailData(detail);
+    const detail = await getAdminAttendanceEventDetail(eventId, {
+      includeClubStatuses: true,
+    });
+    if (!detail) throw new Error("找不到此點名活動");
+    setDetailData(detail as unknown as AttendanceEventDetailResponse);
   }, []);
 
   const handleManualCheckIn = useCallback(

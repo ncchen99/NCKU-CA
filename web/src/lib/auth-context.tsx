@@ -34,6 +34,21 @@ async function fetchUserData(uid: string): Promise<User | null> {
   return { uid: snap.id, ...snap.data() } as User;
 }
 
+/**
+ * 確保 Firebase ID token 內含最新的 custom claims（特別是 role）。
+ * setCustomUserClaims 後既有 token 不會自動更新，必須強制刷新一次。
+ * Firestore Security Rules 依賴 request.auth.token.role，沒有刷新就會被拒絕。
+ */
+async function syncClaimsWithRole(
+  fbUser: FirebaseUser,
+  role: string | undefined,
+): Promise<void> {
+  if (!role) return;
+  const result = await fbUser.getIdTokenResult();
+  if (result.claims.role === role) return;
+  await fbUser.getIdToken(true);
+}
+
 async function createSession(idToken: string) {
   const res = await fetch("/api/auth/session", {
     method: "POST",
@@ -89,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setFirebaseUser(fbUser);
           const userData = await fetchUserData(fbUser.uid);
           setUser(userData);
+          await syncClaimsWithRole(fbUser, userData?.role);
         } catch (err) {
           console.error("Auth state change error:", err);
           setFirebaseUser(null);
@@ -131,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userData = await fetchUserData(fbUser.uid);
     setFirebaseUser(fbUser);
     setUser(userData);
+    await syncClaimsWithRole(fbUser, userData?.role);
   }, []);
 
   const signOut = useCallback(async () => {
@@ -150,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!fbUser) return;
     const userData = await fetchUserData(fbUser.uid);
     setUser(userData);
+    await syncClaimsWithRole(fbUser, userData?.role);
   }, []);
 
   return (

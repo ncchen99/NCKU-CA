@@ -1,239 +1,262 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
 
-    // ╔══════════════════════════════════════════════════════════════╗
-    // ║  成功大學社團聯合會 — Firestore Security Rules              ║
-    // ║  NCKU CA Official Platform                                 ║
-    // ║  原則：預設拒絕、RBAC Custom Claims、最小權限               ║
-    // ╚══════════════════════════════════════════════════════════════╝
+      // ╔══════════════════════════════════════════════════════════════╗
+      // ║  成功大學社團聯合會 — Firestore Security Rules              ║
+      // ║  NCKU CA Official Platform                                 ║
+      // ║  原則：預設拒絕、RBAC Custom Claims、最小權限               ║
+      // ╚══════════════════════════════════════════════════════════════╝
 
-    // ──────────────────────────────────────────────
-    //  輔助函式 (Helper Functions)
-    // ──────────────────────────────────────────────
+      // ──────────────────────────────────────────────
+      //  輔助函式 (Helper Functions)
+      // ──────────────────────────────────────────────
 
-    // 是否已通過 Firebase Auth 驗證
-    function isAuthenticated() {
-      return request.auth != null;
-    }
+      // 是否已通過 Firebase Auth 驗證
+      function isAuthenticated() {
+        return request.auth != null;
+      }
 
-    // 是否為管理員（Custom Claims role == 'admin'）
-    function isAdmin() {
-      return isAuthenticated()
-          && request.auth.token.role == 'admin';
-    }
+      // 是否為管理員（Custom Claims role == 'admin'）
+      function isAdmin() {
+        return isAuthenticated()
+            && request.auth.token.role == 'admin';
+      }
 
-    // 是否為社團成員（Custom Claims role == 'club_member'）
-    function isClubMember() {
-      return isAuthenticated()
-          && request.auth.token.role == 'club_member';
-    }
+      // 是否為社團成員（Custom Claims role == 'club_member'）
+      function isClubMember() {
+        return isAuthenticated()
+            && request.auth.token.role == 'club_member';
+      }
 
-    // 是否為指定 UID 的擁有者
-    function isOwner(uid) {
-      return isAuthenticated()
-          && request.auth.uid == uid;
-    }
+      // 是否為指定 UID 的擁有者
+      function isOwner(uid) {
+        return isAuthenticated()
+            && request.auth.uid == uid;
+      }
 
-    // 是否為成大校內 Email（@gs.ncku.edu.tw）
-    function isNckuEmail() {
-      return isAuthenticated()
-          && request.auth.token.email_verified == true
-          && request.auth.token.email.matches('.*@gs[.]ncku[.]edu[.]tw$');
-    }
+      // 是否為成大校內 Email（@gs.ncku.edu.tw）
+      function isNckuEmail() {
+        return isAuthenticated()
+            && request.auth.token.email_verified == true
+            && request.auth.token.email.matches('.*@gs[.]ncku[.]edu[.]tw$');
+      }
 
-    // 取得即將寫入的資料
-    function incomingData() {
-      return request.resource.data;
-    }
+      // 取得即將寫入的資料
+      function incomingData() {
+        return request.resource.data;
+      }
 
-    // 取得目前已存在的資料
-    function existingData() {
-      return resource.data;
-    }
+      // 取得目前已存在的資料
+      function existingData() {
+        return resource.data;
+      }
 
-    function isActiveClub(clubId) {
-      return clubId is string
-          && clubId != ''
-          && exists(/databases/$(database)/documents/clubs/$(clubId))
-          && get(/databases/$(database)/documents/clubs/$(clubId)).data.is_active == true;
-    }
+      function isActiveClub(clubId) {
+        return clubId is string
+            && clubId != ''
+            && exists(/databases/$(database)/documents/clubs/$(clubId))
+            && get(/databases/$(database)/documents/clubs/$(clubId)).data.is_active == true;
+      }
 
-    // ──────────────────────────────────────────────
-    //  1. site_content — 前台頁面內容（CMS）
-    //  讀取：所有人（公開網站內容）
-    //  寫入：僅限管理員
-    // ──────────────────────────────────────────────
-    match /site_content/{pageId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
+      // ──────────────────────────────────────────────
+      //  1. site_content — 前台頁面內容（CMS）
+      //  讀取：所有人（公開網站內容）
+      //  寫入：僅限管理員
+      // ──────────────────────────────────────────────
+      match /site_content/{pageId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
 
-    // ──────────────────────────────────────────────
-    //  2. posts — 最新消息 / 活動回顧文章
-    //  讀取：已發布文章任何人可讀；草稿僅管理員可讀
-    //  寫入：僅限管理員
-    // ──────────────────────────────────────────────
-    match /posts/{postId} {
-      allow read: if resource.data.status == 'published'
-                  || isAdmin();
-      allow create, update, delete: if isAdmin();
-    }
+      // ──────────────────────────────────────────────
+      //  2. posts — 最新消息 / 活動回顧文章
+      //  讀取：已發布文章任何人可讀；草稿僅管理員可讀
+      //  寫入：僅限管理員
+      // ──────────────────────────────────────────────
+      match /posts/{postId} {
+        allow read: if resource.data.status == 'published'
+                    || isAdmin();
+        allow create, update, delete: if isAdmin();
+      }
 
-    // ──────────────────────────────────────────────
-    //  3. clubs — 社團名單
-    //  讀取：所有人（公開資訊）
-    //  寫入：僅限管理員
-    // ──────────────────────────────────────────────
-    match /clubs/{clubId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
+      // ──────────────────────────────────────────────
+      //  3. clubs — 社團名單
+      //  讀取：所有人（公開資訊）
+      //  寫入：僅限管理員
+      // ──────────────────────────────────────────────
+      match /clubs/{clubId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
 
-    // ──────────────────────────────────────────────
-    //  4. users — 平台用戶
-    //  讀取：本人可讀自己的文件；管理員可讀全部
-    //  建立：首次登入時由系統建立（auth.uid == uid）
-    //  更新：本人僅可修改 display_name；管理員可更新所有欄位
-    //  刪除：僅限管理員
-    // ──────────────────────────────────────────────
-    match /users/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
+      // ──────────────────────────────────────────────
+      //  4. users — 平台用戶
+      //  讀取：本人可讀自己的文件；管理員可讀全部
+      //  建立：首次登入時由系統建立（auth.uid == uid）
+      //  更新：本人僅可修改 display_name；管理員可更新所有欄位
+      //  刪除：僅限管理員
+      // ──────────────────────────────────────────────
+      match /users/{uid} {
+        allow read: if isOwner(uid) || isAdmin();
 
-      // 首次登入建立用戶文件，uid 必須與登入帳號一致
-      allow create: if isOwner(uid)
-                    && incomingData().uid == uid
-                    && incomingData().email == request.auth.token.email;
+        // 首次登入建立用戶文件，uid 必須與登入帳號一致
+        allow create: if isOwner(uid)
+                      && incomingData().uid == uid
+                      && incomingData().email == request.auth.token.email;
 
-      // 一般用戶只能更新個人資料欄位（display_name、club_id 等），
-      // 不可自行變更 role、email 等敏感欄位
-      // 管理員可更新所有欄位（包含 role、club_id 等）
-      allow update: if isAdmin()
-                    || (isOwner(uid)
-                        && incomingData().diff(existingData()).affectedKeys()
-                            .hasOnly([
-                              'display_name',
-                              'club_id',
-                              'position_title',
-                              'department_grade',
-                              'profile_completed'
-                            ])
-                        && incomingData().display_name is string
-                        && incomingData().display_name.size() > 0
-                        && (
-                          !incomingData().diff(existingData()).affectedKeys().hasAny(['club_id'])
-                          || incomingData().club_id == ''
-                          || isActiveClub(incomingData().club_id)
-                        )
-                       );
+        // 一般用戶只能更新個人資料欄位（display_name、club_id 等），
+        // 不可自行變更 role、email 等敏感欄位
+        // 管理員可更新所有欄位（包含 role、club_id 等）
+        allow update: if isAdmin()
+                      || (isOwner(uid)
+                          && incomingData().diff(existingData()).affectedKeys()
+                              .hasOnly([
+                                'display_name',
+                                'club_id',
+                                'position_title',
+                                'department_grade',
+                                'profile_completed'
+                              ])
+                          && incomingData().display_name is string
+                          && incomingData().display_name.size() > 0
+                          && (
+                            !incomingData().diff(existingData()).affectedKeys().hasAny(['club_id'])
+                            || incomingData().club_id == ''
+                            || isActiveClub(incomingData().club_id)
+                          )
+                        );
 
-      allow delete: if isAdmin();
-    }
+        allow delete: if isAdmin();
+      }
 
-    // ──────────────────────────────────────────────
-    //  5. forms — 表單模板 Schema
-    //  讀取：已開放的表單任何人可讀；管理員可讀全部（含草稿、已關閉）
-    //  寫入：僅限管理員
-    // ──────────────────────────────────────────────
-    match /forms/{formId} {
-      allow read: if resource.data.status == 'open'
-                  || isAdmin();
-      allow create, update, delete: if isAdmin();
+      // ──────────────────────────────────────────────
+      //  5. forms — 表單模板 Schema
+      //  讀取：已開放的表單任何人可讀；登入使用者可讀全部（含已關閉，供個人歷史頁顯示標題）；
+      //        管理員可讀全部草稿與已關閉
+      //  寫入：僅限管理員
+      // ──────────────────────────────────────────────
+      match /forms/{formId} {
+        allow read: if isAuthenticated()
+                    || resource.data.status == 'open'
+                    || isAdmin();
+        allow create, update, delete: if isAdmin();
 
-      // ──────────────────────────────────────────
-      //  5.1 forms/{formId}/responses — 表單回覆
-      //  讀取：提交者可讀自己的回覆；管理員可讀全部
-      //  建立：已驗證的成大用戶，submitted_by_uid 必須等於 auth.uid
-      //  更新/刪除：一律禁止（提交後不可修改，確保資料完整性）
-      // ──────────────────────────────────────────
-      match /responses/{responseId} {
+        // ──────────────────────────────────────────
+        //  5.1 forms/{formId}/responses — 表單回覆
+        //  讀取：提交者可讀自己的回覆；管理員可讀全部
+        //  建立：已驗證的成大用戶，submitted_by_uid 必須等於 auth.uid
+        //  更新/刪除：一律禁止（提交後不可修改，確保資料完整性）
+        // ──────────────────────────────────────────
+        match /responses/{responseId} {
+          allow read: if isAdmin()
+                      || (isAuthenticated()
+                          && resource.data.submitted_by_uid == request.auth.uid);
+
+          // 僅允許建立，且必須滿足以下條件：
+          // 1. 必須是成大 Email 帳號
+          // 2. submitted_by_uid 必須與登入者 UID 一致（防止代填）
+          // 3. form_id 必須與路徑中的 formId 一致
+          allow create: if isNckuEmail()
+                        && incomingData().submitted_by_uid == request.auth.uid
+                        && incomingData().form_id == formId;
+
+          // 表單回覆為不可變資料，禁止更新與刪除
+          allow update, delete: if false;
+        }
+      }
+
+      // ──────────────────────────────────────────────
+      //  6. deposit_records — 保證金紀錄
+      //  讀取：管理員可讀全部；社團成員可讀所屬社團的紀錄
+      //  建立/更新：僅限管理員，且更新時強制狀態只能向前推進
+      //  刪除：一律禁止（保留審計軌跡）
+      // ──────────────────────────────────────────────
+      match /deposit_records/{recordId} {
+        allow read: if isAdmin()
+                    || (isClubMember()
+                        && resource.data.club_id == request.auth.token.club_id);
+
+        allow create: if isAdmin();
+
+        // 狀態機：只允許向前推進
+        // pending_payment → paid → returned
+        // 不可逆轉、不可跳級
+        allow update: if isAdmin()
+                      && isValidDepositTransition(
+                          existingData().status,
+                          incomingData().status
+                        );
+
+        // 保證金紀錄不可刪除，確保審計追蹤完整
+        allow delete: if false;
+      }
+
+      // 保證金狀態轉換驗證：只允許合法的向前推進
+      function isValidDepositTransition(oldStatus, newStatus) {
+        return (oldStatus == 'pending_payment' && newStatus == 'paid')
+            || (oldStatus == 'paid' && newStatus == 'returned');
+      }
+
+      // ──────────────────────────────────────────────
+      //  7. attendance_events — 點名事件
+      //  讀取：已開放的事件任何人可讀；登入使用者可讀全部（含已關閉，供個人歷史頁顯示標題）；
+      //        管理員可讀全部
+      //  寫入：僅限管理員
+      // ──────────────────────────────────────────────
+      match /attendance_events/{eventId} {
+        allow read: if isAuthenticated()
+                    || resource.data.status == 'open'
+                    || isAdmin();
+        allow create, update, delete: if isAdmin();
+
+        // ──────────────────────────────────────────
+        //  7.1 attendance_events/{eventId}/records — 點名紀錄
+        //  讀取：簽到者可讀自己的紀錄；管理員可讀全部
+        //  建立：已驗證用戶，user_uid 必須與 auth.uid 一致（防止代替他人點名）
+        //  更新/刪除：一律禁止（點名紀錄不可變）
+        // ──────────────────────────────────────────
+        match /records/{recordId} {
+          allow read: if isAdmin()
+                      || (isAuthenticated()
+                          && resource.data.user_uid == request.auth.uid);
+
+          // 建立點名紀錄：
+          // 1. 必須是成大 Email 帳號
+          // 2. user_uid 必須與登入者 UID 一致（防止代簽）
+          allow create: if isNckuEmail()
+                        && incomingData().user_uid == request.auth.uid;
+
+          // 點名紀錄為不可變資料，禁止更新與刪除
+          allow update, delete: if false;
+        }
+      }
+
+      // ──────────────────────────────────────────────
+      //  Collection Group 查詢規則
+      //  巢狀 match 只覆蓋直接路徑存取；collectionGroup() 查詢
+      //  必須額外定義以 {path=**} 開頭的同名 collection rule。
+      //  這裡僅允許使用者讀取「自己」的回覆 / 簽到紀錄，
+      //  以支援 /profile/forms 與 /profile/attendance 頁面直連。
+      // ──────────────────────────────────────────────
+      match /{path=**}/responses/{responseId} {
         allow read: if isAdmin()
                     || (isAuthenticated()
                         && resource.data.submitted_by_uid == request.auth.uid);
-
-        // 僅允許建立，且必須滿足以下條件：
-        // 1. 必須是成大 Email 帳號
-        // 2. submitted_by_uid 必須與登入者 UID 一致（防止代填）
-        // 3. form_id 必須與路徑中的 formId 一致
-        allow create: if isNckuEmail()
-                      && incomingData().submitted_by_uid == request.auth.uid
-                      && incomingData().form_id == formId;
-
-        // 表單回覆為不可變資料，禁止更新與刪除
-        allow update, delete: if false;
       }
-    }
 
-    // ──────────────────────────────────────────────
-    //  6. deposit_records — 保證金紀錄
-    //  讀取：管理員可讀全部；社團成員可讀所屬社團的紀錄
-    //  建立/更新：僅限管理員，且更新時強制狀態只能向前推進
-    //  刪除：一律禁止（保留審計軌跡）
-    // ──────────────────────────────────────────────
-    match /deposit_records/{recordId} {
-      allow read: if isAdmin()
-                  || (isClubMember()
-                      && resource.data.club_id == request.auth.token.club_id);
-
-      allow create: if isAdmin();
-
-      // 狀態機：只允許向前推進
-      // pending_payment → paid → returned
-      // 不可逆轉、不可跳級
-      allow update: if isAdmin()
-                    && isValidDepositTransition(
-                         existingData().status,
-                         incomingData().status
-                       );
-
-      // 保證金紀錄不可刪除，確保審計追蹤完整
-      allow delete: if false;
-    }
-
-    // 保證金狀態轉換驗證：只允許合法的向前推進
-    function isValidDepositTransition(oldStatus, newStatus) {
-      return (oldStatus == 'pending_payment' && newStatus == 'paid')
-          || (oldStatus == 'paid' && newStatus == 'returned');
-    }
-
-    // ──────────────────────────────────────────────
-    //  7. attendance_events — 點名事件
-    //  讀取：已開放的事件任何人可讀；管理員可讀全部
-    //  寫入：僅限管理員
-    // ──────────────────────────────────────────────
-    match /attendance_events/{eventId} {
-      allow read: if resource.data.status == 'open'
-                  || isAdmin();
-      allow create, update, delete: if isAdmin();
-
-      // ──────────────────────────────────────────
-      //  7.1 attendance_events/{eventId}/records — 點名紀錄
-      //  讀取：簽到者可讀自己的紀錄；管理員可讀全部
-      //  建立：已驗證用戶，user_uid 必須與 auth.uid 一致（防止代替他人點名）
-      //  更新/刪除：一律禁止（點名紀錄不可變）
-      // ──────────────────────────────────────────
-      match /records/{recordId} {
+      match /{path=**}/records/{recordId} {
         allow read: if isAdmin()
                     || (isAuthenticated()
                         && resource.data.user_uid == request.auth.uid);
+      }
 
-        // 建立點名紀錄：
-        // 1. 必須是成大 Email 帳號
-        // 2. user_uid 必須與登入者 UID 一致（防止代簽）
-        allow create: if isNckuEmail()
-                      && incomingData().user_uid == request.auth.uid;
-
-        // 點名紀錄為不可變資料，禁止更新與刪除
-        allow update, delete: if false;
+      // ──────────────────────────────────────────────
+      //  預設拒絕：未明確列出的路徑一律拒絕存取
+      //  確保新增 Collection 時必須手動開放權限
+      // ──────────────────────────────────────────────
+      match /{document=**} {
+        allow read, write: if false;
       }
     }
-
-    // ──────────────────────────────────────────────
-    //  預設拒絕：未明確列出的路徑一律拒絕存取
-    //  確保新增 Collection 時必須手動開放權限
-    // ──────────────────────────────────────────────
-    match /{document=**} {
-      allow read, write: if false;
-    }
   }
-}

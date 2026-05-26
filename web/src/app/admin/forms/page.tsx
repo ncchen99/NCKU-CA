@@ -29,6 +29,11 @@ import {
 import { FormFieldEditor } from "@/components/admin/form-field-editor";
 import { FormTemplatePicker } from "@/components/admin/form-template-picker";
 import { formatTimestamp, adminFetch, timestampToMs } from "@/lib/admin-utils";
+import {
+  getAdminForms,
+  getAdminFormById,
+  getAdminFormResponseCount,
+} from "@/lib/client-firestore";
 import { toast } from "@/components/ui/use-toast";
 import type { FormField as FormFieldType } from "@/types";
 import type { FormTemplate } from "@/lib/form-templates";
@@ -157,18 +162,13 @@ export default function FormsPage() {
     if (!background) setLoading(true);
     if (!background) setError(null);
     try {
-      const data = await adminFetch<Form[]>("/api/admin/forms");
+      const data = (await getAdminForms()) as unknown as Form[];
 
       const formsWithCounts = await Promise.all(
         data.map(async (form) => {
           try {
-            const responses = await adminFetch<unknown[]>(
-              `/api/admin/forms/${form.id}/responses`,
-            );
-            return {
-              ...form,
-              responseCount: Array.isArray(responses) ? responses.length : 0,
-            };
+            const count = await getAdminFormResponseCount(form.id);
+            return { ...form, responseCount: count };
           } catch {
             return { ...form, responseCount: 0 };
           }
@@ -248,7 +248,8 @@ export default function FormsPage() {
     setModalOpen(true);
     setFormFetching(true);
     try {
-      const full = await adminFetch<Form>(`/api/admin/forms/${form.id}`);
+      const full = (await getAdminFormById(form.id)) as unknown as Form;
+      if (!full) throw new Error("表單不存在或已被刪除");
       setEditingForm(full);
 
       const rawFields = (full.fields || []) as unknown as Record<string, unknown>[];
