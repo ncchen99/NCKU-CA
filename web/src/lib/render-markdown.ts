@@ -36,5 +36,9 @@ export async function renderMarkdownToHtml(markdown: string): Promise<string> {
     .use(rehypeStringify)
     .process(markdown);
 
-  return String(file);
+  const html = String(file);
+  // Wrap table element in a scroll container for mobile responsiveness
+  return html
+    .replace(/<table([\s>])/g, '<div class="table-wrapper"><table$1')
+    .replace(/<\/table>/g, "</table></div>");
 }
