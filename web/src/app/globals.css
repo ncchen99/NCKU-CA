@@ -26,7 +26,16 @@ body {
   font-feature-settings: 'ss01' 1;
 }
 
+a {
+  overflow-wrap: break-word;
+}
+
 /* 公開頁 Markdown（章程、CMS） */
+.cms-markdown {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 .cms-markdown h1 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -113,6 +122,8 @@ body {
 .cms-markdown a {
   color: var(--color-primary);
   text-decoration: none;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .cms-markdown .anchor-link {
