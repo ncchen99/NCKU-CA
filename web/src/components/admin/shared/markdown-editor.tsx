@@ -334,7 +334,7 @@ export function MarkdownEditor({
                             key={f.id}
                             type="button"
                             onClick={() => {
-                              insertText(`\n\n[填寫表單：${f.title}](/forms/${f.id} "form-embed")\n`);
+                              insertText(`\n\n[${f.title}](/forms/${f.id} "form-embed")\n`);
                               setFormMenuOpen(false);
                             }}
                             className="flex w-full px-3 py-2 text-left text-[12px] text-neutral-700 hover:bg-neutral-50 hover:text-primary transition-colors"
