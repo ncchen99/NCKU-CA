@@ -1,8 +1,8 @@
 meta:
   source: https://sys.activity-osa.ncku.edu.tw/index.php?c=club0408
   source_name: NCKU Student Club Platform
-  scraped_at: '2026-03-24T08:40:50.449090Z'
-  total_clubs: 231
+  scraped_at: '2026-07-08T03:54:10.186110Z'
+  total_clubs: 234
   categories:
   - code: A
     name: 系學會
@@ -144,12 +144,12 @@ clubs:
   category_code: A
   status: 正式
   email: nckucesa.club@gs.ncku.edu.tw
-  president_name: null
+  president_name: 林新恩
   president_name_en: null
-  advisor_name: null
+  advisor_name: 王雲哲
   goal: 溝通同學間之意見，聯絡師生間之情誼，使我們能更加團結、共同為本系之光榮而努力。
   description: null
-  regular_activity_time: 週二晚上20:00~22:00
+  regular_activity_time: 週四晚上20:00~22:00
   main_activity_location: 社辦
   website_url: https://www.facebook.com/profile.php?id=100064015302340
   import_source: yaml_import
@@ -161,15 +161,17 @@ clubs:
       status: 正式
       platform_id: 088A014
     detail:
-      name: null
+      name: 王雲哲
       name_c: 土木工程學系會
       name_e: Students Association-Department of Civil Engineering
       email: nckucesa.club@gs.ncku.edu.tw
       goal: 溝通同學間之意見，聯絡師生間之情誼，使我們能更加團結、共同為本系之光榮而努力。
       introduce: ''
-      acttime: 週二晚上20:00~22:00
+      acttime: 週四晚上20:00~22:00
       actplace: 社辦
       url: https://www.facebook.com/profile.php?id=100064015302340
+      leader_name_c: 林新恩
+      leader_name_e: null
 - id: ncku-088a009
   platform_id: 088A009
   name: 機械工程系會
@@ -310,9 +312,9 @@ clubs:
   category_code: A
   status: 正式
   email: nckuacc.club@gs.ncku.edu.tw
-  president_name: null
+  president_name: 駱禹潔
   president_name_en: null
-  advisor_name: null
+  advisor_name: 林軒竹
   goal: 系上學生自治團體,為每一位會計系學生爭取權益,並積極舉辦相關活動與講座,促進系上同學互相交流和增進新知。
   description: 116級成員為主要幹部,全系上的人皆能參與系學會。
   regular_activity_time: 不定期舉行活動
@@ -327,7 +329,7 @@ clubs:
       status: 正式
       platform_id: 088A028
     detail:
-      name: null
+      name: 林軒竹
       name_c: 會計學系會
       name_e: Students Association-Department of Accounting
       email: nckuacc.club@gs.ncku.edu.tw
@@ -336,6 +338,8 @@ clubs:
       acttime: 不定期舉行活動
       actplace: 系會辦
       url: https://www.facebook.com/nckuaccountancy
+      leader_name_c: 駱禹潔
+      leader_name_e: null
 - id: ncku-088a026
   platform_id: 088A026
   name: 交通管理科學系系學會
@@ -599,9 +603,9 @@ clubs:
   email: sname.ncku@gmail.com
   president_name: 劉向昀
   president_name_en: null
-  advisor_name: null
+  advisor_name: 吳炳承
   goal: 促進系上同學及各年級的關係，讓系統系成為溫暖的大家庭
-  description: 一群認同系統系的熱血青年
+  description: 一群認同系統系的熱血青年!
   regular_activity_time: 禮拜一中午12:55
   main_activity_location: 社團辦公室
   website_url: http://www.facebook.com/Ncku.Sname.Student.Organization
@@ -614,12 +618,12 @@ clubs:
       status: 正式
       platform_id: 088A018
     detail:
-      name: null
+      name: 吳炳承
       name_c: 系統及船舶機電工程學系會
       name_e: Students Association-Department of Systems and Naval Mechatronic Engineering
       email: sname.ncku@gmail.com
       goal: 促進系上同學及各年級的關係，讓系統系成為溫暖的大家庭
-      introduce: 一群認同系統系的熱血青年
+      introduce: 一群認同系統系的熱血青年!
       acttime: 禮拜一中午12:55
       actplace: 社團辦公室
       url: http://www.facebook.com/Ncku.Sname.Student.Organization
@@ -669,11 +673,11 @@ clubs:
   category_code: A
   status: 正式
   email: f44136122@gs.ncku.edu.tw
-  president_name: null
+  president_name: 高一弘
   president_name_en: null
-  advisor_name: null
+  advisor_name: 詹劭勳
   goal: null
-  description: null
+  description: 壯大航太系!
   regular_activity_time: 每周
   main_activity_location: 社團辦公室
   website_url: https://www.facebook.com/NckuDaa?locale=zh_TW
@@ -686,15 +690,17 @@ clubs:
       status: 正式
       platform_id: 088A021
     detail:
-      name: null
+      name: 詹劭勳
       name_c: 航空太空工程學系會
       name_e: Students Association-Department of Aeronautical and Astronautical Engineering
       email: f44136122@gs.ncku.edu.tw
       goal: ''
-      introduce: ''
+      introduce: 壯大航太系!
       acttime: 每周
       actplace: 社團辦公室
       url: https://www.facebook.com/NckuDaa?locale=zh_TW
+      leader_name_c: 高一弘
+      leader_name_e: null
 - id: ncku-088a023
   platform_id: 088A023
   name: 測量及空間資訊學系會
@@ -1353,9 +1359,9 @@ clubs:
   category_code: A
   status: 正式
   email: bepatientlcy@gmail.com
-  president_name: null
+  president_name: 王柏翰
   president_name_en: null
-  advisor_name: null
+  advisor_name: 黃珍語
   goal: null
   description: null
   regular_activity_time: 星期一早上10點
@@ -1370,7 +1376,7 @@ clubs:
       status: 正式
       platform_id: 088A031
     detail:
-      name: null
+      name: 黃珍語
       name_c: 醫學檢驗生物技術學系會
       name_e: Students Association-Department of Medical Technology
       email: bepatientlcy@gmail.com
@@ -1379,6 +1385,8 @@ clubs:
       acttime: 星期一早上10點
       actplace: 社團辦公室
       url: ''
+      leader_name_c: 王柏翰
+      leader_name_e: null
 - id: ncku-091a038
   platform_id: 091A038
   name: 台灣文學系系學會
@@ -1781,7 +1789,7 @@ clubs:
   email: ncku.den.stu.association@dentistry.ncku.edu.tw
   president_name: 王揆儀
   president_name_en: null
-  advisor_name: null
+  advisor_name: 黃則達
   goal: "本會宗旨為：\n一、聯絡本系師生、校友以及會員間之感情。 \n二、培養會員之自治能力及民主觀念。 \n三、定期舉辦學術及康樂活動，培養互助合作的精神。\
     \ \n四、積極推廣與本校各系及其他各校牙醫學系之交流。 \n五、為學校與本會會員之溝通橋樑，維護及爭取會員之共同權益。"
   description: null
@@ -1797,7 +1805,7 @@ clubs:
       status: 正式
       platform_id: 109A047
     detail:
-      name: null
+      name: 黃則達
       name_c: 牙醫學系系學會
       name_e: Student Association-department of dentistry
       email: ncku.den.stu.association@dentistry.ncku.edu.tw
@@ -1977,7 +1985,7 @@ clubs:
   email: nckusirs@gmail.com
   president_name: 黃晟祐
   president_name_en: null
-  advisor_name: null
+  advisor_name: 蔡群立
   goal: 我們出生的年代，是個低工資的時代。若我們不創業自己當老闆，想要累積財富就是透過理財投資。主要內容是講解何謂理財、何謂投資，提出有無投資理財之比較，進而讓新生深刻了解理財的重要性。
   description: 近幾年來，從政治制度的遽變到大眾消費、理財觀念之不同，從經濟起飛到證券市場的蓬勃發展，你能感受到時代的脈動嗎？且讓證券投資研習社告訴你!
   regular_activity_time: 禮拜四pm7:00~pm9:00
@@ -1992,7 +2000,7 @@ clubs:
       status: 正式
       platform_id: 088B011
     detail:
-      name: null
+      name: 蔡群立
       name_c: 證券投資研習社
       name_e: Securities Investment Association
       email: nckusirs@gmail.com
@@ -2085,9 +2093,9 @@ clubs:
   category_code: B
   status: 正式
   email: e54105026@gs.ncku.edu.tw
-  president_name: null
+  president_name: 張北辰
   president_name_en: null
-  advisor_name: null
+  advisor_name: 林錦玄
   goal: 讓加入的社員有正確的騎車觀念並擁有基本的維修保養技能。
   description: 有鑑於本校機（汽）車使用率急劇增加，為確保使用安全並增加同學維修保養之基本常識，及提高同學對機（汽）車環境污染之環保意識。
   regular_activity_time: 每週五晚上7:00
@@ -2102,7 +2110,7 @@ clubs:
       status: 正式
       platform_id: 088B017
     detail:
-      name: null
+      name: 林錦玄
       name_c: 機動車研究社
       name_e: Chapter of Motor vehicle Study Association
       email: e54105026@gs.ncku.edu.tw
@@ -2111,6 +2119,8 @@ clubs:
       acttime: 每週五晚上7:00
       actplace: 社團辦公室
       url: http://www.facebook.com/%E6%88%90%E5%8A%9F%E5%A4%A7%E5%AD%B8%E6%A9%9F%E7%A0%94%E7%A4%BE-NCKU-Motors-CLUB-288831024582842
+      leader_name_c: 張北辰
+      leader_name_e: null
 - id: ncku-088b018
   platform_id: 088B018
   name: 信望愛社
@@ -2661,7 +2671,7 @@ clubs:
   email: f14096130@gs.ncku.edu.tw
   president_name: 林鼎紘
   president_name_en: null
-  advisor_name: null
+  advisor_name: 馮業達
   goal: null
   description: 以學術之觀點進行軍事相關知識之研究與討論，讓人更加了解軍事，認識軍事。
   regular_activity_time: 星期三1900~2100
@@ -2676,7 +2686,7 @@ clubs:
       status: 正式
       platform_id: 090C021
     detail:
-      name: null
+      name: 馮業達
       name_c: 軍事研究社
       name_e: Military club
       email: f14096130@gs.ncku.edu.tw
@@ -2695,12 +2705,12 @@ clubs:
   category_code: B
   status: 正式
   email: nckucmc0221@gmail.com
-  president_name: null
+  president_name: 林莉璇
   president_name_en: null
-  advisor_name: null
+  advisor_name: 林少紅
   goal: 聚集一群對中藥、針灸等中醫學有興趣者，共同探究與學習中醫學的奧妙，繼而活用於日常生活中以造福人群，回饋社會。
-  description: 成大中醫社今年(2025)秋季是第36屆，是個由喜愛中醫藥的學生組成的社團。社團成員除了醫學院學生外，亦常有文、管、理、工、社科等學院的學生加入，多樣性相當的高。授課內容除了參採醫書經典外，也會邀請中醫師為社員上課，更有各式各樣的實作課程，如藥膳實作、推拿實作，加深加廣學習中醫、中藥。
-  regular_activity_time: 每周四19:00~21:00
+  description: 成大中醫社今年(2026)春季是第37屆，是個由喜愛中醫藥的學生組成的社團。社團成員除了醫學院學生外，亦常有文、管、理、工、社科等學院的學生加入，多樣性相當的高。授課內容除了參採醫書經典外，也會邀請中醫師為社員上課，更有各式各樣的實作課程，如藥膳實作、推拿實作，加深加廣學習中醫、中藥。
+  regular_activity_time: 每周三19:00~21:00
   main_activity_location: 醫學院303D教室
   website_url: http://www.facebook.com/groups/207053039325598/
   import_source: yaml_import
@@ -2712,15 +2722,17 @@ clubs:
       status: 正式
       platform_id: 098B055
     detail:
-      name: null
+      name: 林少紅
       name_c: 中國傳統醫學研習社
       name_e: Traditional Chinese Medicine Club
       email: nckucmc0221@gmail.com
       goal: 聚集一群對中藥、針灸等中醫學有興趣者，共同探究與學習中醫學的奧妙，繼而活用於日常生活中以造福人群，回饋社會。
-      introduce: 成大中醫社今年(2025)秋季是第36屆，是個由喜愛中醫藥的學生組成的社團。社團成員除了醫學院學生外，亦常有文、管、理、工、社科等學院的學生加入，多樣性相當的高。授課內容除了參採醫書經典外，也會邀請中醫師為社員上課，更有各式各樣的實作課程，如藥膳實作、推拿實作，加深加廣學習中醫、中藥。
-      acttime: 每周四19:00~21:00
+      introduce: 成大中醫社今年(2026)春季是第37屆，是個由喜愛中醫藥的學生組成的社團。社團成員除了醫學院學生外，亦常有文、管、理、工、社科等學院的學生加入，多樣性相當的高。授課內容除了參採醫書經典外，也會邀請中醫師為社員上課，更有各式各樣的實作課程，如藥膳實作、推拿實作，加深加廣學習中醫、中藥。
+      acttime: 每周三19:00~21:00
       actplace: 醫學院303D教室
       url: http://www.facebook.com/groups/207053039325598/
+      leader_name_c: 林莉璇
+      leader_name_e: null
 - id: ncku-099b057
   platform_id: 099B057
   name: 旅行社
@@ -2728,13 +2740,13 @@ clubs:
   category: 綜合性
   category_code: B
   status: 正式
-  email: f56477@livemail.tw
-  president_name: null
+  email: null
+  president_name: 賴韻伃
   president_name_en: null
-  advisor_name: null
+  advisor_name: 郭昊侖
   goal: 一群志同道合，對旅行有興趣的人  希望透過旅行相關的分享講座、電影、聚餐，甚至是一起旅行、一起增加我們對這個世界的認識
   description: 成大旅行社是由一群愛好旅行與探索的同學組成，無論是戶外郊遊、城市探索或名勝古蹟踩點，我們都有一位專業的社團老師和一群朋友陪你一起旅行。在這裡不僅能結識志同道合的朋友，還能學習旅行知識與團隊合作，創造獨特的回憶。
-  regular_activity_time: 星期一晚上6:30
+  regular_activity_time: 星期三晚上6:30
   main_activity_location: 天主教台南青年中心
   website_url: https://www.facebook.com/nckuclub
   import_source: yaml_import
@@ -2746,15 +2758,17 @@ clubs:
       status: 正式
       platform_id: 099B057
     detail:
-      name: null
+      name: 郭昊侖
       name_c: 旅行社
       name_e: NCKU Traveler
-      email: f56477@livemail.tw
+      email: ''
       goal: 一群志同道合，對旅行有興趣的人  希望透過旅行相關的分享講座、電影、聚餐，甚至是一起旅行、一起增加我們對這個世界的認識
       introduce: 成大旅行社是由一群愛好旅行與探索的同學組成，無論是戶外郊遊、城市探索或名勝古蹟踩點，我們都有一位專業的社團老師和一群朋友陪你一起旅行。在這裡不僅能結識志同道合的朋友，還能學習旅行知識與團隊合作，創造獨特的回憶。
-      acttime: 星期一晚上6:30
+      acttime: 星期三晚上6:30
       actplace: 天主教台南青年中心
       url: https://www.facebook.com/nckuclub
+      leader_name_c: 賴韻伃
+      leader_name_e: null
 - id: ncku-100b064
   platform_id: 100B064
   name: 喜信社
@@ -2799,8 +2813,8 @@ clubs:
   category_code: B
   status: 正式
   email: null
-  president_name: null
-  president_name_en: null
+  president_name: 劉士瑋
+  president_name_en: LIU, SHIH-WEI
   advisor_name: null
   goal: '藉由鍛鍊瑜伽體位法、了解其哲學並實踐於日常，讓個體融入瑜伽生命、對自我與宇宙有更深層了悟並為更好人類社會努力
 
@@ -2860,6 +2874,8 @@ clubs:
       acttime: 週一18:00-20:30
       actplace: 阿南達瑪迦台南瑜伽屋
       url: http://www.facebook.com/nckuanandamargayogaclub
+      leader_name_c: 劉士瑋
+      leader_name_e: LIU, SHIH-WEI
 - id: ncku-105b070
   platform_id: 105B070
   name: 翔鷹社
@@ -3332,7 +3348,7 @@ clubs:
   category_code: B
   status: 正式
   email: kmdlshogi@gmail.com
-  president_name: null
+  president_name: 丁士鈞
   president_name_en: null
   advisor_name: null
   goal: 發展南部之將棋活動，並擴展科摩多龍棋市場。完成科摩多龍偉大願景。鼓勵社員參與思考性及創造性活動。
@@ -3358,6 +3374,8 @@ clubs:
       acttime: 原則上晚上六點到十點為主，星期幾看場地申請結果。
       actplace: 依當日出席社員在群組中討論為主
       url: https://www.facebook.com/groups/831420165091128/
+      leader_name_c: 丁士鈞
+      leader_name_e: null
 - id: ncku-113b101
   platform_id: 113B101
   name: 愛玩無國界社
@@ -3405,11 +3423,11 @@ clubs:
   president_name: 方昱程
   president_name_en: null
   advisor_name: null
-  goal: 推廣獸迷族群與獸文化，並期許能使更多人認識此群體。
+  goal: 推廣獸迷族群及相關文化，促進校園內外對此群體的理解與認識。
   description: 成大獸文化社致力於以各式活動來推廣獸文化，也期許能藉社團聚集校內及南部獸迷同好們。
   regular_activity_time: 無固定社課，活動以社團社群平台公告為主
   main_activity_location: 以社團社群平台公告為主
-  website_url: https://www.facebook.com/NCKUFurry
+  website_url: https://www.facebook.com/FurriesatNCKU
   import_source: yaml_import
   raw_data:
     list_row:
@@ -3423,11 +3441,11 @@ clubs:
       name_c: 獸文化社
       name_e: Furry Club
       email: nckufurry@gmail.com
-      goal: 推廣獸迷族群與獸文化，並期許能使更多人認識此群體。
+      goal: 推廣獸迷族群及相關文化，促進校園內外對此群體的理解與認識。
       introduce: 成大獸文化社致力於以各式活動來推廣獸文化，也期許能藉社團聚集校內及南部獸迷同好們。
       acttime: 無固定社課，活動以社團社群平台公告為主
       actplace: 以社團社群平台公告為主
-      url: https://www.facebook.com/NCKUFurry
+      url: https://www.facebook.com/FurriesatNCKU
       leader_name_c: 方昱程
       leader_name_e: null
 - id: ncku-110b085
@@ -3438,11 +3456,11 @@ clubs:
   category_code: B
   status: 試辦
   email: nckukink@gmail.com
-  president_name: null
+  president_name: 梁晨妤
   president_name_en: null
   advisor_name: null
   goal: 在安全的前提下，推廣身體自主權與多元情慾自主的理念，打破社會對情慾行為的迷思與誤解。
-  description: 禁羈音似中文的禁忌，是由Kinky翻譯而來，作為非主流情慾行為的統稱。本社希望透過講座、工作坊、分享會等形式打破社會對情慾行為的迷思與誤解，推廣身體自主權與多元情慾自主的理念
+  description: 禁羈音似中文的禁忌，是由Kinky翻譯而來，作為非主流情慾行為的統稱。本社希望透過講座、工作坊、分享會、實作課程等形式打破社會對情慾行為的迷思與誤解，推廣身體自主權與多元情慾自主的理念
   regular_activity_time: 每周四19-21時
   main_activity_location: 安全屋
   website_url: http://www.facebook.com/nckukink/
@@ -3460,10 +3478,12 @@ clubs:
       name_e: Kinky Club
       email: nckukink@gmail.com
       goal: 在安全的前提下，推廣身體自主權與多元情慾自主的理念，打破社會對情慾行為的迷思與誤解。
-      introduce: 禁羈音似中文的禁忌，是由Kinky翻譯而來，作為非主流情慾行為的統稱。本社希望透過講座、工作坊、分享會等形式打破社會對情慾行為的迷思與誤解，推廣身體自主權與多元情慾自主的理念
+      introduce: 禁羈音似中文的禁忌，是由Kinky翻譯而來，作為非主流情慾行為的統稱。本社希望透過講座、工作坊、分享會、實作課程等形式打破社會對情慾行為的迷思與誤解，推廣身體自主權與多元情慾自主的理念
       acttime: 每周四19-21時
       actplace: 安全屋
       url: http://www.facebook.com/nckukink/
+      leader_name_c: 梁晨妤
+      leader_name_e: null
 - id: ncku-113b102
   platform_id: 113B102
   name: 煎煮炒炸火烤社
@@ -3594,11 +3614,11 @@ clubs:
   category_code: B
   status: 試辦
   email: null
-  president_name: null
+  president_name: 邱柏瑜
   president_name_en: null
   advisor_name: null
-  goal: null
-  description: null
+  goal: 讓更多人接觸到穿搭的魅力
+  description: 是一個喜歡玩穿搭、一起買衣服的成大學生組成社團
   regular_activity_time: 未定
   main_activity_location: 未定
   website_url: https://www.instagram.com/ncku_over_cooked/?utm_source=ig_web_button_share_sheet
@@ -3615,11 +3635,13 @@ clubs:
       name_c: 超會搭社
       name_e: over cooked club
       email: ''
-      goal: ''
-      introduce: ''
+      goal: 讓更多人接觸到穿搭的魅力
+      introduce: 是一個喜歡玩穿搭、一起買衣服的成大學生組成社團
       acttime: 未定
       actplace: 未定
       url: https://www.instagram.com/ncku_over_cooked/?utm_source=ig_web_button_share_sheet
+      leader_name_c: 邱柏瑜
+      leader_name_e: null
 - id: ncku-114b106
   platform_id: 114B106
   name: 卡牌研究社
@@ -3668,7 +3690,7 @@ clubs:
   category_code: B
   status: 試辦
   email: null
-  president_name: null
+  president_name: 邱律銘
   president_name_en: null
   advisor_name: null
   goal: 成大區塊鏈研究社，顧名思義以區塊鏈作為社團主要討論項目，研究內容將會從市場端、技術端兩個面向進行切入。由於南部缺乏整合性資源，故期望從北部拉取相關資源，以提升南部地區對於區塊鏈之普遍認知。
@@ -3694,6 +3716,8 @@ clubs:
       acttime: 未定
       actplace: 未定
       url: ''
+      leader_name_c: 邱律銘
+      leader_name_e: null
 - id: ncku-114b107
   platform_id: 114B107
   name: 香火文化社
@@ -3995,8 +4019,8 @@ clubs:
   president_name: 林懋
   president_name_en: null
   advisor_name: 林育筠
-  goal: null
-  description: 不論是華麗的CG電繪、傳統的黑白連環漫畫或是只是想尋找ACGMN的同好，漫畫社都可以成為你在成大的第二個家!
+  goal: 開設CG電繪、漫畫等動漫相關課程，並主辦成大同人誌展售會。
+  description: 不論是華麗的CG電繪、傳統的黑白連環漫畫或是只是想尋找ACGMN的同好，漫畫社都可以成為你在成大的第二個家！除了社課以外亦會不定期舉辦日K、繪聚等交流活動，並籌辦每年的成大同人場，為目前國內最大的校園主辦同人誌展售會。
   regular_activity_time: 星期二晚上7:00
   main_activity_location: 第五會議室
   website_url: https://www.instagram.com/ncku_manga_club?igsh=eThvMjh4MzJveHdu
@@ -4013,8 +4037,8 @@ clubs:
       name_c: 漫畫社
       name_e: Comic Club
       email: nckucomic103@gmail.com
-      goal: ''
-      introduce: 不論是華麗的CG電繪、傳統的黑白連環漫畫或是只是想尋找ACGMN的同好，漫畫社都可以成為你在成大的第二個家!
+      goal: 開設CG電繪、漫畫等動漫相關課程，並主辦成大同人誌展售會。
+      introduce: 不論是華麗的CG電繪、傳統的黑白連環漫畫或是只是想尋找ACGMN的同好，漫畫社都可以成為你在成大的第二個家！除了社課以外亦會不定期舉辦日K、繪聚等交流活動，並籌辦每年的成大同人場，為目前國內最大的校園主辦同人誌展售會。
       acttime: 星期二晚上7:00
       actplace: 第五會議室
       url: https://www.instagram.com/ncku_manga_club?igsh=eThvMjh4MzJveHdu
@@ -4152,7 +4176,7 @@ clubs:
   category_code: C
   status: 正式
   email: null
-  president_name: 林宸翊
+  president_name: 曾筠捷
   president_name_en: null
   advisor_name: 林芷寧
   goal: null
@@ -4178,7 +4202,7 @@ clubs:
       acttime: 星期四晚上6:00~9:30
       actplace: 第三、四、五會議室
       url: http://www.facebook.com/B.A.R.C.NCKU
-      leader_name_c: 林宸翊
+      leader_name_c: 曾筠捷
       leader_name_e: null
 - id: ncku-091c022
   platform_id: 091C022
@@ -4334,9 +4358,9 @@ clubs:
   category_code: C
   status: 正式
   email: null
-  president_name: null
+  president_name: 吳冠陞
   president_name_en: null
-  advisor_name: null
+  advisor_name: 葉思沂
   goal: 成功大學以工程立校，工程方面實力全球頂尖，此社團希望讓成大同學在大學四年中讀課本理論之餘，也能有實際操作遙控模型、實踐測試航空理論、控制原理之機會。
   description: '為校內同學開一個能討論、交流的平台。並能一起約試飛遙控飛機、共同開發模型or機器人、交流、切磋。
 
@@ -4353,7 +4377,7 @@ clubs:
       status: 正式
       platform_id: 103C040
     detail:
-      name: null
+      name: 葉思沂
       name_c: 遙控模型社
       name_e: RC Model Club
       email: ''
@@ -4364,6 +4388,8 @@ clubs:
       acttime: 每個禮拜三 19:00~21:00
       actplace: 一活435室
       url: http://www.facebook.com/nckurcmodelclub/
+      leader_name_c: 吳冠陞
+      leader_name_e: null
 - id: ncku-103c042
   platform_id: 103C042
   name: 火舞藝術研究社
@@ -4457,7 +4483,7 @@ clubs:
   description: '以文學方面課程為主體，包括讀稿會、工作坊、正課與聊書會。
 
     非文學方面的則有與他社的聯合社課等。'
-  regular_activity_time: 星期四19:00~21:00
+  regular_activity_time: 星期三19:00~21:00
   main_activity_location: 芸青軒2F 214 文學社社辦
   website_url: https://www.facebook.com/literature.club.ncku
   import_source: yaml_import
@@ -4477,7 +4503,7 @@ clubs:
       introduce: '以文學方面課程為主體，包括讀稿會、工作坊、正課與聊書會。
 
         非文學方面的則有與他社的聯合社課等。'
-      acttime: 星期四19:00~21:00
+      acttime: 星期三19:00~21:00
       actplace: 芸青軒2F 214 文學社社辦
       url: https://www.facebook.com/literature.club.ncku
       leader_name_c: 吳昱辰
@@ -4658,7 +4684,7 @@ clubs:
   category_code: C
   status: 正式
   email: aerogroup2020@gmail.com
-  president_name: 王仁牧
+  president_name: 雷鈞凱
   president_name_en: null
   advisor_name: 陳昱達
   goal: "本社團為依法設立、非以營利為目的之學生組織團體。\n宗旨如下：\n一、\t加強對航空太空科技有興趣學生之連結\n二、\t普及航空太空知識\n三、\t\
@@ -4686,7 +4712,7 @@ clubs:
       acttime: 每週二 19:00~21:00
       actplace: 航太系館
       url: http://www.facebook.com/ispncku
-      leader_name_c: 王仁牧
+      leader_name_c: 雷鈞凱
       leader_name_e: null
 - id: ncku-110c062
   platform_id: 110C062
@@ -4696,11 +4722,11 @@ clubs:
   category_code: C
   status: 正式
   email: pmun2025@gmail.com
-  president_name: null
+  president_name: 謝翔安
   president_name_en: null
   advisor_name: null
   goal: 鳳凰模擬聯合國社成立宗旨，期許能將所有對模擬聯合國事務有熱忱之學生聚集，以會議形式進行舉辦。不僅對國際議題進行立場交換，甚至作為與會代表、主席，以及工作人員等，皆能從中找到自己的人生信念與價值。
-  description: 本社在未來將規劃常態性社課，以輕鬆卻專業的態度帶領社員認識國際議題，以及教授專業文件撰寫格式與辯論技巧。
+  description: 本社旨在透過社團集會，以輕鬆卻專業的態度帶領社員認識國際議題，以及教授專業文件撰寫格式與辯論技巧。除社團集會外，本社亦與其他大學模聯社團舉辦訓練活動（如寒訓），以及不定期舉辦議題工作坊。
   regular_activity_time: 週三 18:30~20:30
   main_activity_location: 學生活動中心會議室
   website_url: http://facebook.com/phoenixmun
@@ -4718,10 +4744,12 @@ clubs:
       name_e: Phoenix Model United Nations
       email: pmun2025@gmail.com
       goal: 鳳凰模擬聯合國社成立宗旨，期許能將所有對模擬聯合國事務有熱忱之學生聚集，以會議形式進行舉辦。不僅對國際議題進行立場交換，甚至作為與會代表、主席，以及工作人員等，皆能從中找到自己的人生信念與價值。
-      introduce: 本社在未來將規劃常態性社課，以輕鬆卻專業的態度帶領社員認識國際議題，以及教授專業文件撰寫格式與辯論技巧。
+      introduce: 本社旨在透過社團集會，以輕鬆卻專業的態度帶領社員認識國際議題，以及教授專業文件撰寫格式與辯論技巧。除社團集會外，本社亦與其他大學模聯社團舉辦訓練活動（如寒訓），以及不定期舉辦議題工作坊。
       acttime: 週三 18:30~20:30
       actplace: 學生活動中心會議室
       url: http://facebook.com/phoenixmun
+      leader_name_c: 謝翔安
+      leader_name_e: null
 - id: ncku-110c063
   platform_id: 110C063
   name: 資料分析社
@@ -4894,15 +4922,15 @@ clubs:
   category_code: C
   status: 正式
   email: 暫無
-  president_name: null
+  president_name: 王宣朗
   president_name_en: null
   advisor_name: null
-  goal: 建立一個學生得以正向交流的環境
-  description: '新創撲克社
+  goal: 加入競技撲克研究社，讓你一邊娛樂一邊提升牌技！
+  description: '想學德州撲克，但不知道從哪裡開始？
 
-    交朋友?興趣?有未來?
+    想練實戰，但找不到一起切磋的對手？
 
-    學習娛樂樣樣通，加就對了啦，'
+    成大競技撲克社五月下旬活動開跑！！'
   regular_activity_time: 每周假日
   main_activity_location: 學生活動中心
   website_url: https://www.instagram.com/ncku.poker?igsh=MWswYWI0NXJ3aXc4Zw%3D%3D&utm_source=qr
@@ -4919,15 +4947,17 @@ clubs:
       name_c: 競技撲克研究社
       name_e: Poker Club
       email: 暫無
-      goal: 建立一個學生得以正向交流的環境
-      introduce: '新創撲克社
+      goal: 加入競技撲克研究社，讓你一邊娛樂一邊提升牌技！
+      introduce: '想學德州撲克，但不知道從哪裡開始？
 
-        交朋友?興趣?有未來?
+        想練實戰，但找不到一起切磋的對手？
 
-        學習娛樂樣樣通，加就對了啦，'
+        成大競技撲克社五月下旬活動開跑！！'
       acttime: 每周假日
       actplace: 學生活動中心
       url: https://www.instagram.com/ncku.poker?igsh=MWswYWI0NXJ3aXc4Zw%3D%3D&utm_source=qr
+      leader_name_c: 王宣朗
+      leader_name_e: null
 - id: ncku-109c059
   platform_id: 109C059
   name: 霍特獎社
@@ -4936,9 +4966,9 @@ clubs:
   category_code: C
   status: 試辦
   email: hultprizencku@gmail.com
-  president_name: null
+  president_name: 許銘勝
   president_name_en: null
-  advisor_name: null
+  advisor_name: 張佑宇
   goal: 成大霍特獎旨在透過競賽和工作坊，激勵參賽者成為積極的變革者，發展創新解決方案，並培養實用技能。社團目標與聯合國永續發展目標一致，致力於塑造參賽者成為對社會福祉負責任的貢獻者，並推動永續發展目標的實現。
   description: 霍特獎是由聯合國與霍特國際商學院聯合頒發的全英文國際永續創新創業競賽，鼓勵學生運用創新思維創辦社會企業，解決全球最緊迫的問題。全球冠軍隊伍將獲得100萬美元的種子基金，並接受國際商業領袖的指導。成大自2020年參與霍特獎，旨在透過競賽對聯合國永續發展目標（SDGs）作出貢獻。目前，我們積極推動競賽的復興，並計劃在成大舉辦第二場校園賽，藉此培養影響力社群，推動創新與永續發展。
   regular_activity_time: 不固定
@@ -4953,7 +4983,7 @@ clubs:
       status: 試辦
       platform_id: 109C059
     detail:
-      name: null
+      name: 張佑宇
       name_c: 霍特獎社
       name_e: Hult Prize
       email: hultprizencku@gmail.com
@@ -4962,6 +4992,8 @@ clubs:
       acttime: 不固定
       actplace: 校內
       url: https://www.instagram.com/hpatncku/
+      leader_name_c: 許銘勝
+      leader_name_e: null
 - id: ncku-113c072
   platform_id: 113C072
   name: 戀財研討會
@@ -5155,6 +5187,108 @@ clubs:
       url: ''
       leader_name_c: 游昱嘉
       leader_name_e: null
+- id: ncku-115c077
+  platform_id: 115C077
+  name: 遊戲設計社
+  name_en: Game Design Club
+  category: 學藝性
+  category_code: C
+  status: 試辦
+  email: nckugdc@gmail.com
+  president_name: 蔡幸融
+  president_name_en: TSAI HSING-JUNG
+  advisor_name: null
+  goal: '本社團以「遊戲設計與開發」為核心，旨在建立理論學習與實作創
+
+    作並行的學藝性社群。此處所稱之「遊戲設計」，係指電子遊戲內
+
+    容之設計與製作，涵蓋程式開發、玩法機制、敘事架構、美術建模
+
+    與音樂音效等跨領域整合創作。透過專題實作與團隊合作，培養學
+
+    生技術能力與創作思維，並促進跨系所交流。'
+  description: '這裡是一個研究與討論「遊戲設計 × 製作實作」的社團。
+
+    我們著重研究遊戲是如何被設計、被製作、被完成的，
+
+    並同時將所學運用到創作實踐上。
+
+
+    在這裡，你可以：
+
+
+    • 討論、分享、遊玩各種類型的遊戲
+
+    • 參與 Game Jam 與社團活動
+
+    • 與同好共同製作小型專案
+
+    • 嘗試 Unity 或其他工具進行原型開發
+
+    • 與不同背景的夥伴合作創作
+
+
+    無論你是完全沒有經驗的新手，
+
+    或是已經接觸過開發、設計、美術或音樂製作，
+
+    只要對「遊戲如何被創造」感到好奇、對電子遊戲充滿興趣，都歡迎加入我們。'
+  regular_activity_time: 不定期
+  main_activity_location: 不固定
+  website_url: https://linktr.ee/NCKU_GDC
+  import_source: yaml_import
+  raw_data:
+    list_row:
+      row_no: '34'
+      name_c: 遊戲設計社
+      name_e: Game Design Club
+      status: 試辦
+      platform_id: 115C077
+    detail:
+      name: null
+      name_c: 遊戲設計社
+      name_e: Game Design Club
+      email: nckugdc@gmail.com
+      goal: '本社團以「遊戲設計與開發」為核心，旨在建立理論學習與實作創
+
+        作並行的學藝性社群。此處所稱之「遊戲設計」，係指電子遊戲內
+
+        容之設計與製作，涵蓋程式開發、玩法機制、敘事架構、美術建模
+
+        與音樂音效等跨領域整合創作。透過專題實作與團隊合作，培養學
+
+        生技術能力與創作思維，並促進跨系所交流。'
+      introduce: '這裡是一個研究與討論「遊戲設計 × 製作實作」的社團。
+
+        我們著重研究遊戲是如何被設計、被製作、被完成的，
+
+        並同時將所學運用到創作實踐上。
+
+
+        在這裡，你可以：
+
+
+        • 討論、分享、遊玩各種類型的遊戲
+
+        • 參與 Game Jam 與社團活動
+
+        • 與同好共同製作小型專案
+
+        • 嘗試 Unity 或其他工具進行原型開發
+
+        • 與不同背景的夥伴合作創作
+
+
+        無論你是完全沒有經驗的新手，
+
+        或是已經接觸過開發、設計、美術或音樂製作，
+
+        只要對「遊戲如何被創造」感到好奇、對電子遊戲充滿興趣，都歡迎加入我們。'
+      acttime: 不定期
+      actplace: 不固定
+      url: https://linktr.ee/NCKU_GDC
+      leader_name_c: 蔡幸融
+      leader_name_e: TSAI HSING-JUNG
 - id: ncku-088d004
   platform_id: 088D004
   name: 國樂研究社
@@ -6582,7 +6716,7 @@ clubs:
   category_code: E
   status: 正式
   email: aquatic.club@gs.ncku.edu.tw
-  president_name: null
+  president_name: 涂育慈
   president_name_en: null
   advisor_name: null
   goal: 讓大家學會游泳，愛上游泳，並且安全的游泳
@@ -6616,6 +6750,8 @@ clubs:
       acttime: 星期二晚上7:00-8:00
       actplace: 新館游泳池
       url: http://www.facebook.com/groups/260166740752062/
+      leader_name_c: 涂育慈
+      leader_name_e: null
 - id: ncku-088e012
   platform_id: 088E012
   name: 網球社
@@ -6629,7 +6765,7 @@ clubs:
   advisor_name: null
   goal: 希望成大生們能對網球有興趣，且能順利在成大找到球友
   description: 每週兩次練習時間，有專業教練教球
-  regular_activity_time: 星期一 四晚上7:00-10:00
+  regular_activity_time: 星期一、四晚上7:00-10:00
   main_activity_location: 自強網球場
   website_url: http://www.facebook.com/nckutc111
   import_source: yaml_import
@@ -6647,7 +6783,7 @@ clubs:
       email: nckutennis@gmail.com
       goal: 希望成大生們能對網球有興趣，且能順利在成大找到球友
       introduce: 每週兩次練習時間，有專業教練教球
-      acttime: 星期一 四晚上7:00-10:00
+      acttime: 星期一、四晚上7:00-10:00
       actplace: 自強網球場
       url: http://www.facebook.com/nckutc111
       leader_name_c: 許書瑜
@@ -6856,7 +6992,7 @@ clubs:
   category_code: E
   status: 正式
   email: null
-  president_name: null
+  president_name: 張晉緁
   president_name_en: null
   advisor_name: null
   goal: '本社宗旨在提升校內的棒球風氣與培養棒球相關知識與技術
@@ -6898,6 +7034,8 @@ clubs:
       acttime: 每週三 早上6:00-8:30；週日下午1:00-5:00
       actplace: 成功大學自強校區棒球場
       url: http://www.facebook.com/nckubaseballclub/community
+      leader_name_c: 張晉緁
+      leader_name_e: null
 - id: ncku-104e041
   platform_id: 104E041
   name: 籃球聯盟
@@ -7090,7 +7228,7 @@ clubs:
   category_code: E
   status: 正式
   email: 109e050@gs.ncku.edu.tw
-  president_name: null
+  president_name: 洪瑞蓬
   president_name_en: null
   advisor_name: null
   goal: '傳承學長創辦之足球聯賽，鼓勵各系隊進行交流，一步一腳印，共同剷平成大草皮
@@ -7140,6 +7278,8 @@ clubs:
       acttime: 平日
       actplace: 光復足球場
       url: https://www.facebook.com/NationalChengKungUniversityFootballLeague
+      leader_name_c: 洪瑞蓬
+      leader_name_e: null
 - id: ncku-110e052
   platform_id: 110E052
   name: 文雲武術社
@@ -7299,15 +7439,35 @@ clubs:
   president_name: 徐子祺
   president_name_en: null
   advisor_name: null
-  goal: 成大 Tricking 社，從台南成大出發，致力於降低 Tricking 學習門檻，並打造一個充滿自由、突破極限與彼此支持的 Tricking 社群生態，以提高大家對
-    Tricking 的慾望，進而推動台灣南部的 Tricking 風氣與市場發展。
-  description: 'Tricking 是一種結合體操、武術、Breaking元素的極限運動，其重要的元素有地板技、踢技、空翻、轉體以流暢且富有視覺效果的方式呈現。
+  goal: 'NCKU Tricking Club is committed to lowering the barrier to learning tricking
+    and building a tricking community ecosystem defined by freedom, pushing limits,
+    and mutual support. Our goal is to inspire greater passion for tricking and, in
+    turn, promote the growth of tricking culture and the market in southern Taiwan.
+
+    成大 Tricking 社，從台南成大出發，致力於降低 Tricking 學習門檻，並打造一個充滿自由、突破極限與彼此支持的 Tricking 社群生態，以提高大家對
+    Tricking 的慾望，進而推動台灣 Tricking 文化與市場的發展'
+  description: 'Tricking is an extreme sport that combines elements of gymnastics,
+    martial arts, and breaking. Its core components include groundwork, kicks, flips,
+    and twists, all performed in a smooth and visually striking way.
+
+    In the short term, we hope to promote tricking at National Cheng Kung University.
+    In the medium term, we hope to bring together people in Tainan who are interested
+    in tricking, extreme sports, physical artistry, or acrobatic movement. In the
+    long term, we hope to help develop the tricking industry in southern Taiwan.
+
+    We also hope that our efforts can indirectly help inspire the creation of other
+    related student groups at NCKU, such as a Taekwondo freestyle poomsae club, a
+    competitive cheerleading club, or other extreme sports clubs.
+
+    -
+
+    Tricking 是一種結合體操、武術、Breaking元素的極限運動，其重要的元素有地板技、踢技、空翻、轉體以流暢且富有視覺效果的方式呈現。
 
     短期希望能在成大推廣 Tricking，中期希望聚集台南的對 Tricking/極限運動/體術/毯子功有興趣的人，長期希望推動南部 Tricking 產業發展。
 
     遠大的夢想是成大因為我們有體操室，或是我們把社辦慢慢弄的越來越像體操室。
 
-    也希望我們能間接催生成大的跆拳道自由品勢或是競技啦啦隊/其他極限運動社團。'
+    也希望我們能間接催生成大的跆拳道自由品勢或是競技啦啦隊。'
   regular_activity_time: （五） 19:30~21:00
   main_activity_location: 總圖地下人工草地
   website_url: https://www.instagram.com/ncku_tricking/
@@ -7324,16 +7484,37 @@ clubs:
       name_c: 極限翻滾武技社
       name_e: Tricking Club
       email: wowwowtricking@gmail.com
-      goal: 成大 Tricking 社，從台南成大出發，致力於降低 Tricking 學習門檻，並打造一個充滿自由、突破極限與彼此支持的 Tricking
-        社群生態，以提高大家對 Tricking 的慾望，進而推動台灣南部的 Tricking 風氣與市場發展。
-      introduce: 'Tricking 是一種結合體操、武術、Breaking元素的極限運動，其重要的元素有地板技、踢技、空翻、轉體以流暢且富有視覺效果的方式呈現。
+      goal: 'NCKU Tricking Club is committed to lowering the barrier to learning tricking
+        and building a tricking community ecosystem defined by freedom, pushing limits,
+        and mutual support. Our goal is to inspire greater passion for tricking and,
+        in turn, promote the growth of tricking culture and the market in southern
+        Taiwan.
+
+        成大 Tricking 社，從台南成大出發，致力於降低 Tricking 學習門檻，並打造一個充滿自由、突破極限與彼此支持的 Tricking 社群生態，以提高大家對
+        Tricking 的慾望，進而推動台灣 Tricking 文化與市場的發展'
+      introduce: 'Tricking is an extreme sport that combines elements of gymnastics,
+        martial arts, and breaking. Its core components include groundwork, kicks,
+        flips, and twists, all performed in a smooth and visually striking way.
+
+        In the short term, we hope to promote tricking at National Cheng Kung University.
+        In the medium term, we hope to bring together people in Tainan who are interested
+        in tricking, extreme sports, physical artistry, or acrobatic movement. In
+        the long term, we hope to help develop the tricking industry in southern Taiwan.
+
+        We also hope that our efforts can indirectly help inspire the creation of
+        other related student groups at NCKU, such as a Taekwondo freestyle poomsae
+        club, a competitive cheerleading club, or other extreme sports clubs.
+
+        -
+
+        Tricking 是一種結合體操、武術、Breaking元素的極限運動，其重要的元素有地板技、踢技、空翻、轉體以流暢且富有視覺效果的方式呈現。
 
         短期希望能在成大推廣 Tricking，中期希望聚集台南的對 Tricking/極限運動/體術/毯子功有興趣的人，長期希望推動南部 Tricking
         產業發展。
 
         遠大的夢想是成大因為我們有體操室，或是我們把社辦慢慢弄的越來越像體操室。
 
-        也希望我們能間接催生成大的跆拳道自由品勢或是競技啦啦隊/其他極限運動社團。'
+        也希望我們能間接催生成大的跆拳道自由品勢或是競技啦啦隊。'
       acttime: （五） 19:30~21:00
       actplace: 總圖地下人工草地
       url: https://www.instagram.com/ncku_tricking/
@@ -7347,7 +7528,7 @@ clubs:
   category_code: E
   status: 正式
   email: 113E059@gs.ncku.edu.tw
-  president_name: 江丞琳
+  president_name: 李宥彤
   president_name_en: null
   advisor_name: null
   goal: 藉由成立弓道組織，凝聚弓道愛好者之向心力，共同切磋技藝、交流知識。
@@ -7373,7 +7554,7 @@ clubs:
       acttime: 週六、日10:00~15:00
       actplace: 台南女中體育館地下一樓
       url: https://www.facebook.com/profile.php?id=61554712884457
-      leader_name_c: 江丞琳
+      leader_name_c: 李宥彤
       leader_name_e: null
 - id: ncku-114e068
   platform_id: 114E068
@@ -7481,42 +7662,6 @@ clubs:
       url: ''
       leader_name_c: 蔡易軒
       leader_name_e: null
-- id: ncku-113e063
-  platform_id: 113E063
-  name: 衝浪社
-  name_en: Surfing Club
-  category: 體能性
-  category_code: E
-  status: 試辦
-  email: null
-  president_name: 杜學宇
-  president_name_en: null
-  advisor_name: null
-  goal: 成立社團的目的是想創造一個衝浪可以一起進步成長的地方，衝浪是需要長久累積經驗以及練習的，社團主要的目標是讓沒有接觸過的人可以瞭解衝浪這項運動，有興趣想要進階的人也可以在這裡繼續學習進步
-  description: 促進衝浪運動，提供學習與練習的機會，並建立一個熱愛衝浪文化的社群，會有許多知識社課，以及衝浪體驗及團練。
-  regular_activity_time: 根據不同活動調整
-  main_activity_location: 觀夕平台
-  website_url: https://www.instagram.com/ncku_surfing?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==
-  import_source: yaml_import
-  raw_data:
-    list_row:
-      row_no: '33'
-      name_c: 衝浪社
-      name_e: Surfing Club
-      status: 試辦
-      platform_id: 113E063
-    detail:
-      name: null
-      name_c: 衝浪社
-      name_e: Surfing Club
-      email: ''
-      goal: 成立社團的目的是想創造一個衝浪可以一起進步成長的地方，衝浪是需要長久累積經驗以及練習的，社團主要的目標是讓沒有接觸過的人可以瞭解衝浪這項運動，有興趣想要進階的人也可以在這裡繼續學習進步
-      introduce: 促進衝浪運動，提供學習與練習的機會，並建立一個熱愛衝浪文化的社群，會有許多知識社課，以及衝浪體驗及團練。
-      acttime: 根據不同活動調整
-      actplace: 觀夕平台
-      url: https://www.instagram.com/ncku_surfing?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==
-      leader_name_c: 杜學宇
-      leader_name_e: null
 - id: ncku-113e062
   platform_id: 113E062
   name: 格鬥遊戲研究社
@@ -7546,7 +7691,7 @@ clubs:
   import_source: yaml_import
   raw_data:
     list_row:
-      row_no: '34'
+      row_no: '33'
       name_c: 格鬥遊戲研究社
       name_e: Fighting Games Club
       status: 試辦
@@ -7573,6 +7718,42 @@ clubs:
       url: https://www.facebook.com/profile.php?id=61572581126111
       leader_name_c: 施懷哲
       leader_name_e: null
+- id: ncku-113e063
+  platform_id: 113E063
+  name: 衝浪社
+  name_en: Surfing Club
+  category: 體能性
+  category_code: E
+  status: 試辦
+  email: null
+  president_name: 杜學宇
+  president_name_en: null
+  advisor_name: null
+  goal: 成立社團的目的是想創造一個衝浪可以一起進步成長的地方，衝浪是需要長久累積經驗以及練習的，社團主要的目標是讓沒有接觸過的人可以瞭解衝浪這項運動，有興趣想要進階的人也可以在這裡繼續學習進步
+  description: 促進衝浪運動，提供學習與練習的機會，並建立一個熱愛衝浪文化的社群，會有許多知識社課，以及衝浪體驗及團練。
+  regular_activity_time: 根據不同活動調整
+  main_activity_location: 觀夕平台
+  website_url: https://www.instagram.com/ncku_surfing?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==
+  import_source: yaml_import
+  raw_data:
+    list_row:
+      row_no: '34'
+      name_c: 衝浪社
+      name_e: Surfing Club
+      status: 試辦
+      platform_id: 113E063
+    detail:
+      name: null
+      name_c: 衝浪社
+      name_e: Surfing Club
+      email: ''
+      goal: 成立社團的目的是想創造一個衝浪可以一起進步成長的地方，衝浪是需要長久累積經驗以及練習的，社團主要的目標是讓沒有接觸過的人可以瞭解衝浪這項運動，有興趣想要進階的人也可以在這裡繼續學習進步
+      introduce: 促進衝浪運動，提供學習與練習的機會，並建立一個熱愛衝浪文化的社群，會有許多知識社課，以及衝浪體驗及團練。
+      acttime: 根據不同活動調整
+      actplace: 觀夕平台
+      url: https://www.instagram.com/ncku_surfing?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==
+      leader_name_c: 杜學宇
+      leader_name_e: null
 - id: ncku-114e064
   platform_id: 114E064
   name: 賽車運動社
@@ -7585,7 +7766,7 @@ clubs:
   president_name_en: null
   advisor_name: null
   goal: 推廣賽車運動文化,提升成員對車輛操作技巧的認識,培養安全駕駛意識,促進賽車運動在校園與社會的普及與發展
-  description: 佛系賽車
+  description: 開賽車 開賽車
   regular_activity_time: 18點至20點
   main_activity_location: 高雄TKS賽車場
   website_url: https://www.instagram.com/nckuracing/
@@ -7603,7 +7784,7 @@ clubs:
       name_e: Racing Club
       email: ''
       goal: 推廣賽車運動文化,提升成員對車輛操作技巧的認識,培養安全駕駛意識,促進賽車運動在校園與社會的普及與發展
-      introduce: 佛系賽車
+      introduce: 開賽車 開賽車
       acttime: 18點至20點
       actplace: 高雄TKS賽車場
       url: https://www.instagram.com/nckuracing/
@@ -7691,7 +7872,7 @@ clubs:
   email: 114e067@gs.ncku.edu.tw
   president_name: 林桓廷
   president_name_en: null
-  advisor_name: null
+  advisor_name: 陳昭宇
   goal: null
   description: null
   regular_activity_time: 一、四晚上18.40-20.40
@@ -7706,7 +7887,7 @@ clubs:
       status: 試辦
       platform_id: 114E067
     detail:
-      name: null
+      name: 陳昭宇
       name_c: 匹克球社
       name_e: Pickleball Club
       email: 114e067@gs.ncku.edu.tw
@@ -7752,6 +7933,42 @@ clubs:
       actplace: 各校區
       url: ''
       leader_name_c: 陳品頤
+      leader_name_e: null
+- id: ncku-100e033
+  platform_id: 100E033
+  name: 高爾夫球社
+  name_en: Golf Club
+  category: 體能性
+  category_code: E
+  status: 試辦
+  email: tim86918@me.com
+  president_name: 周群倪
+  president_name_en: null
+  advisor_name: null
+  goal: 透過專業師資培訓課程，輔以幹部團隊多元活動，打造學生入門學習平台！
+  description: 主要課程由專業高球教練彭怡千安排，輔以社團幹部規劃多元活動(社團聯誼、賽試觀賞、下場體驗、活動競賽)，另設大專盃培訓營集體練習，提供有興趣者輕鬆卻又不失專業性的學習平台！
+  regular_activity_time: 星期一晚上19:00~21:00
+  main_activity_location: 好昕實業股份有限公司(府城高爾夫球練習場)
+  website_url: http://www.facebook.com/groups/262041187163346/
+  import_source: yaml_import
+  raw_data:
+    list_row:
+      row_no: '40'
+      name_c: 高爾夫球社
+      name_e: Golf Club
+      status: 試辦
+      platform_id: 100E033
+    detail:
+      name: null
+      name_c: 高爾夫球社
+      name_e: Golf Club
+      email: tim86918@me.com
+      goal: 透過專業師資培訓課程，輔以幹部團隊多元活動，打造學生入門學習平台！
+      introduce: 主要課程由專業高球教練彭怡千安排，輔以社團幹部規劃多元活動(社團聯誼、賽試觀賞、下場體驗、活動競賽)，另設大專盃培訓營集體練習，提供有興趣者輕鬆卻又不失專業性的學習平台！
+      acttime: 星期一晚上19:00~21:00
+      actplace: 好昕實業股份有限公司(府城高爾夫球練習場)
+      url: http://www.facebook.com/groups/262041187163346/
+      leader_name_c: 周群倪
       leader_name_e: null
 - id: ncku-088f004
   platform_id: 088F004
@@ -7841,7 +8058,7 @@ clubs:
   category_code: F
   status: 正式
   email: 088f002@gs.ncku.edu.tw
-  president_name: 楊欣翰
+  president_name: 陳原豪
   president_name_en: null
   advisor_name: 黃清松
   goal: 本社以童軍訓練及群體教育方式教導大學生拓展所學、發展個人淺能，使其成為在群體生活能發揮所長、在個人表現能合乎心之所向為宗旨，並以服務工作、童軍活動、野外活動、反哺回饋為主要內容。
@@ -7867,7 +8084,7 @@ clubs:
       acttime: 無
       actplace: 社團辦公室
       url: http://www.facebook.com/nckuscout
-      leader_name_c: 楊欣翰
+      leader_name_c: 陳原豪
       leader_name_e: null
 - id: ncku-088f005
   platform_id: 088F005
@@ -7995,7 +8212,7 @@ clubs:
   email: nckuccc@kimo.com
   president_name: 黃友辰
   president_name_en: null
-  advisor_name: null
+  advisor_name: 涂庭源
   goal: '[建造一生跟隨耶穌基督的門徒]
 
     ＊看重｢生命改變｣，透過小組生活幫助契友在生命上越來越像耶穌。
@@ -8014,7 +8231,7 @@ clubs:
       status: 正式
       platform_id: 088F010
     detail:
-      name: null
+      name: 涂庭源
       name_c: 真善美服務社
       name_e: TVBS(True Virtue Beauty Service)
       email: nckuccc@kimo.com
@@ -8452,7 +8669,7 @@ clubs:
   category_code: G
   status: 正式
   email: nckuch123@gmail.com
-  president_name: null
+  president_name: 黃顗睿
   president_name_en: null
   advisor_name: null
   goal: 聯絡同鄉人之感情，培養個體之課外能力。
@@ -8478,6 +8695,8 @@ clubs:
       acttime: 星期三晚上10點
       actplace: 第一會議室 A
       url: http://www.facebook.com/NCKUChanghuaKids
+      leader_name_c: 黃顗睿
+      leader_name_e: null
 - id: ncku-094g012
   platform_id: 094G012
   name: 成大建中北一女校友會
@@ -8594,7 +8813,7 @@ clubs:
   category_code: G
   status: 正式
   email: winds3654@hotmail.com
-  president_name: null
+  president_name: 黃浩睿
   president_name_en: null
   advisor_name: null
   goal: 期冀雲嘉學子們都能在成大感受到家鄉的溫暖，也能成為好夥伴一起努力，揮灑青春。
@@ -8620,6 +8839,8 @@ clubs:
       acttime: 無
       actplace: 社團辦公室
       url: https://www.facebook.com/share/g/1Go6oKRNG9/
+      leader_name_c: 黃浩睿
+      leader_name_e: null
 - id: ncku-100g025
   platform_id: 100G025
   name: 原住民文化交流社
@@ -8889,7 +9110,7 @@ clubs:
   category_code: G
   status: 正式
   email: ppitainan.comm@gmail.com
-  president_name: 楊創宇
+  president_name: 黃飛鴻
   president_name_en: null
   advisor_name: 陳炳宏
   goal: As an Indonesian students which pursuing academic degree in Tainan, Taiwan,
@@ -8925,7 +9146,7 @@ clubs:
       acttime: at the end of the month
       actplace: 社團辦公室
       url: http://ppitainan.org/
-      leader_name_c: 楊創宇
+      leader_name_c: 黃飛鴻
       leader_name_e: null
 - id: ncku-103g032
   platform_id: 103G032
@@ -9052,7 +9273,7 @@ clubs:
   category_code: G
   status: 正式
   email: n18133013@gs.ncku.edu.tw
-  president_name: null
+  president_name: 陳舒哲
   president_name_en: null
   advisor_name: null
   goal: "一、搭建陸生之間交流平台，建立有效溝通機制。 \n二、加強與僑陸組等相關部門的溝通協作，及時傳達反饋有效信息。\n三、維護陸生在校基本權益，爭取更多話語發言權。\n\
@@ -9080,6 +9301,8 @@ clubs:
       acttime: 每兩個月的第二週的週五
       actplace: 僑陸組會議室
       url: ''
+      leader_name_c: 陳舒哲
+      leader_name_e: null
 - id: ncku-104g035
   platform_id: 104G035
   name: 馬來西亞同學會
@@ -9160,9 +9383,9 @@ clubs:
   category_code: G
   status: 正式
   email: null
-  president_name: null
+  president_name: 洪翰帝
   president_name_en: null
-  advisor_name: null
+  advisor_name: 柯碧蓮
   goal: '1. To be center community of Thai students in NCKU
 
     2. To organize and contribute Thai culture and activities to NCKU
@@ -9182,7 +9405,7 @@ clubs:
       status: 正式
       platform_id: 110G041
     detail:
-      name: null
+      name: 柯碧蓮
       name_c: 泰國學生會
       name_e: Thai Student Association Club
       email: ''
@@ -9196,6 +9419,44 @@ clubs:
       acttime: 無
       actplace: D-24
       url: ''
+      leader_name_c: 洪翰帝
+      leader_name_e: null
+- id: ncku-115g043
+  platform_id: 115G043
+  name: 巴拉圭學生會
+  name_en: Paraguayan Students Association
+  category: 聯誼性
+  category_code: G
+  status: 試辦
+  email: null
+  president_name: 吳莉嵐
+  president_name_en: MARIA BELEN DE LA HUERTA
+  advisor_name: null
+  goal: null
+  description: null
+  regular_activity_time: null
+  main_activity_location: null
+  website_url: null
+  import_source: yaml_import
+  raw_data:
+    list_row:
+      row_no: '21'
+      name_c: 巴拉圭學生會
+      name_e: Paraguayan Students Association
+      status: 試辦
+      platform_id: 115G043
+    detail:
+      name: null
+      name_c: 巴拉圭學生會
+      name_e: Paraguayan Students Association
+      email: null
+      goal: ''
+      introduce: ''
+      acttime: null
+      actplace: null
+      url: null
+      leader_name_c: 吳莉嵐
+      leader_name_e: MARIA BELEN DE LA HUERTA
 - id: ncku-108g038
   platform_id: 108G038
   name: 印度學生會
@@ -9219,7 +9480,7 @@ clubs:
   import_source: yaml_import
   raw_data:
     list_row:
-      row_no: '21'
+      row_no: '22'
       name_c: 印度學生會
       name_e: Indian Student Association
       status: 試辦

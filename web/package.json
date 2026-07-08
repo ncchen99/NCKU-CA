@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "npx tsx ../scripts/seed-firestore.ts",
+    "seed:clubs": "npx tsx ../scripts/seed-firestore.ts --clubs-only",
     "seed:facebook-posts": "npx tsx ../scripts/seed-facebook-posts.ts"
   },
   "dependencies": {

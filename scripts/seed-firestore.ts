@@ -239,7 +239,13 @@ async function main() {
   const db = initFirebase();
   console.log("🔥 Firebase Admin SDK 初始化成功");
 
-  await seedSiteContent(db);
+  const clubsOnly = process.argv.includes("--clubs-only");
+
+  if (!clubsOnly) {
+    await seedSiteContent(db);
+  } else {
+    console.log("\n⚠️ 已啟用 --clubs-only 參數，跳過 site_content 集合的寫入");
+  }
   await seedClubs(db);
 
   console.log("\n" + "=".repeat(50));
