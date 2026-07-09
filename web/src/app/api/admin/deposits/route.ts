@@ -43,7 +43,11 @@ export async function GET(request: NextRequest) {
     }
     const withNames = records.map((r) => ({
       ...r,
-      club_name: r.club_id ? nameByClubId.get(r.club_id) : undefined,
+      club_name: r.club_id
+        ? r.club_id === "none"
+          ? "無"
+          : nameByClubId.get(r.club_id)
+        : undefined,
       form_id: bindingMetaByDepositId.get(r.id)?.form_id ?? r.form_id,
       form_title:
         (r.form_id ? formTitleById.get(r.form_id) : undefined) ??

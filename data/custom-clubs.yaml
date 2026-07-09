@@ -1,0 +1,9 @@
+meta:
+  description: "Custom non-club student organizations and groups"
+clubs:
+  - id: org-med-choir
+    name: 醫學院合唱團
+    category: 其他
+    category_code: OTHER
+    status: 正式
+    import_source: custom_import

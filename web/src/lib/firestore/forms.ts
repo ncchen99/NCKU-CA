@@ -339,9 +339,11 @@ export async function submitFormResponse(
     const depositsRef = db.collection("deposit_records");
 
     return await db.runTransaction(async (tx) => {
-      const existing = await tx.get(
-        responsesRef.where("club_id", "==", data.club_id).limit(1)
-      );
+      const checkQuery = data.club_id === "none"
+        ? responsesRef.where("submitted_by_uid", "==", data.submitted_by_uid).limit(1)
+        : responsesRef.where("club_id", "==", data.club_id).limit(1);
+
+      const existing = await tx.get(checkQuery);
 
       if (!existing.empty) {
         throw new DuplicateFormSubmissionError();

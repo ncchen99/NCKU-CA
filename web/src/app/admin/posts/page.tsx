@@ -106,8 +106,10 @@ function toSlug(title: string): string {
   return title
     .trim()
     .toLowerCase()
-    .replace(/[^\w\s\u4e00-\u9fff-]/g, "")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function parseTags(tagsText: string): string[] {
@@ -229,7 +231,11 @@ export default function PostsPage() {
   function validate(): boolean {
     const errors: Partial<Record<keyof PostForm, string>> = {};
     if (!form.title.trim()) errors.title = "標題為必填";
-    if (!form.slug.trim()) errors.slug = "Slug 為必填";
+    if (!form.slug.trim()) {
+      errors.slug = "Slug 為必填";
+    } else if (!/^[a-zA-Z0-9-]+$/.test(form.slug)) {
+      errors.slug = "Slug 僅能包含英文字母、數字及連字號 (-)";
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -628,10 +634,10 @@ export default function PostsPage() {
               value={form.slug}
               onChange={(e) => {
                 setSlugManuallyEdited(true);
-                setForm((prev) => ({ ...prev, slug: (e.target as HTMLInputElement).value }));
+                setForm((prev) => ({ ...prev, slug: (e.target as HTMLInputElement).value.toLowerCase() }));
               }}
               error={formErrors.slug}
-              hint="網址的文字，建議用英文、數字和連字號"
+              hint="網址的文字，僅能包含英文字母、數字及連字號 (-)"
             />
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

@@ -26,7 +26,11 @@ export async function GET(req: NextRequest) {
     const nameByClubId = new Map(clubs.map((c) => [c.id, c.name]));
     const enriched = users.map((u) => ({
       ...u,
-      club_name: u.club_id ? nameByClubId.get(u.club_id) : undefined,
+      club_name: u.club_id
+        ? u.club_id === "none"
+          ? "無"
+          : nameByClubId.get(u.club_id)
+        : undefined,
     }));
     return Response.json({ users: enriched }, {
       headers: {

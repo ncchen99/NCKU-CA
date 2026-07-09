@@ -42,7 +42,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     const enriched = responses.map((r) => ({
       ...r,
       club_name:
-        (r.club_id ? clubNameById.get(r.club_id) : undefined) ??
+        (r.club_id
+          ? r.club_id === "none"
+            ? "無"
+            : clubNameById.get(r.club_id)
+          : undefined) ??
         (r.submitted_by_uid ? userClubNameByUid.get(r.submitted_by_uid) : undefined),
       submitted_by_name: r.submitted_by_uid
         ? userNameByUid.get(r.submitted_by_uid)

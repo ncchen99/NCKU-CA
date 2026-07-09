@@ -69,24 +69,30 @@ export default function ProfilePage() {
         return;
       }
 
-      const clubs = await getActiveClubs();
-      const selectedClub = clubs.find((c) => c.id === clubId);
-      if (!selectedClub) {
-        setError("所選社團無效或已停用");
-        return;
+      let selectedClubName = "";
+      if (clubId && clubId !== "none") {
+        const clubs = await getActiveClubs();
+        const selectedClub = clubs.find((c) => c.id === clubId);
+        if (!selectedClub) {
+          setError("所選社團無效或已停用");
+          return;
+        }
+        selectedClubName = selectedClub.name;
+      } else {
+        selectedClubName = "無";
       }
 
       await saveProfileUser({
         uid: user.uid,
         email: user.email ?? "",
         displayName: displayName.trim(),
-        clubId,
+        clubId: clubId || "none",
         positionTitle: positionTitle.trim() || undefined,
         departmentGrade: departmentGrade.trim() || undefined,
         profileCompleted: true,
       });
 
-      setClubName(selectedClub.name);
+      setClubName(selectedClubName);
       setSuccess(true);
       await refreshUser();
     } catch (err) {

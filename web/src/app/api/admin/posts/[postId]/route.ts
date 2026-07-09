@@ -36,6 +36,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const { postId } = await context.params;
     const previousPost = await getPostById(postId);
     const body = await request.json();
+
+    if (body.slug !== undefined && (typeof body.slug !== "string" || !/^[a-zA-Z0-9-]+$/.test(body.slug))) {
+      return NextResponse.json(
+        { error: "Slug 格式錯誤，僅能包含英文字母、數字及連字號 (-)" },
+        { status: 400 }
+      );
+    }
+
     await updatePost(postId, body);
 
     const nextPost = {

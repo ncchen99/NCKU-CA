@@ -278,9 +278,11 @@ export async function checkIn(
       .collection(RECORDS_SUB);
 
     return await db.runTransaction(async (tx) => {
-      const existing = await tx.get(
-        recordsRef.where("club_id", "==", data.club_id).limit(1)
-      );
+      const checkQuery = data.club_id === "none"
+        ? recordsRef.where("user_uid", "==", data.user_uid).limit(1)
+        : recordsRef.where("club_id", "==", data.club_id).limit(1);
+
+      const existing = await tx.get(checkQuery);
 
       if (!existing.empty) {
         const dupRef = recordsRef.doc();

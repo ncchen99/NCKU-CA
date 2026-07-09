@@ -327,13 +327,17 @@ export async function getProfileUser(uid: string): Promise<ProfileUser | null> {
     };
 
     if (profile.club_id) {
-        const clubSnap = await getDoc(doc(db, "clubs", profile.club_id));
-        if (clubSnap.exists()) {
-            const clubData = clubSnap.data() as Record<string, unknown>;
-            profile.club_name =
-                typeof clubData.name === "string" ? clubData.name : undefined;
-            profile.club_category =
-                typeof clubData.category === "string" ? clubData.category : undefined;
+        if (profile.club_id === "none") {
+            profile.club_name = "無";
+        } else {
+            const clubSnap = await getDoc(doc(db, "clubs", profile.club_id));
+            if (clubSnap.exists()) {
+                const clubData = clubSnap.data() as Record<string, unknown>;
+                profile.club_name =
+                    typeof clubData.name === "string" ? clubData.name : undefined;
+                profile.club_category =
+                    typeof clubData.category === "string" ? clubData.category : undefined;
+            }
         }
     }
 
@@ -577,7 +581,11 @@ export async function getAdminUsers(role?: string): Promise<AdminUserItem[]> {
     );
     return users.map((u) => ({
         ...u,
-        club_name: u.club_id ? clubNames.get(u.club_id) || undefined : undefined,
+        club_name: u.club_id
+            ? u.club_id === "none"
+                ? "無"
+                : clubNames.get(u.club_id) || undefined
+            : undefined,
     }));
 }
 

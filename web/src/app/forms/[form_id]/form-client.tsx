@@ -111,7 +111,7 @@ function FormFieldInput({
           value={strVal}
           onChange={(v) => onChange(v)}
           placeholder={field.placeholder || "請選擇您的社團"}
-          allowClear={false}
+          allowClear={true}
           error={!!error}
         />
       ) : field.type === "select" ? (
@@ -410,10 +410,10 @@ export function FormClient({
 
     try {
       // 取得 club_id：如果有 club_picker 欄位就用它的值，否則用使用者的 club_id
-      let clubId = user.club_id || "";
+      let clubId = user.club_id || "none";
       const clubField = fields.find((f) => f.type === "club_picker");
       if (clubField && answers[clubField.id]) {
-        clubId = answers[clubField.id] as string;
+        clubId = (answers[clubField.id] as string) || "none";
       }
 
       const res = isEditMode

@@ -113,7 +113,7 @@ export function ClubSearchSelect({
     }));
 
     if (allowClear) {
-      list.unshift({ value: "", label: clearLabel });
+      list.unshift({ value: "none", label: clearLabel });
     }
 
     // If we have a value but it's not in the loaded list,

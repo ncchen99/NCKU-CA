@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, slug, category, content_markdown, tags, status, cover_image_url } = body;
 
+    if (!slug || typeof slug !== "string" || !/^[a-zA-Z0-9-]+$/.test(slug)) {
+      return NextResponse.json(
+        { error: "Slug 格式錯誤，僅能包含英文字母、數字及連字號 (-)" },
+        { status: 400 }
+      );
+    }
+
     const id = await createPost({
       title,
       slug,

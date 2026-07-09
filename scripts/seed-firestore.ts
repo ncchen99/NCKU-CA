@@ -9,7 +9,7 @@
  *   或: cd web && npx tsx ../scripts/seed-firestore.ts
  */
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
@@ -184,15 +184,32 @@ async function seedClubs(db: FirebaseFirestore.Firestore) {
     return;
   }
 
-  console.log(`  📊 共找到 ${data.clubs.length} 個社團`);
+  // 載入自訂社團/組織
+  const customYamlPath = resolve(PROJECT_ROOT, "data", "custom-clubs.yaml");
+  let customClubs: YamlClub[] = [];
+  if (existsSync(customYamlPath)) {
+    try {
+      const customContent = readFileSync(customYamlPath, "utf-8");
+      const customData = yaml.load(customContent) as YamlRoot;
+      if (customData?.clubs?.length) {
+        customClubs = customData.clubs;
+        console.log(`  ➕ 載入 ${customClubs.length} 個自訂社團/組織`);
+      }
+    } catch (e) {
+      console.warn("⚠️ 無法解析自訂社團 YAML 檔案:", e);
+    }
+  }
+
+  const allClubs = [...data.clubs, ...customClubs];
+  console.log(`  📊 共找到 ${allClubs.length} 個社團（含自訂）`);
 
   let batch = db.batch();
   let batchCount = 0;
   let totalWritten = 0;
 
-  for (const club of data.clubs) {
+  for (const club of allClubs) {
     if (batchCount >= BATCH_LIMIT) {
-      await commitBatch(batch, `已寫入 ${totalWritten} / ${data.clubs.length}`);
+      await commitBatch(batch, `已寫入 ${totalWritten} / ${allClubs.length}`);
       batch = db.batch();
       batchCount = 0;
     }
@@ -209,7 +226,7 @@ async function seedClubs(db: FirebaseFirestore.Firestore) {
       ...(club.description ? { description: club.description } : {}),
       ...(club.website_url ? { website_url: club.website_url } : {}),
       is_active: club.status === "正式",
-      import_source: "yaml_import" as const,
+      import_source: club.import_source ?? ("yaml_import" as const),
       raw_data: club.raw_data ?? {},
       imported_at: FieldValue.serverTimestamp(),
     });
@@ -219,7 +236,7 @@ async function seedClubs(db: FirebaseFirestore.Firestore) {
   }
 
   if (batchCount > 0) {
-    await commitBatch(batch, `已寫入 ${totalWritten} / ${data.clubs.length}`);
+    await commitBatch(batch, `已寫入 ${totalWritten} / ${allClubs.length}`);
   }
 
   console.log(`🏫 clubs 寫入完成（共 ${totalWritten} 筆文件）`);
