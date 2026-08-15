@@ -59,6 +59,24 @@
             && get(/databases/$(database)/documents/clubs/$(clubId)).data.is_active == true;
       }
 
+      // club_id 是否為合法值：未選社（''）、明確無社團（'none'）或啟用中的社團
+      function isAllowedClubId(clubId) {
+        return clubId == ''
+            || clubId == 'none'
+            || isActiveClub(clubId);
+      }
+
+      // 使用者本人可自行寫入的欄位白名單（不含 role / email / uid 等敏感欄位）
+      function selfWritableUserFields() {
+        return [
+          'display_name',
+          'club_id',
+          'position_title',
+          'department_grade',
+          'profile_completed'
+        ];
+      }
+
       // ──────────────────────────────────────────────
       //  1. site_content — 前台頁面內容（CMS）
       //  讀取：所有人（公開網站內容）
@@ -93,17 +111,33 @@
       // ──────────────────────────────────────────────
       //  4. users — 平台用戶
       //  讀取：本人可讀自己的文件；管理員可讀全部
-      //  建立：首次登入時由系統建立（auth.uid == uid）
+      //  建立：首次登入時由系統建立（auth.uid == uid），欄位受白名單限制，
+      //        且 role 一律固定為 club_member（不得自行提權為 admin）
       //  更新：本人僅可修改 display_name；管理員可更新所有欄位
       //  刪除：僅限管理員
       // ──────────────────────────────────────────────
       match /users/{uid} {
         allow read: if isOwner(uid) || isAdmin();
 
-        // 首次登入建立用戶文件，uid 必須與登入帳號一致
-        allow create: if isOwner(uid)
-                      && incomingData().uid == uid
-                      && incomingData().email == request.auth.token.email;
+        // 首次登入建立用戶文件，uid 必須與登入帳號一致。
+        // 注意：create 時 resource 為 null，不能使用 diff(existingData())，
+        // 必須改用 incomingData().keys().hasOnly([...]) 做欄位白名單。
+        allow create: if isAdmin()
+                      || (isOwner(uid)
+                          && incomingData().uid == uid
+                          && incomingData().email == request.auth.token.email
+                          // 提權防線：新建文件的 role 只能是 club_member
+                          && incomingData().role == 'club_member'
+                          && incomingData().keys().hasOnly(
+                              ['uid', 'email', 'role', 'created_at']
+                                .concat(selfWritableUserFields())
+                            )
+                          && incomingData().display_name is string
+                          && (
+                            !incomingData().keys().hasAny(['club_id'])
+                            || isAllowedClubId(incomingData().club_id)
+                          )
+                        );
 
         // 一般用戶只能更新個人資料欄位（display_name、club_id 等），
         // 不可自行變更 role、email 等敏感欄位
@@ -111,19 +145,12 @@
         allow update: if isAdmin()
                       || (isOwner(uid)
                           && incomingData().diff(existingData()).affectedKeys()
-                              .hasOnly([
-                                'display_name',
-                                'club_id',
-                                'position_title',
-                                'department_grade',
-                                'profile_completed'
-                              ])
+                              .hasOnly(selfWritableUserFields())
                           && incomingData().display_name is string
                           && incomingData().display_name.size() > 0
                           && (
                             !incomingData().diff(existingData()).affectedKeys().hasAny(['club_id'])
-                            || incomingData().club_id == ''
-                            || isActiveClub(incomingData().club_id)
+                            || isAllowedClubId(incomingData().club_id)
                           )
                         );
 
