@@ -1,11 +1,20 @@
-# Root-level dependencies
-/node_modules/
+# Dependencies（任何層級，例如 firebase/tests/node_modules）
+node_modules/
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# Firebase emulator / CLI 產物
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+database-debug.log*
+pubsub-debug.log*
+ui-debug.log*
+firebase-export-*/
 
 # OS files
 .DS_Store

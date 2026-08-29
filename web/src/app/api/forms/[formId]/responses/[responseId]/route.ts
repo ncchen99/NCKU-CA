@@ -157,7 +157,10 @@ export async function PATCH(
       }
     }
 
-    await updateFormResponse(formId, responseId, sanitized);
+    await updateFormResponse(formId, responseId, sanitized, {
+      formFields: fields,
+      clubId: existing.club_id,
+    });
 
     return Response.json({ ok: true });
   } catch (error) {

@@ -1,3 +1,4 @@
+import { CUSTOM_CLUB_NAME_FIELD_ID, NO_CLUB_ID } from "@/lib/club-name";
 import type { FormField } from "@/types";
 
 /** 表單模板定義 */
@@ -27,12 +28,55 @@ function makeField(
   };
 }
 
+/**
+ * 建立與 club_picker 搭配的自填社團名稱欄位。
+ *
+ * 不在 clubs 名單內的單位（試辦社團、學生組織等）在 club_picker 選「無」，
+ * 此欄位才會顯示並強制填寫，其值會成為表單回覆與保證金紀錄的社團名稱。
+ */
+function makeCustomClubNameField(
+  clubPickerFieldId: string,
+): Omit<FormField, "order"> {
+  return makeField(
+    CUSTOM_CLUB_NAME_FIELD_ID,
+    "text",
+    "社團／組織名稱（未在名單中請填寫）",
+    {
+      required: true,
+      placeholder: "例如：匹克球社（試辦）、成杏合唱團",
+      depends_on: {
+        field_id: clubPickerFieldId,
+        operator: "equals",
+        value: NO_CLUB_ID,
+        action: "show",
+      },
+    },
+  );
+}
+
+/**
+ * 在 club_picker 之後補上自填社團名稱欄位。
+ * 統一套用於所有模板，新增模板時不會漏掉。
+ */
+function withCustomClubNameField(
+  fields: Omit<FormField, "order">[],
+): Omit<FormField, "order">[] {
+  if (fields.some((f) => f.id === CUSTOM_CLUB_NAME_FIELD_ID)) return fields;
+  const pickerIndex = fields.findIndex((f) => f.type === "club_picker");
+  if (pickerIndex === -1) return fields;
+  return [
+    ...fields.slice(0, pickerIndex + 1),
+    makeCustomClubNameField(fields[pickerIndex].id),
+    ...fields.slice(pickerIndex + 1),
+  ];
+}
+
 function makeActivityRegistrationFields(): Omit<FormField, "order">[] {
   return [
     makeField("club_name", "club_picker", "社團名稱", {
       required: true,
       default_from_user: "club_name",
-      placeholder: "請選擇您的社團",
+      placeholder: "請選擇您的社團；名單中沒有請選「— 無 —」",
     }),
     makeField("contact_name", "text", "聯絡人姓名", {
       required: true,
@@ -88,7 +132,7 @@ const expoRegistration: FormTemplate = {
     makeField("club_name", "club_picker", "社團名稱", {
       required: true,
       default_from_user: "club_name",
-      placeholder: "請選擇您的社團",
+      placeholder: "請選擇您的社團；名單中沒有請選「— 無 —」",
     }),
     makeField("contact_email", "email", "電子郵件地址", {
       required: true,
@@ -159,7 +203,7 @@ const generalRegistration: FormTemplate = {
     makeField("club_name", "club_picker", "社團名稱", {
       required: true,
       default_from_user: "club_name",
-      placeholder: "請選擇您的社團",
+      placeholder: "請選擇您的社團；名單中沒有請選「— 無 —」",
     }),
     makeField("contact_name", "text", "聯絡人姓名", {
       required: true,
@@ -191,7 +235,7 @@ const attendanceSurvey: FormTemplate = {
     makeField("club_name", "club_picker", "社團名稱", {
       required: true,
       default_from_user: "club_name",
-      placeholder: "請選擇您的社團",
+      placeholder: "請選擇您的社團；名單中沒有請選「— 無 —」",
     }),
     makeField("club_category", "text", "社團性質", {
       default_from_user: "club_category",
@@ -243,13 +287,16 @@ const winterAssociation: FormTemplate = {
   fields: makeActivityRegistrationFields(),
 };
 
-/** 所有可用模板 */
+/** 所有可用模板（一律補上與 club_picker 搭配的自填社團名稱欄位） */
 export const FORM_TEMPLATES: FormTemplate[] = [
   expoRegistration,
   winterAssociation,
   generalRegistration,
   attendanceSurvey,
-];
+].map((template) => ({
+  ...template,
+  fields: withCustomClubNameField(template.fields),
+}));
 
 /** 根據 key 取得模板 */
 export function getFormTemplate(key: string): FormTemplate | undefined {

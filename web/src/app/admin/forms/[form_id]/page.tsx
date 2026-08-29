@@ -27,6 +27,7 @@ import {
     timestampToMs,
     type FirestoreTimestamp,
 } from "@/lib/admin-utils";
+import { CUSTOM_CLUB_NAME_FIELD_IDS } from "@/lib/club-name";
 import {
     getAdminFormById,
     getAdminFormResponses,
@@ -298,6 +299,8 @@ export default function AdminFormPreviewAndResponsesPage() {
                 (f) =>
                     f.type !== "section_header" &&
                     f.type !== "club_picker" &&
+                    // 自填社團名稱已併入「社團」欄顯示，不另外佔一欄
+                    !CUSTOM_CLUB_NAME_FIELD_IDS.includes(f.id as never) &&
                     f.default_from_user !== "club_name" &&
                     f.default_from_user !== "club_id",
             )

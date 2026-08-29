@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, unauthorizedResponse } from "@/lib/admin-auth";
 import { getFormResponses, getAllClubs, getUser } from "@/lib/firestore";
+import { resolveClubDisplayName } from "@/lib/club-name";
 
 type RouteContext = { params: Promise<{ formId: string }> };
 
@@ -42,11 +43,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     const enriched = responses.map((r) => ({
       ...r,
       club_name:
-        (r.club_id
-          ? r.club_id === "none"
-            ? "無"
-            : clubNameById.get(r.club_id)
-          : undefined) ??
+        resolveClubDisplayName(r, (id) => clubNameById.get(id)) ??
         (r.submitted_by_uid ? userClubNameByUid.get(r.submitted_by_uid) : undefined),
       submitted_by_name: r.submitted_by_uid
         ? userNameByUid.get(r.submitted_by_uid)

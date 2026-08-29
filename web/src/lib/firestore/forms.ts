@@ -1,6 +1,7 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldPath, FieldValue } from "firebase-admin/firestore";
 import { unstable_cache } from "next/cache";
+import { extractCustomClubName, isUnresolvedClubId } from "@/lib/club-name";
 import type { Form, FormResponse } from "@/types";
 
 const COLLECTION = "forms";
@@ -280,18 +281,52 @@ export async function updateFormResponse(
   formId: string,
   responseId: string,
   answers: Record<string, unknown>,
+  options?: {
+    /** 表單欄位定義，用於解析使用者自填的社團名稱 */
+    formFields?: Form["fields"];
+    /** 回覆既有的 club_id，用於判斷是否需要改用自填名稱 */
+    clubId?: string;
+  },
 ): Promise<void> {
   try {
     const db = getAdminDb();
+    const update: Record<string, unknown> = {
+      answers,
+      updated_at: FieldValue.serverTimestamp(),
+    };
+
+    // 系統帶不出社團時，自填的「社團名稱」欄位就是社團名稱來源，
+    // 使用者改動該欄位時需一併更新回覆與綁定的保證金紀錄。
+    const needsCustomName = isUnresolvedClubId(options?.clubId);
+    const customClubName = needsCustomName
+      ? extractCustomClubName(options?.formFields, answers)
+      : undefined;
+
+    // 只在解析得到名稱時覆寫；解析不到就保留既有值，
+    // 避免舊回覆（自填欄位尚未存在）被編輯時把回填的名稱清掉。
+    if (needsCustomName && customClubName) {
+      update.club_name_custom = customClubName;
+    }
+
     await db
       .collection(COLLECTION)
       .doc(formId)
       .collection(RESPONSES_SUB)
       .doc(responseId)
-      .update({
-        answers,
-        updated_at: FieldValue.serverTimestamp(),
-      });
+      .update(update);
+
+    if (needsCustomName && customClubName) {
+      const linkedDeposits = await db
+        .collection("deposit_records")
+        .where("form_response_id", "==", responseId)
+        .get();
+
+      await Promise.all(
+        linkedDeposits.docs.map((doc) =>
+          doc.ref.update({ club_name_custom: customClubName }),
+        ),
+      );
+    }
   } catch (error) {
     throw new Error(
       `Failed to update response "${responseId}" for form "${formId}": ${error instanceof Error ? error.message : error}`,
@@ -327,6 +362,8 @@ export async function submitFormResponse(
   data: Omit<FormResponse, "id" | "submitted_at" | "is_duplicate_attempt">,
   options?: {
     depositPolicy?: Form["deposit_policy"];
+    /** 表單欄位定義，用於解析使用者自填的社團名稱 */
+    formFields?: Form["fields"];
     updatedByUid?: string;
   },
 ): Promise<string> {
@@ -349,9 +386,16 @@ export async function submitFormResponse(
         throw new DuplicateFormSubmissionError();
       }
 
+      // 系統帶不出社團（不在 clubs 名單內的試辦社團／學生組織）時，
+      // 以使用者自填的「社團名稱」欄位作為社團名稱來源。
+      const customClubName = isUnresolvedClubId(data.club_id)
+        ? extractCustomClubName(options?.formFields, data.answers)
+        : undefined;
+
       const newRef = responsesRef.doc();
       tx.set(newRef, {
         ...data,
+        ...(customClubName ? { club_name_custom: customClubName } : {}),
         submitted_at: FieldValue.serverTimestamp(),
         is_duplicate_attempt: false,
       });
@@ -367,6 +411,7 @@ export async function submitFormResponse(
         const depositRef = depositsRef.doc();
         const depositPayload: Record<string, unknown> = {
           club_id: data.club_id,
+          ...(customClubName ? { club_name_custom: customClubName } : {}),
           status: "pending_payment",
           amount: depositAmount,
           updated_by: options?.updatedByUid ?? data.submitted_by_uid,

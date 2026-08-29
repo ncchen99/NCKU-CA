@@ -10,7 +10,9 @@
     "seed": "npx tsx ../scripts/seed-firestore.ts",
     "seed:clubs": "npx tsx ../scripts/seed-firestore.ts --clubs-only",
     "seed:facebook-posts": "npx tsx ../scripts/seed-facebook-posts.ts",
-    "audit:admins": "npx tsx ../scripts/audit-admin-roles.ts"
+    "audit:admins": "npx tsx ../scripts/audit-admin-roles.ts",
+    "backfill:club-name-custom": "npx tsx ../scripts/backfill-club-name-custom.ts",
+    "form:add-custom-club-name-field": "npx tsx ../scripts/add-custom-club-name-field.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1016.0",

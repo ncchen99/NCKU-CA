@@ -188,6 +188,7 @@ export async function syncMissingLinkedDepositRecords(): Promise<number> {
         if (existingResponseIds.has(responseDoc.id)) continue;
         const responseData = responseDoc.data() as {
           club_id?: string;
+          club_name_custom?: string;
           submitted_by_uid?: string;
         };
         if (!responseData.club_id) continue;
@@ -195,6 +196,9 @@ export async function syncMissingLinkedDepositRecords(): Promise<number> {
         const depositRef = db.collection(COLLECTION).doc();
         batch.set(depositRef, {
           club_id: responseData.club_id,
+          ...(responseData.club_name_custom
+            ? { club_name_custom: responseData.club_name_custom }
+            : {}),
           form_id: formDoc.id,
           form_response_id: responseDoc.id,
           status: "pending_payment",

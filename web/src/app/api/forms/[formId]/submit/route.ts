@@ -216,6 +216,7 @@ export async function POST(
       answers: sanitizedAnswers,
     }, {
       depositPolicy: form.deposit_policy,
+      formFields: fields,
       updatedByUid: session.uid,
     });
 

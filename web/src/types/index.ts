@@ -141,6 +141,13 @@ export interface FormResponse {
   id: string;
   form_id: string;
   club_id: string;
+  /**
+   * 使用者自填的社團名稱。
+   * 當 club_id 無法對應 clubs 名單（空值或 "none"）時作為社團名稱來源。
+   */
+  club_name_custom?: string;
+  /** 由管理 API 依 club_id / club_name_custom 解析，僅供顯示 */
+  club_name?: string;
   submitted_by_uid: string;
   answers: Record<string, unknown>;
   submitted_at: Timestamp;
@@ -151,7 +158,12 @@ export interface FormResponse {
 export interface DepositRecord {
   id: string;
   club_id: string;
-  /** 由管理 API 依 club_id 解析，僅供顯示 */
+  /**
+   * 使用者自填的社團名稱（由綁定的表單回覆帶入）。
+   * 當 club_id 無法對應 clubs 名單（空值或 "none"）時作為社團名稱來源。
+   */
+  club_name_custom?: string;
+  /** 由管理 API 依 club_id / club_name_custom 解析，僅供顯示 */
   club_name?: string;
   /** 綁定表單 ID（linked_to_response 模式會寫入） */
   form_id?: string;

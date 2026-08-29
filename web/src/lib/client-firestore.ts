@@ -1,4 +1,5 @@
 import { getClientDb } from "@/lib/firebase";
+import { resolveClubDisplayName } from "@/lib/club-name";
 import type {
     AttendanceEvent,
     AttendanceRecord,
@@ -728,15 +729,16 @@ export async function getAdminFormResponses(
         (d) =>
             ({ id: d.id, ...(d.data() as Omit<FormResponse, "id">) }) as FormResponse,
     );
+    // club_name_custom 也一起查：舊資料的自填欄位可能存的是社團 ID
     const clubIds = responses
-        .map((r) => r.club_id)
+        .flatMap((r) => [r.club_id, r.club_name_custom])
         .filter((x): x is string => !!x);
     const clubNames = await fetchByIdsChunked("clubs", clubIds, (_id, data) =>
         typeof data.name === "string" ? data.name : "",
     );
     return responses.map((r) => ({
         ...r,
-        club_name: r.club_id ? clubNames.get(r.club_id) || undefined : undefined,
+        club_name: resolveClubDisplayName(r, (id) => clubNames.get(id) || undefined),
     }));
 }
 
@@ -775,8 +777,9 @@ export async function getAdminDeposits(options?: {
                 ({ id: d.id, ...(d.data() as Omit<DepositRecord, "id">) }) as DepositRecord,
         )
         .sort((a, b) => sortByRecency(a, b, ["created_at", "updated_at"]));
+    // club_name_custom 也一起查：舊資料的自填欄位可能存的是社團 ID
     const clubIds = records
-        .map((r) => r.club_id)
+        .flatMap((r) => [r.club_id, r.club_name_custom])
         .filter((x): x is string => !!x);
     const formIds = records
         .map((r) => r.form_id)
@@ -791,7 +794,7 @@ export async function getAdminDeposits(options?: {
     ]);
     return records.map((r) => ({
         ...r,
-        club_name: r.club_id ? clubNames.get(r.club_id) || undefined : undefined,
+        club_name: resolveClubDisplayName(r, (id) => clubNames.get(id) || undefined),
         form_title: r.form_id ? formTitles.get(r.form_id) || undefined : undefined,
     }));
 }
@@ -997,7 +1000,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
         .slice(0, 5)
         .map((r) => ({
             ...r,
-            club_name: r.club_id ? clubNames.get(r.club_id)?.name : undefined,
+            club_name: resolveClubDisplayName(r, (id) => clubNames.get(id)?.name),
         }));
 
     const allEvents = allEventsSnap.docs.map(
