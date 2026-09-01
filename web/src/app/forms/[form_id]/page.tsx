@@ -100,7 +100,7 @@ export default async function FormPage({ params }: Props) {
       <PublicLayout>
         <section className="w-full">
           <div className="mx-auto max-w-3xl px-6 pt-24 pb-20">
-            <div className="rounded-xl bg-white p-8 shadow-[0_0_0_1px_rgba(10,10,10,0.08)] text-center">
+            <div className="rounded-xl bg-white p-8 shadow-[0_0_0_1px_rgba(10,10,10,0.08)] text-left">
               <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 font-mono text-[11px] font-medium text-neutral-600">
                 已截止
               </span>
