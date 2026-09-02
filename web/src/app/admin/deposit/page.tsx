@@ -34,6 +34,7 @@ interface DepositRecord {
   form_response_id?: string;
   status: "pending_payment" | "paid" | "returned";
   amount: number;
+  created_at?: unknown;
   paid_at?: unknown;
   returned_at?: unknown;
   notes?: string;
@@ -63,6 +64,7 @@ function downloadDepositCsv(records: DepositRecord[]) {
     "綁定表單",
     "狀態",
     "金額",
+    "建立日期",
     "繳費日期",
     "退還日期",
     "備註",
@@ -77,6 +79,7 @@ function downloadDepositCsv(records: DepositRecord[]) {
       record.form_title ?? (record.form_id || record.form_response_id ? "已綁定（表單名稱未知）" : "獨立保證金"),
       statusLabel,
       String(record.amount),
+      formatTimestamp(record.created_at as Parameters<typeof formatTimestamp>[0]),
       formatTimestamp(record.paid_at as Parameters<typeof formatTimestamp>[0]),
       formatTimestamp(record.returned_at as Parameters<typeof formatTimestamp>[0]),
       record.notes ?? "",
@@ -352,6 +355,19 @@ export default function DepositPage() {
         },
       },
       {
+        id: "created_at",
+        accessorFn: (row) => timestampToMs(row.created_at),
+        header: ({ column }) => adminSortableHeader(column, "建立日期"),
+        sortingFn: "basic",
+        cell: ({ row }) => (
+          <span className="text-neutral-400">
+            {formatTimestamp(
+              row.original.created_at as Parameters<typeof formatTimestamp>[0],
+            )}
+          </span>
+        ),
+      },
+      {
         id: "paid_at",
         accessorFn: (row) => timestampToMs(row.paid_at),
         header: ({ column }) => adminSortableHeader(column, "繳費日期"),
@@ -531,7 +547,7 @@ export default function DepositPage() {
 
         {loading ? (
           <div className="overflow-hidden">
-            <AdminTableSkeleton rows={6} columns={[24, 120, 80, 64, 56, 80, 80]} />
+            <AdminTableSkeleton rows={6} columns={[24, 120, 80, 64, 56, 80, 80, 80]} />
           </div>
         ) : error ? (
           <AdminErrorState message={error} onRetry={fetchDeposits} />
@@ -541,7 +557,7 @@ export default function DepositPage() {
             columns={depositColumns}
             getRowId={(row) => row.id}
             emptyMessage="沒有找到符合條件的保證金紀錄"
-            emptyColSpan={9}
+            emptyColSpan={10}
           />
         )}
       </Card>

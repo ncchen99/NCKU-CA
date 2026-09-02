@@ -144,10 +144,10 @@ export async function getDepositBindingMeta(
 export async function syncMissingLinkedDepositRecords(): Promise<number> {
   try {
     const db = getAdminDb();
+    // 不篩 binding_mode：兩種模式的紀錄都由送出表單自動建立並帶上綁定資訊。
     const formsSnapshot = await db
       .collection("forms")
       .where("deposit_policy.required", "==", true)
-      .where("deposit_policy.binding_mode", "==", "linked_to_response")
       .get();
 
     let created = 0;
@@ -203,6 +203,7 @@ export async function syncMissingLinkedDepositRecords(): Promise<number> {
           form_response_id: responseDoc.id,
           status: "pending_payment",
           amount,
+          created_at: FieldValue.serverTimestamp(),
           updated_by: responseData.submitted_by_uid ?? "system",
         });
         batchCount += 1;
@@ -266,6 +267,31 @@ export async function updateDepositStatus(
   } catch (error) {
     throw new Error(
       `Failed to update deposit status "${id}": ${error instanceof Error ? error.message : error}`
+    );
+  }
+}
+
+export async function updateDepositNotes(
+  id: string,
+  notes: string,
+  adminUid: string
+): Promise<void> {
+  try {
+    const db = getAdminDb();
+    const docRef = db.collection(COLLECTION).doc(id);
+
+    await db.runTransaction(async (tx) => {
+      const doc = await tx.get(docRef);
+      if (!doc.exists) {
+        throw new Error(`Deposit record "${id}" not found`);
+      }
+
+      // 備註不動狀態機，任何狀態下都可以編輯。
+      tx.update(docRef, { notes, updated_by: adminUid });
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to update deposit notes "${id}": ${error instanceof Error ? error.message : error}`
     );
   }
 }

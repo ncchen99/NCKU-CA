@@ -409,18 +409,18 @@ export async function submitFormResponse(
 
       if (requiresDeposit) {
         const depositRef = depositsRef.doc();
+        // 綁定資訊兩種 binding_mode 都寫入：紀錄本來就是由送出表單自動建立的，
+        // 少了 form_id 會讓同一社團的多筆保證金在後台無法分辨來源。
         const depositPayload: Record<string, unknown> = {
           club_id: data.club_id,
           ...(customClubName ? { club_name_custom: customClubName } : {}),
+          form_id: formId,
+          form_response_id: newRef.id,
           status: "pending_payment",
           amount: depositAmount,
+          created_at: FieldValue.serverTimestamp(),
           updated_by: options?.updatedByUid ?? data.submitted_by_uid,
         };
-
-        if (options?.depositPolicy?.binding_mode === "linked_to_response") {
-          depositPayload.form_id = formId;
-          depositPayload.form_response_id = newRef.id;
-        }
 
         tx.set(depositRef, depositPayload);
       }

@@ -6,6 +6,7 @@ import {
   getDepositRecords,
   getFormTitleMapByIds,
   syncMissingLinkedDepositRecords,
+  updateDepositNotes,
   updateDepositStatus,
 } from "@/lib/firestore";
 import { resolveClubDisplayName } from "@/lib/club-name";
@@ -64,12 +65,30 @@ export async function PUT(request: NextRequest) {
   if (!session) return unauthorizedResponse();
 
   try {
-    const { id, status } = await request.json();
+    const { id, status, notes } = await request.json();
+
+    if (typeof id !== "string" || !id) {
+      return NextResponse.json({ error: "缺少保證金紀錄 ID" }, { status: 400 });
+    }
+
+    // 備註是獨立的更新路徑，不經過狀態機。
+    if (status === undefined && typeof notes === "string") {
+      await updateDepositNotes(id, notes, session.uid);
+      return NextResponse.json({ success: true });
+    }
+
+    if (status !== "paid" && status !== "returned") {
+      return NextResponse.json(
+        { error: "缺少可更新的欄位（status 或 notes）" },
+        { status: 400 }
+      );
+    }
+
     await updateDepositStatus(id, status, session.uid);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "更新保證金狀態失敗" },
+      { error: error instanceof Error ? error.message : "更新保證金失敗" },
       { status: 500 }
     );
   }

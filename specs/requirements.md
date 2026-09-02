@@ -245,6 +245,7 @@ theme: {
 | `form_response_id` | `string?` — 來源表單回覆 ID（`binding_mode='linked_to_response'` 時必填） |
 | `status`           | `string` — `'pending_payment'` \| `'paid'` \| `'returned'`（狀態機）      |
 | `amount`           | `number` — 保證金金額                                                     |
+| `created_at`       | `Timestamp` — 建立時間（用於區分同一社團跨期別的多筆保證金）              |
 | `paid_at`          | `Timestamp?` — 繳交時間（由 admin 標記）                                  |
 | `returned_at`      | `Timestamp?` — 領回時間（由 admin 標記）                                  |
 | `notes`            | `string?` — 備註                                                          |
@@ -253,7 +254,7 @@ theme: {
 > **狀態機**：`pending_payment → paid → returned`，僅允許 admin 向前推進，不可逆（確保審計追蹤）。
 
 > **建立時機**：僅當該表單 `deposit_policy.required=true` 才建立 `deposit_records`。  
-> **綁定規則**：`binding_mode='linked_to_response'` 時由送出表單自動建立；`binding_mode='independent'` 時由管理員手動建立與維護。
+> **綁定規則**：兩種 `binding_mode` 送出表單時都會自動建立紀錄並寫入 `form_id` / `form_response_id`（少了綁定資訊，同一社團的多筆保證金在後台無法分辨來源）。差別在於 `binding_mode='independent'` 的紀錄後續由管理員獨立維護，不隨表單回覆連動。
 
 ### 3.7 attendance_events / records（點名）
 

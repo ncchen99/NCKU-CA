@@ -12,6 +12,7 @@
     "seed:facebook-posts": "npx tsx ../scripts/seed-facebook-posts.ts",
     "audit:admins": "npx tsx ../scripts/audit-admin-roles.ts",
     "backfill:club-name-custom": "npx tsx ../scripts/backfill-club-name-custom.ts",
+    "backfill:deposit-created-at": "npx tsx ../scripts/backfill-deposit-created-at.ts",
     "form:add-custom-club-name-field": "npx tsx ../scripts/add-custom-club-name-field.ts"
   },
   "dependencies": {

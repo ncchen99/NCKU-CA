@@ -172,6 +172,8 @@ export interface DepositRecord {
   form_response_id?: string;
   status: "pending_payment" | "paid" | "returned";
   amount: number;
+  /** 紀錄建立時間，用於區分同一社團跨期別的多筆保證金 */
+  created_at?: Timestamp;
   paid_at?: Timestamp;
   returned_at?: Timestamp;
   notes?: string;
