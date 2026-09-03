@@ -133,7 +133,7 @@ export default function AdminDashboard() {
   ];
 
   const recentResponses = data?.latestResponses ?? [];
-  const depositRecords = data?.pendingDeposits?.records ?? [];
+  const depositRecords = (data?.pendingDeposits?.records ?? []).slice(0, 5);
 
   type DashboardLatestResponse = NonNullable<
     DashboardData["latestResponses"]
@@ -183,7 +183,10 @@ export default function AdminDashboard() {
             {formatRelativeTime(row.original.submitted_at)}
           </span>
         ),
-        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+        meta: {
+          thClassName: "px-5 text-right whitespace-nowrap",
+          tdClassName: "px-5 text-right whitespace-nowrap",
+        },
       },
       {
         id: "link",
@@ -200,7 +203,10 @@ export default function AdminDashboard() {
             </Link>
           );
         },
-        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+        meta: {
+          thClassName: "px-5 text-right whitespace-nowrap",
+          tdClassName: "px-5 text-right whitespace-nowrap",
+        },
       },
     ],
     [],
@@ -250,7 +256,10 @@ export default function AdminDashboard() {
             ${(row.original.amount ?? 0).toLocaleString()}
           </span>
         ),
-        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+        meta: {
+          thClassName: "px-5 text-right whitespace-nowrap",
+          tdClassName: "px-5 text-right whitespace-nowrap",
+        },
       },
       {
         id: "link",
@@ -259,12 +268,15 @@ export default function AdminDashboard() {
         cell: () => (
           <Link
             href="/admin/deposit"
-            className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
+            className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
           >
             前往處理
           </Link>
         ),
-        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+        meta: {
+          thClassName: "px-5 text-right whitespace-nowrap",
+          tdClassName: "px-5 text-right whitespace-nowrap",
+        },
       },
     ],
     [],
