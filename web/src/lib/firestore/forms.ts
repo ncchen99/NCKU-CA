@@ -388,11 +388,14 @@ export async function updateFormResponse(
         throw new DuplicateFormSubmissionError();
       }
 
-      const linkedDeposits = await tx.get(
-        db
-          .collection("deposit_records")
-          .where("form_response_id", "==", responseId),
-      );
+      // Independent and legacy unspecified deposits are maintained by admins.
+      const linkedDeposits = form.deposit_policy?.binding_mode === "linked_to_response"
+        ? await tx.get(
+            db
+              .collection("deposit_records")
+              .where("form_response_id", "==", responseId),
+          )
+        : null;
       const clubNameValue = customClubName ?? FieldValue.delete();
 
       tx.update(responseRef, {
@@ -401,9 +404,10 @@ export async function updateFormResponse(
         club_name_custom: clubNameValue,
         updated_at: FieldValue.serverTimestamp(),
       });
-      for (const deposit of linkedDeposits.docs) {
+      for (const deposit of linkedDeposits?.docs ?? []) {
         const linkedFormId = deposit.data().form_id;
-        if (linkedFormId && linkedFormId !== formId) continue;
+        // A response ID alone cannot identify a legacy deposit's source form.
+        if (linkedFormId !== formId) continue;
         tx.update(deposit.ref, {
           club_id: clubId,
           club_name_custom: clubNameValue,

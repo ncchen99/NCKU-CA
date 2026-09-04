@@ -80,7 +80,11 @@ test("submission and edit transactions enforce club and response invariants", as
   });
 
   await Promise.all([
-    formRef.set({ status: "open", fields, deposit_policy: { required: false } }),
+    formRef.set({
+      status: "open",
+      fields,
+      deposit_policy: { required: false, binding_mode: "linked_to_response" },
+    }),
     db.collection("clubs").doc(oldClubId).set({ is_active: true }),
     db.collection("clubs").doc(newClubId).set({ is_active: true }),
     db.collection("clubs").doc(inactiveClubId).set({ is_active: false }),
@@ -217,4 +221,70 @@ test("submission and edit transactions enforce club and response invariants", as
     forms.FormNotOpenError,
   );
   assert.equal((await responseRef.get()).data()?.club_id, "none");
+
+  for (const bindingMode of ["independent", undefined, "unknown-mode"]) {
+    for (const status of ["pending_payment", "paid", "returned"]) {
+      await t.test(`${bindingMode ?? "unspecified"} ${status} deposits remain unchanged`, async () => {
+        await Promise.all([
+          formRef.update({
+            status: "open",
+            deposit_policy: {
+              required: true,
+              amount: 100,
+              ...(bindingMode ? { binding_mode: bindingMode } : {}),
+            },
+          }),
+          responseRef.set({
+            form_id: formId,
+            submitted_by_uid: ownerUid,
+            club_id: oldClubId,
+            answers: { primary: oldClubId },
+          }),
+          depositRef.set({
+            form_id: formId,
+            form_response_id: responseId,
+            club_id: oldClubId,
+            club_name_custom: "管理員維護的名稱",
+            status,
+            amount: 100,
+            paid_at: new Date("2026-01-01T00:00:00Z"),
+            returned_at: new Date("2026-01-02T00:00:00Z"),
+            updated_by: "finance-admin",
+          }),
+        ]);
+        const beforeDeposit = (await depositRef.get()).data();
+
+        await forms.updateFormResponse(formId, responseId, { primary: newClubId }, ownerUid);
+        assert.equal((await responseRef.get()).data()?.club_id, newClubId);
+        assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+
+        await forms.updateFormResponse(
+          formId,
+          responseId,
+          { primary: "none", club_name_custom: "修改後的組織" },
+          ownerUid,
+        );
+        assert.equal((await responseRef.get()).data()?.club_name_custom, "修改後的組織");
+        assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+      });
+    }
+  }
+
+  for (const linkedFormId of [undefined, `${prefix}-other-form`]) {
+    await t.test("linked mode preserves deposits without an exact form identity", async () => {
+      await Promise.all([
+        formRef.update({ deposit_policy: { required: false, binding_mode: "linked_to_response" } }),
+        depositRef.set({
+          form_response_id: responseId,
+          ...(linkedFormId ? { form_id: linkedFormId } : {}),
+          club_id: oldClubId,
+          club_name_custom: "獨立維護",
+          status: "paid",
+        }),
+      ]);
+      const beforeDeposit = (await depositRef.get()).data();
+      await forms.updateFormResponse(formId, responseId, { primary: newClubId }, ownerUid);
+      assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+    });
+  }
 });
