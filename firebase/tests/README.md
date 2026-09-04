@@ -1,8 +1,7 @@
 # Firestore Security Rules 回歸測試
 
-針對 `firebase/firestore.rules` 的 `users/{uid}` 權限規則做自動化驗證，
-重點在防止「一般學生自行建立 `role: "admin"` 文件自提權」這類提權漏洞
-（見 [issue #1](https://github.com/ncchen99/NCKU-CA/issues/1)）。
+針對 `firebase/firestore.rules` 的使用者與表單回覆權限做自動化驗證，
+防止自行提權，以及繞過提交 API 直接建立任意表單回覆。
 
 ## 需求
 
@@ -35,6 +34,22 @@ npm test
 | EXPLOIT-6 | 學生 update 時綁不存在的社團 |
 | EXPLOIT-7 | 文件不存在時搶先 create 提權 |
 | EXPLOIT-8 | 學生替他人建立 `users` 文件 |
+
+**表單回覆（必須被拒絕）**
+
+| 情境 |
+| --- |
+| 在不存在的表單下自訂 response document ID |
+| 以 `setDoc` / `addDoc` 直接建立回覆 |
+| 以 Client SDK 直接更新或刪除回覆 |
+
+**表單回覆讀取（不可被誤殺）**
+
+| 情境 |
+| --- |
+| 提交者可讀自己的回覆 |
+| 管理員可讀全部回覆 |
+| 其他學生不可讀取回覆 |
 
 **正常流程（不可被誤殺）**
 

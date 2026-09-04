@@ -172,24 +172,16 @@
         // ──────────────────────────────────────────
         //  5.1 forms/{formId}/responses — 表單回覆
         //  讀取：提交者可讀自己的回覆；管理員可讀全部
-        //  建立：已驗證的成大用戶，submitted_by_uid 必須等於 auth.uid
-        //  更新/刪除：一律禁止（提交後不可修改，確保資料完整性）
+        //  寫入：一律由伺服器端提交 API 處理；Client SDK 僅能讀取
         // ──────────────────────────────────────────
         match /responses/{responseId} {
           allow read: if isAdmin()
                       || (isAuthenticated()
                           && resource.data.submitted_by_uid == request.auth.uid);
 
-          // 僅允許建立，且必須滿足以下條件：
-          // 1. 必須是成大 Email 帳號
-          // 2. submitted_by_uid 必須與登入者 UID 一致（防止代填）
-          // 3. form_id 必須與路徑中的 formId 一致
-          allow create: if isNckuEmail()
-                        && incomingData().submitted_by_uid == request.auth.uid
-                        && incomingData().form_id == formId;
-
-          // 表單回覆為不可變資料，禁止更新與刪除
-          allow update, delete: if false;
+          // 提交 API 會驗證表單狀態與 Schema，並以 transaction 建立 Auto ID、
+          // 防止重複提交及同步建立保證金；Admin SDK 不受此規則影響。
+          allow create, update, delete: if false;
         }
       }
 
