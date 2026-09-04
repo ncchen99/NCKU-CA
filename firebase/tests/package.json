@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Firestore Security Rules 回歸測試（需要 Firebase CLI 與 Java）",
   "scripts": {
-    "test": "firebase emulators:exec --project ncku-ca-rulestest \"node users-rules.test.mjs\""
+    "test": "firebase emulators:exec --project ncku-ca-rulestest \"node users-rules.test.mjs && node admin-data-rules.test.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.0",
