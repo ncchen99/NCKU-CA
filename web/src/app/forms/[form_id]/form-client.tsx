@@ -409,13 +409,6 @@ export function FormClient({
     setSubmitting(true);
 
     try {
-      // 取得 club_id：如果有 club_picker 欄位就用它的值，否則用使用者的 club_id
-      let clubId = user.club_id || "none";
-      const clubField = fields.find((f) => f.type === "club_picker");
-      if (clubField && answers[clubField.id]) {
-        clubId = (answers[clubField.id] as string) || "none";
-      }
-
       const res = isEditMode
         ? await fetch(`/api/forms/${formId}/responses/${responseId}`, {
             method: "PATCH",
@@ -425,10 +418,7 @@ export function FormClient({
         : await fetch(`/api/forms/${formId}/submit`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              club_id: clubId,
-              answers,
-            }),
+            body: JSON.stringify({ answers }),
           });
 
       const data = await res.json();
