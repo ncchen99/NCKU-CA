@@ -38,7 +38,7 @@ export default function AttendancePage() {
 
   useEffect(() => {
     let cancelled = false;
-    getOpenAttendanceEvents({ userUid: firebaseUser?.uid })
+    getOpenAttendanceEvents()
       .then((openEvents) => {
         if (cancelled) return;
         setEvents(openEvents);

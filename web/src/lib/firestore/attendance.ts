@@ -266,6 +266,27 @@ export async function getAttendanceRecords(
   }
 }
 
+export async function hasUserAttendedEvent(
+  eventId: string,
+  uid: string,
+): Promise<boolean> {
+  try {
+    const db = getAdminDb();
+    const snapshot = await db
+      .collection(COLLECTION)
+      .doc(eventId)
+      .collection(RECORDS_SUB)
+      .where("user_uid", "==", uid)
+      .limit(1)
+      .get();
+    return !snapshot.empty;
+  } catch (error) {
+    throw new Error(
+      `Failed to check attendance for user "${uid}": ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
 export async function checkIn(
   eventId: string,
   data: Omit<AttendanceRecord, "id" | "checked_in_at" | "is_duplicate_attempt">

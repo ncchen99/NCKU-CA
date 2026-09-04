@@ -1,4 +1,6 @@
 import { AdminSidebar } from "@/components/admin/sidebar";
+import { verifyAdmin } from "@/lib/admin-auth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: {
@@ -7,11 +9,14 @@ export const metadata = {
   },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const admin = await verifyAdmin();
+  if (!admin) redirect("/");
+
   return (
     <div className="flex min-h-screen bg-neutral-50">
       <AdminSidebar />

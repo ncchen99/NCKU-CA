@@ -17,10 +17,13 @@
         return request.auth != null;
       }
 
-      // 是否為管理員（Custom Claims role == 'admin'）
+      // 是否為管理員：Custom Claims 與 users 文件必須一致，
+      // 確保管理員被降權後不會因舊 token 繼續存取後台資料。
       function isAdmin() {
         return isAuthenticated()
-            && request.auth.token.role == 'admin';
+            && request.auth.token.role == 'admin'
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
       }
 
       // 是否為社團成員（Custom Claims role == 'club_member'）
@@ -159,13 +162,13 @@
 
       // ──────────────────────────────────────────────
       //  5. forms — 表單模板 Schema
-      //  讀取：已開放的表單任何人可讀；登入使用者可讀全部（含已關閉，供個人歷史頁顯示標題）；
-      //        管理員可讀全部草稿與已關閉
+      //  讀取：已開放的表單任何人可讀；已關閉表單供登入使用者查閱；
+      //        草稿僅限管理員
       //  寫入：僅限管理員
       // ──────────────────────────────────────────────
       match /forms/{formId} {
-        allow read: if isAuthenticated()
-                    || resource.data.status == 'open'
+        allow read: if resource.data.status == 'open'
+                    || (isAuthenticated() && resource.data.status == 'closed')
                     || isAdmin();
         allow create, update, delete: if isAdmin();
 
@@ -227,14 +230,11 @@
 
       // ──────────────────────────────────────────────
       //  7. attendance_events — 點名事件
-      //  讀取：已開放的事件任何人可讀；登入使用者可讀全部（含已關閉，供個人歷史頁顯示標題）；
-      //        管理員可讀全部
+      //  讀取：僅限管理員。公開與個人頁由伺服器 API 回傳不含密碼的 DTO。
       //  寫入：僅限管理員
       // ──────────────────────────────────────────────
       match /attendance_events/{eventId} {
-        allow read: if isAuthenticated()
-                    || resource.data.status == 'open'
-                    || isAdmin();
+        allow read: if isAdmin();
         allow create, update, delete: if isAdmin();
 
         // ──────────────────────────────────────────
@@ -248,14 +248,9 @@
                       || (isAuthenticated()
                           && resource.data.user_uid == request.auth.uid);
 
-          // 建立點名紀錄：
-          // 1. 必須是成大 Email 帳號
-          // 2. user_uid 必須與登入者 UID 一致（防止代簽）
-          allow create: if isNckuEmail()
-                        && incomingData().user_uid == request.auth.uid;
-
-          // 點名紀錄為不可變資料，禁止更新與刪除
-          allow update, delete: if false;
+          // 點名 API 會驗證密碼、開放時間、社團範圍與重複簽到；
+          // Client SDK 不得繞過該流程直接建立紀錄。
+          allow create, update, delete: if false;
         }
       }
 

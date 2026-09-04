@@ -20,7 +20,7 @@ export function AttendanceBannerGate() {
 
   useEffect(() => {
     let cancelled = false;
-    getOpenAttendanceEvents({ userUid: firebaseUser?.uid })
+    getOpenAttendanceEvents()
       .then((events) => {
         if (cancelled) return;
         const first = events?.[0];
