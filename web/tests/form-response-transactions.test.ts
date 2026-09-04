@@ -3,9 +3,10 @@ import { generateKeyPairSync, randomUUID } from "node:crypto";
 import test from "node:test";
 
 test("submission and edit transactions enforce club and response invariants", async (t) => {
-  assert.ok(
-    process.env.FIRESTORE_EMULATOR_HOST,
-    "FIRESTORE_EMULATOR_HOST is required",
+  assert.match(
+    process.env.FIRESTORE_EMULATOR_HOST ?? "",
+    /^(localhost|127\.0\.0\.1):\d+$/,
+    "A local FIRESTORE_EMULATOR_HOST is required",
   );
 
   const { privateKey } = generateKeyPairSync("rsa", {

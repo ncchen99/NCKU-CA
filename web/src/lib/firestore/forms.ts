@@ -68,6 +68,10 @@ async function assertActiveClubs(
   clubIds: string[],
 ): Promise<void> {
   if (clubIds.length === 0) return;
+  // Firestore accepts path aliases and nested paths; club IDs must be single segments.
+  if (clubIds.some((clubId) => clubId.includes("/"))) {
+    throw new InvalidClubSubmissionError();
+  }
   const db = getAdminDb();
   const snapshots = await tx.getAll(
     ...clubIds.map((clubId) => db.collection("clubs").doc(clubId)),
