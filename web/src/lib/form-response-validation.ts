@@ -71,7 +71,7 @@ function validateStringPattern(field: FormField, value: string): string | null {
   if (!value || !field.validation?.pattern) return null;
   try {
     if (!new RegExp(field.validation.pattern).test(value)) {
-      return field.validation.custom_message ?? `${field.label} 格式不正確`;
+      return field.validation.custom_message || `${field.label} 格式不正確`;
     }
   } catch {
     // Invalid administrator-authored patterns retain the existing no-op behavior.
@@ -106,7 +106,7 @@ function validateFieldValue(field: FormField, value: unknown): string | null {
       numberValue < field.validation.min
     ) {
       return (
-        field.validation.custom_message ??
+        field.validation.custom_message ||
         `${field.label} 不可小於 ${field.validation.min}`
       );
     }
@@ -115,11 +115,11 @@ function validateFieldValue(field: FormField, value: unknown): string | null {
       numberValue > field.validation.max
     ) {
       return (
-        field.validation.custom_message ??
+        field.validation.custom_message ||
         `${field.label} 不可大於 ${field.validation.max}`
       );
     }
-    return null;
+    return validateStringPattern(field, String(value));
   }
 
   if (typeof value !== "string") {
@@ -152,7 +152,7 @@ function validateFieldValue(field: FormField, value: unknown): string | null {
       value.length < field.validation.min
     ) {
       return (
-        field.validation.custom_message ??
+        field.validation.custom_message ||
         `${field.label} 長度不可少於 ${field.validation.min}`
       );
     }
@@ -161,7 +161,7 @@ function validateFieldValue(field: FormField, value: unknown): string | null {
       value.length > field.validation.max
     ) {
       return (
-        field.validation.custom_message ??
+        field.validation.custom_message ||
         `${field.label} 長度不可超過 ${field.validation.max}`
       );
     }

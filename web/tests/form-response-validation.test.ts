@@ -222,3 +222,36 @@ test("collects every non-sentinel club picker for active-club checks", () => {
     ["club-a", "club-b"],
   );
 });
+
+test("number patterns apply to strings and numbers after ordinary numeric checks", () => {
+  const fields = [field("count", "number", {
+    validation: { min: 1, max: 100, pattern: "^[0-9]+$", custom_message: "請填整數" },
+  })];
+  for (const count of ["1.5", 1.5, "1e2", "+2", "invalid", Infinity, 0, 101]) {
+    assert.throws(() => validateAndSanitizeFormAnswers(fields, { count }), InvalidFormAnswersError);
+  }
+  assert.throws(() => validateAndSanitizeFormAnswers(fields, { count: "1.5" }), /請填整數/);
+  for (const count of ["2", 2, "100", ""]) {
+    assert.deepEqual(validateAndSanitizeFormAnswers(fields, { count }), { count });
+  }
+  for (const pattern of [undefined, "["]) {
+    assert.deepEqual(validateAndSanitizeFormAnswers([
+      field("count", "number", { validation: { pattern } }),
+    ], { count: "1.5" }), { count: "1.5" });
+  }
+});
+
+test("an empty custom message never disables configured validation", () => {
+  for (const [type, validation, value] of [
+    ["number", { pattern: "^[0-9]+$" }, "1.5"],
+    ["number", { min: 2 }, "1"],
+    ["number", { max: 2 }, "3"],
+    ["text", { pattern: "^[a-z]+$" }, "1"],
+    ["text", { min: 2 }, "a"],
+    ["text", { max: 2 }, "abc"],
+  ] as const) {
+    assert.throws(() => validateAndSanitizeFormAnswers([
+      field("value", type, { validation: { ...validation, custom_message: "" } }),
+    ], { value }), InvalidFormAnswersError);
+  }
+});
