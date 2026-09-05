@@ -9,7 +9,6 @@ import {
 import { getUser } from "@/lib/firestore/users";
 import {
   InvalidFormAnswersError,
-  resolveSubmissionClubId,
   validateAndSanitizeFormAnswers,
 } from "@/lib/form-response-validation";
 import { anyTimestampToDate } from "@/lib/datetime";
@@ -48,15 +47,11 @@ export async function POST(
 
     const fields = form.fields ?? [];
     const sanitizedAnswers = validateAndSanitizeFormAnswers(fields, body.answers);
-    const clubId = resolveSubmissionClubId(
-      fields,
-      sanitizedAnswers,
-      user?.club_id,
-    );
-
     const responseId = await submitFormResponse(formId, {
       form_id: formId,
-      club_id: clubId,
+      // The transaction derives attribution using its current schema. Only the
+      // authenticated profile may supply a fallback if no picker is visible.
+      club_id: user?.club_id?.trim() || "none",
       submitted_by_uid: session.uid,
       answers: sanitizedAnswers,
     }, {

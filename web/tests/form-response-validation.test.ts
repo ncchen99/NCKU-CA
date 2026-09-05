@@ -255,3 +255,56 @@ test("an empty custom message never disables configured validation", () => {
     ], { value }), InvalidFormAnswersError);
   }
 });
+
+test("hidden malformed answers are discarded and visible equivalents are rejected", () => {
+  const fields = [field("show", "radio"), ...[
+    field("email", "email"), field("count", "number"),
+    field("choices", "checkbox", { options: ["A"] }),
+  ].map((input) => ({ ...input, required: true, depends_on: {
+    field_id: "show", operator: "equals" as const, value: "是", action: "show" as const,
+  } }))];
+  const stale = { email: "bad", count: {}, choices: [42] };
+  assert.deepEqual(validateAndSanitizeFormAnswers(fields, { show: "否", ...stale }), { show: "否" });
+  assert.throws(() => validateAndSanitizeFormAnswers(fields, { show: "是", ...stale }), InvalidFormAnswersError);
+});
+
+test("dependency chains are order independent and sanitization is idempotent", () => {
+  const fields = [
+    field("show", "radio"),
+    field("middle", "text", { depends_on: { field_id: "show", operator: "equals", value: "是", action: "show" } }),
+    field("club", "club_picker", { required: true, depends_on: { field_id: "middle", operator: "equals", value: "old", action: "show" } }),
+    field("empty_notice", "text", { depends_on: { field_id: "middle", operator: "is_empty", value: "", action: "show" } }),
+  ];
+  const raw = { club: "stale-club", middle: "old", show: " 否 ", empty_notice: "visible" };
+  for (const ordered of [fields, [...fields].reverse()]) {
+    const answers = validateAndSanitizeFormAnswers(ordered, raw);
+    assert.deepEqual(answers, { show: "否", empty_notice: "visible" });
+    assert.deepEqual(validateAndSanitizeFormAnswers(ordered, answers), answers);
+    assert.equal(resolveSubmissionClubId(ordered, answers, "profile-club"), "profile-club");
+    assert.deepEqual(resolveSubmissionClub(ordered, answers, "none"), { clubId: "none" });
+  }
+});
+
+test("dependency cycles terminate without retaining cycle answers", () => {
+  const fields = [
+    field("a", "text", { depends_on: { field_id: "b", operator: "is_empty", value: "", action: "show" } }),
+    field("b", "text", { depends_on: { field_id: "a", operator: "is_empty", value: "", action: "show" } }),
+    field("note", "text"),
+  ];
+  for (const ordered of [fields, [...fields].reverse()]) {
+    const answers = validateAndSanitizeFormAnswers(ordered, { a: "", b: "", note: "kept" });
+    assert.deepEqual(answers, { note: "kept" });
+    assert.deepEqual(validateAndSanitizeFormAnswers(ordered, answers), answers);
+  }
+});
+
+test("the first visible club picker determines attribution", () => {
+  const fields = [
+    field("show", "radio"),
+    field("hidden", "club_picker", { depends_on: { field_id: "show", operator: "equals", value: "是", action: "show" } }),
+    field("visible", "club_picker"),
+  ];
+  const answers = validateAndSanitizeFormAnswers(fields, { show: "否", hidden: "stale", visible: "club-a" });
+  assert.deepEqual(answers, { show: "否", visible: "club-a" });
+  assert.deepEqual(resolveSubmissionClub(fields, answers, "club-b"), { clubId: "club-a" });
+});

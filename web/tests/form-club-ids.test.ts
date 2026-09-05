@@ -68,10 +68,10 @@ test("club IDs remain single document IDs across submission and edit", async (t)
   const initialResponses = (await responses.get()).docs.map((doc) => doc.data());
   const initialDeposits = (await deposits.get()).docs.map((doc) => doc.data());
 
-  await t.test("primary and hidden secondary path aliases cannot add responses or deposits", async () => {
+  await t.test("primary and visible secondary path aliases cannot add responses or deposits", async () => {
     for (const id of invalidIds) {
       await assert.rejects(() => submit(id), forms.InvalidClubSubmissionError);
-      await assert.rejects(() => submit(clubB, { primary: clubB, secondary: id }),
+      await assert.rejects(() => submit("none", { primary: "none", secondary: id, club_name_custom: "測試組織" }),
         forms.InvalidClubSubmissionError);
     }
     assert.deepEqual((await responses.get()).docs.map((doc) => doc.data()), initialResponses);
@@ -98,7 +98,7 @@ test("club IDs remain single document IDs across submission and edit", async (t)
     const beforeResponse = (await responseRef.get()).data();
     const beforeDeposit = (await depositRef.get()).data();
     for (const id of invalidIds) {
-      for (const answers of [{ primary: id }, { primary: clubB, secondary: id }]) {
+      for (const answers of [{ primary: id }, { primary: "none", secondary: id, club_name_custom: "測試組織" }]) {
         await assert.rejects(() => forms.updateFormResponse(formRef.id, responseB, answers, `${prefix}-b`),
           forms.InvalidClubSubmissionError);
         assert.deepEqual((await responseRef.get()).data(), beforeResponse);

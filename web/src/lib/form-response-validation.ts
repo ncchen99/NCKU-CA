@@ -18,9 +18,8 @@ function isEmptyValue(value: unknown): boolean {
 
 function evaluateDependsOn(
   dependsOn: DependsOn,
-  answers: Record<string, unknown>,
+  depVal: unknown,
 ): boolean {
-  const depVal = answers[dependsOn.field_id];
   const { operator, value, action } = dependsOn;
 
   let match = false;
@@ -49,11 +48,48 @@ function evaluateDependsOn(
   return action === "show" ? match : !match;
 }
 
-function shouldShowField(
-  field: FormField,
+function normalizeAnswer(value: unknown): unknown {
+  if (typeof value === "string") return value.trim();
+  if (Array.isArray(value)) {
+    return value.map((item) => typeof item === "string" ? item.trim() : item);
+  }
+  return value;
+}
+
+/** Shared by rendering and submission; hidden controllers count as unanswered. */
+export function getVisibleFormFields(
+  fields: FormField[],
   answers: Record<string, unknown>,
-): boolean {
-  return !field.depends_on || evaluateDependsOn(field.depends_on, answers);
+): FormField[] {
+  const fieldsById = new Map(fields.map((field) => [field.id, field]));
+  const visibility = new Map<string, boolean>();
+  const visiting: string[] = [];
+
+  function isVisible(field: FormField): boolean {
+    if (visibility.has(field.id)) return visibility.get(field.id)!;
+    const cycleStart = visiting.indexOf(field.id);
+    if (cycleStart !== -1) {
+      // Cyclic conditions cannot be resolved from user input. Hide every member
+      // consistently, regardless of schema order, instead of retaining stale data.
+      for (const id of visiting.slice(cycleStart)) visibility.set(id, false);
+      return false;
+    }
+    visiting.push(field.id);
+    let visible = true;
+    if (field.depends_on) {
+      const controller = fieldsById.get(field.depends_on.field_id);
+      const depVal = controller && controller.type !== "section_header" && isVisible(controller)
+        && Object.hasOwn(answers, controller.id)
+        ? normalizeAnswer(answers[controller.id])
+        : undefined;
+      visible = evaluateDependsOn(field.depends_on, depVal);
+    }
+    visiting.pop();
+    if (!visibility.has(field.id)) visibility.set(field.id, visible);
+    return visibility.get(field.id)!;
+  }
+
+  return fields.filter(isVisible);
 }
 
 function isValidDate(value: string): boolean {
@@ -171,8 +207,8 @@ function validateFieldValue(field: FormField, value: unknown): string | null {
 }
 
 /**
- * Drops unknown/non-input keys and validates every submitted value against the
- * administrator-authored form schema. Requiredness only applies to visible fields.
+ * Drops unknown, non-input and hidden answers, then validates visible values
+ * against the administrator-authored schema. Repeated calls are idempotent.
  */
 export function validateAndSanitizeFormAnswers(
   fields: FormField[],
@@ -191,28 +227,23 @@ export function validateAndSanitizeFormAnswers(
       .filter((field) => field.type !== "section_header")
       .map((field) => [field.id, field]),
   );
-  const answers: Record<string, unknown> = {};
+  const normalized = Object.fromEntries(
+    Object.entries(rawAnswers)
+      .filter(([key]) => inputFields.has(key))
+      .map(([key, value]) => [key, normalizeAnswer(value)]),
+  );
+  const visibleFields = getVisibleFormFields([...inputFields.values()], normalized);
+  const answers = Object.fromEntries(
+    visibleFields
+      .filter((field) => Object.hasOwn(normalized, field.id))
+      .map((field) => [field.id, normalized[field.id]]),
+  );
 
-  for (const [key, rawValue] of Object.entries(rawAnswers)) {
-    const field = inputFields.get(key);
-    if (!field) continue;
-
-    const value =
-      typeof rawValue === "string"
-        ? rawValue.trim()
-        : Array.isArray(rawValue)
-          ? rawValue.map((item) =>
-              typeof item === "string" ? item.trim() : item,
-            )
-          : rawValue;
+  for (const field of visibleFields) {
+    const value = answers[field.id];
     const invalidReason = validateFieldValue(field, value);
     if (invalidReason) throw new InvalidFormAnswersError(invalidReason);
-    answers[key] = value;
-  }
-
-  for (const field of inputFields.values()) {
-    if (!shouldShowField(field, answers)) continue;
-    if (field.required && isEmptyValue(answers[field.id])) {
+    if (field.required && isEmptyValue(value)) {
       throw new InvalidFormAnswersError(`${field.label} 為必填欄位`);
     }
   }
@@ -226,7 +257,8 @@ export function resolveSubmissionClubId(
   answers: Record<string, unknown>,
   userClubId?: string,
 ): string {
-  const clubPicker = fields.find((field) => field.type === "club_picker");
+  const clubPicker = getVisibleFormFields(fields, answers)
+    .find((field) => field.type === "club_picker");
   const selectedClubId = clubPicker ? answers[clubPicker.id] : undefined;
   if (typeof selectedClubId === "string" && selectedClubId.trim()) {
     return selectedClubId.trim();
@@ -239,6 +271,7 @@ export function resolveSubmissionClub(
   answers: Record<string, unknown>,
   fallbackClubId?: string,
 ): { clubId: string; customClubName?: string } {
+  fields = getVisibleFormFields(fields, answers);
   const clubId = resolveSubmissionClubId(fields, answers, fallbackClubId);
   if (clubId !== NO_CLUB_ID) return { clubId };
 
