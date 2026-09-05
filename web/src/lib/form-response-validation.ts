@@ -1,4 +1,4 @@
-import { extractCustomClubName, NO_CLUB_ID } from "./club-name";
+import { extractCustomClubName, findClubNameField, NO_CLUB_ID } from "./club-name";
 import type { DependsOn, FormField } from "@/types";
 
 export class InvalidFormAnswersError extends Error {
@@ -270,6 +270,7 @@ export function resolveSubmissionClub(
   fields: FormField[],
   answers: Record<string, unknown>,
   fallbackClubId?: string,
+  existingCustomClubName?: string,
 ): { clubId: string; customClubName?: string } {
   fields = getVisibleFormFields(fields, answers);
   const clubId = resolveSubmissionClubId(fields, answers, fallbackClubId);
@@ -277,6 +278,16 @@ export function resolveSubmissionClub(
 
   const customClubName = extractCustomClubName(fields, answers);
   if (customClubName) return { clubId, customClubName };
+
+  // Edits may retain a valid stored name when its input is no longer available.
+  if (
+    !findClubNameField(fields) &&
+    typeof existingCustomClubName === "string" &&
+    existingCustomClubName.trim() &&
+    existingCustomClubName.trim() !== NO_CLUB_ID
+  ) {
+    return { clubId };
+  }
 
   if (!fields.some((field) => field.type === "club_picker")) {
     return { clubId };

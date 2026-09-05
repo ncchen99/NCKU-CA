@@ -288,4 +288,161 @@ test("submission and edit transactions enforce club and response invariants", as
       assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
     });
   }
+
+  for (const [responseName, depositName] of [
+    ["回覆原有名稱", "保證金原有名稱"],
+    [undefined, "保證金原有名稱"],
+    ["回覆原有名稱", undefined],
+    [undefined, undefined],
+  ]) {
+    await t.test(
+      `legacy notes edits preserve each stored name (response: ${responseName ?? "absent"}, deposit: ${depositName ?? "absent"})`,
+      async () => {
+        await Promise.all([
+          formRef.update({
+            status: "open",
+            fields: [{ id: "notes", type: "text", label: "備註", required: false, order: 0 }],
+            deposit_policy: { required: false, binding_mode: "linked_to_response" },
+          }),
+          responseRef.set({
+            form_id: formId,
+            submitted_by_uid: ownerUid,
+            club_id: "none",
+            ...(responseName ? { club_name_custom: responseName } : {}),
+            answers: { notes: "原有備註" },
+          }),
+          depositRef.set({
+            form_id: formId,
+            form_response_id: responseId,
+            club_id: "none",
+            ...(depositName ? { club_name_custom: depositName } : {}),
+            status: "paid",
+            amount: 100,
+            updated_by: "finance-admin",
+          }),
+        ]);
+        const beforeDeposit = (await depositRef.get()).data();
+
+        await forms.updateFormResponse(formId, responseId, { notes: " 更新備註 " }, ownerUid);
+
+        const response = (await responseRef.get()).data()!;
+        assert.deepEqual(response.answers, { notes: "更新備註" });
+        assert.equal(response.club_id, "none");
+        assert.equal(response.club_name_custom, responseName);
+        assert.equal(Object.hasOwn(response, "club_name_custom"), responseName !== undefined);
+        assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+      },
+    );
+  }
+
+  await t.test("a hidden custom name preserves existing response and deposit names", async () => {
+    await Promise.all([
+      formRef.update({
+        fields: [
+          { id: "notes", type: "text", label: "備註", required: false, order: 0 },
+          {
+            id: "club_name_custom", type: "text", label: "自填組織", required: true, order: 1,
+            depends_on: { field_id: "notes", operator: "equals", value: "改名", action: "show" },
+          },
+        ],
+      }),
+      responseRef.update({ club_name_custom: "回覆原有名稱" }),
+      depositRef.update({ club_name_custom: "保證金原有名稱" }),
+    ]);
+    const beforeDeposit = (await depositRef.get()).data();
+
+    await forms.updateFormResponse(
+      formId, responseId, { notes: "更新備註", club_name_custom: { stale: true } }, ownerUid,
+    );
+
+    const response = (await responseRef.get()).data()!;
+    assert.deepEqual(response.answers, { notes: "更新備註" });
+    assert.equal(response.club_id, "none");
+    assert.equal(response.club_name_custom, "回覆原有名稱");
+    assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+  });
+
+  for (const nameFieldState of ["removed", "hidden"]) {
+    await t.test(`a visible none picker preserves a valid legacy name when its input is ${nameFieldState}`, async () => {
+      await Promise.all([
+        formRef.update({
+          fields: [
+            { id: "primary", type: "club_picker", label: "社團", required: true, order: 0 },
+            { id: "notes", type: "text", label: "備註", required: false, order: 1 },
+            ...(nameFieldState === "hidden" ? [{
+              id: "club_name_custom", type: "text", label: "自填組織", required: true, order: 2,
+              depends_on: { field_id: "notes", operator: "equals", value: "改名", action: "show" },
+            }] : []),
+          ],
+        }),
+        responseRef.set({
+          form_id: formId, submitted_by_uid: ownerUid, club_id: "none",
+          club_name_custom: "回覆原有名稱", answers: { primary: "none", notes: "原有備註" },
+        }),
+        depositRef.update({ club_name_custom: "保證金原有名稱" }),
+      ]);
+      const answers = { primary: "none", notes: "更新備註" };
+      const beforeDeposit = (await depositRef.get()).data();
+
+      await forms.updateFormResponse(formId, responseId, answers, ownerUid);
+      assert.deepEqual((await responseRef.get()).data()?.answers, answers);
+      assert.equal((await responseRef.get()).data()?.club_name_custom, "回覆原有名稱");
+      assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+
+      await assert.rejects(() => forms.submitFormResponse(formId, {
+        form_id: formId, club_id: "none", submitted_by_uid: `${prefix}-new-legacy`,
+        club_name_custom: "不可信的名稱", answers,
+      }), /有效的社團／組織名稱/);
+
+      for (const existingName of [undefined, "", "none", " none ", { invalid: true }]) {
+        await responseRef.set({
+          form_id: formId, submitted_by_uid: ownerUid, club_id: "none", answers,
+          ...(existingName === undefined ? {} : { club_name_custom: existingName }),
+        });
+        const beforeResponse = (await responseRef.get()).data();
+        await assert.rejects(() => forms.updateFormResponse(formId, responseId, answers, ownerUid),
+          /有效的社團／組織名稱/);
+        assert.deepEqual((await responseRef.get()).data(), beforeResponse);
+        assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+      }
+
+      await responseRef.update({ club_id: oldClubId, club_name_custom: "舊社團附帶名稱" });
+      await assert.rejects(() => forms.updateFormResponse(formId, responseId, answers, ownerUid),
+        /有效的社團／組織名稱/);
+      assert.equal((await responseRef.get()).data()?.club_id, oldClubId);
+      assert.deepEqual((await depositRef.get()).data(), beforeDeposit);
+    });
+  }
+
+  await t.test("a visible none picker cannot reuse a stored name after its editable name is cleared", async () => {
+    await Promise.all([
+      formRef.update({ fields: [
+        { id: "primary", type: "club_picker", label: "社團", required: true, order: 0 },
+        { id: "club_name_custom", type: "text", label: "自填組織", required: false, order: 1 },
+      ] }),
+      responseRef.update({ club_id: "none", club_name_custom: "回覆原有名稱" }),
+    ]);
+    await assert.rejects(() => forms.updateFormResponse(
+      formId, responseId, { primary: "none", club_name_custom: "" }, ownerUid,
+    ), /有效的社團／組織名稱/);
+    assert.equal((await responseRef.get()).data()?.club_name_custom, "回覆原有名稱");
+  });
+
+  await t.test("an available custom name can still be cleared and replaced", async () => {
+    await Promise.all([
+      formRef.update({
+        fields: [{ id: "club_name_custom", type: "text", label: "自填組織", required: false, order: 0 }],
+      }),
+      responseRef.update({ club_name_custom: "回覆原有名稱" }),
+      depositRef.update({ club_name_custom: "保證金原有名稱" }),
+    ]);
+
+    await forms.updateFormResponse(formId, responseId, { club_name_custom: "" }, ownerUid);
+    assert.equal((await responseRef.get()).data()?.club_name_custom, undefined);
+    assert.equal((await depositRef.get()).data()?.club_name_custom, undefined);
+
+    await forms.updateFormResponse(formId, responseId, { club_name_custom: "新組織" }, ownerUid);
+    assert.equal((await responseRef.get()).data()?.club_name_custom, "新組織");
+    assert.equal((await depositRef.get()).data()?.club_name_custom, "新組織");
+  });
 });

@@ -1,10 +1,11 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldPath, FieldValue } from "firebase-admin/firestore";
 import { unstable_cache } from "next/cache";
-import { NO_CLUB_ID } from "@/lib/club-name";
+import { findClubNameField, NO_CLUB_ID } from "@/lib/club-name";
 import { anyTimestampToDate } from "@/lib/datetime";
 import {
   getSubmittedClubIds,
+  getVisibleFormFields,
   InvalidFormAnswersError,
   resolveSubmissionClub,
   validateAndSanitizeFormAnswers,
@@ -376,6 +377,7 @@ export async function updateFormResponse(
         fields,
         answers,
         response.club_id,
+        response.club_id === NO_CLUB_ID ? response.club_name_custom : undefined,
       );
       await assertActiveClubs(
         tx,
@@ -400,12 +402,16 @@ export async function updateFormResponse(
               .where("form_response_id", "==", responseId),
           )
         : null;
-      const clubNameValue = customClubName ?? FieldValue.delete();
+      // Without a visible name input, each legacy record keeps its own stored name.
+      const clubNameUpdate = clubId === NO_CLUB_ID &&
+        !findClubNameField(getVisibleFormFields(fields, answers))
+        ? {}
+        : { club_name_custom: customClubName ?? FieldValue.delete() };
 
       tx.update(responseRef, {
         answers,
         club_id: clubId,
-        club_name_custom: clubNameValue,
+        ...clubNameUpdate,
         updated_at: FieldValue.serverTimestamp(),
       });
       for (const deposit of linkedDeposits?.docs ?? []) {
@@ -414,7 +420,7 @@ export async function updateFormResponse(
         if (linkedFormId !== formId) continue;
         tx.update(deposit.ref, {
           club_id: clubId,
-          club_name_custom: clubNameValue,
+          ...clubNameUpdate,
         });
       }
     });
