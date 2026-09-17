@@ -1,7 +1,7 @@
 # Firestore Security Rules 回歸測試
 
-針對 `firebase/firestore.rules` 的使用者、後台資料與點名紀錄權限做自動化驗證，
-防止自行提權、草稿／點名密碼外洩，以及繞過點名 API 直接寫入。
+針對 `firebase/firestore.rules` 的使用者、後台資料、點名紀錄與表單回覆權限做自動化驗證，
+防止自行提權、草稿／點名密碼外洩，以及繞過點名與提交 API 直接寫入。
 
 ## 需求
 
@@ -34,6 +34,22 @@ npm test
 | EXPLOIT-6 | 學生 update 時綁不存在的社團 |
 | EXPLOIT-7 | 文件不存在時搶先 create 提權 |
 | EXPLOIT-8 | 學生替他人建立 `users` 文件 |
+
+**表單回覆（必須被拒絕）**
+
+| 情境 |
+| --- |
+| 在不存在的表單下自訂 response document ID |
+| 以 `setDoc` / `addDoc` 直接建立回覆 |
+| 以 Client SDK 直接更新或刪除回覆 |
+
+**表單回覆讀取（不可被誤殺）**
+
+| 情境 |
+| --- |
+| 提交者可讀自己的回覆 |
+| 管理員可讀全部回覆 |
+| 其他學生不可讀取回覆 |
 
 **正常流程（不可被誤殺）**
 
