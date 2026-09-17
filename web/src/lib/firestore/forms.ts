@@ -25,8 +25,17 @@ async function queryFormById(formId: string): Promise<Form | null> {
 
 async function queryPublicFormIds(): Promise<string[]> {
   const db = getAdminDb();
-  const snapshot = await db.collection(COLLECTION).select().get();
+  const snapshot = await db
+    .collection(COLLECTION)
+    .where("status", "in", ["open", "closed"])
+    .select()
+    .get();
   return snapshot.docs.map((doc) => doc.id);
+}
+
+async function queryPublicFormById(formId: string): Promise<Form | null> {
+  const form = await queryFormById(formId);
+  return form?.status === "open" || form?.status === "closed" ? form : null;
 }
 
 export class DuplicateFormSubmissionError extends Error {
@@ -100,8 +109,8 @@ export async function getForm(formId: string): Promise<Form | null> {
 export async function getPublicFormById(formId: string): Promise<Form | null> {
   try {
     return unstable_cache(
-      () => queryFormById(formId),
-      ["forms:getPublicFormById", formId],
+      () => queryPublicFormById(formId),
+      ["forms:getPublicFormById:v2", formId],
       {
         revalidate: PUBLIC_FORMS_REVALIDATE_SECONDS,
         tags: ["forms", `form:${formId}`],
@@ -118,7 +127,7 @@ export async function getPublicFormIds(): Promise<string[]> {
   try {
     return unstable_cache(
       () => queryPublicFormIds(),
-      ["forms:getPublicFormIds"],
+      ["forms:getPublicFormIds:v2"],
       {
         revalidate: PUBLIC_FORMS_REVALIDATE_SECONDS,
         tags: ["forms"],

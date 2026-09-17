@@ -25,7 +25,7 @@ export default function MyAttendancePage() {
   useEffect(() => {
     if (authLoading || !firebaseUser) return;
     let cancelled = false;
-    getMyAttendanceItems(firebaseUser.uid)
+    getMyAttendanceItems()
       .then((data) => {
         if (!cancelled) setItems(data);
       })

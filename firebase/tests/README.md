@@ -1,8 +1,7 @@
 # Firestore Security Rules 回歸測試
 
-針對 `firebase/firestore.rules` 的 `users/{uid}` 權限規則做自動化驗證，
-重點在防止「一般學生自行建立 `role: "admin"` 文件自提權」這類提權漏洞
-（見 [issue #1](https://github.com/ncchen99/NCKU-CA/issues/1)）。
+針對 `firebase/firestore.rules` 的使用者、後台資料與點名紀錄權限做自動化驗證，
+防止自行提權、草稿／點名密碼外洩，以及繞過點名 API 直接寫入。
 
 ## 需求
 
@@ -47,3 +46,13 @@ npm test
 | OK-5 | 讀取自己的 `users` 文件 |
 | OK-6 | 把 `club_id` 從社團改回 `none` |
 | OK-7 | 把 `club_id` 改成其他啟用中的社團 |
+
+**後台資料與點名**
+
+| 類型 | 情境 |
+| --- | --- |
+| 防護 | 匿名／一般學生不可讀取草稿表單與點名事件 |
+| 防護 | 已降權但仍持有舊 admin claim 的使用者不可讀取後台資料 |
+| 防護 | 一般學生不可直接建立點名紀錄 |
+| 正常 | 匿名可讀開放表單、學生可讀已關閉表單 |
+| 正常 | 管理員可讀草稿與點名事件、學生可讀自己的點名紀錄 |

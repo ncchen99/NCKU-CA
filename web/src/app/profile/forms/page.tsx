@@ -29,7 +29,7 @@ export default function MyFormResponsesPage() {
   useEffect(() => {
     if (authLoading || !firebaseUser) return;
     let cancelled = false;
-    getMyFormResponseItems(firebaseUser.uid)
+    getMyFormResponseItems()
       .then((data) => {
         if (!cancelled) setItems(data);
       })

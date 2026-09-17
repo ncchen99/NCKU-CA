@@ -247,58 +247,15 @@ export async function getAdminClubs(options?: {
         .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
 }
 
-/**
- * 公開頁面使用：以前端 Firestore 直接讀取目前可簽到事件，
- * 並可選擇性回傳當前使用者是否已簽到。
- */
-export async function getOpenAttendanceEvents(options?: {
-    userUid?: string;
-}): Promise<PublicOpenAttendanceEvent[]> {
-    const { collection, getDocs, limit, query, where } = await import("firebase/firestore");
-    const db = await getClientDb();
-    const now = new Date();
-
-    const snapshot = await getDocs(
-        query(collection(db, "attendance_events"), where("status", "==", "open")),
-    );
-
-    const events: PublicOpenAttendanceEvent[] = [];
-
-    for (const eventDoc of snapshot.docs) {
-        const data = eventDoc.data() as Record<string, unknown>;
-        const opensAt = toDate(data.opens_at);
-        const closesAt = toDate(data.closes_at);
-        if (!opensAt || !closesAt) continue;
-        if (now < opensAt || now > closesAt) continue;
-
-        let isAttended = false;
-        if (options?.userUid) {
-            const recordSnapshot = await getDocs(
-                query(
-                    collection(db, "attendance_events", eventDoc.id, "records"),
-                    where("user_uid", "==", options.userUid),
-                    limit(1),
-                ),
-            );
-            isAttended = !recordSnapshot.empty;
-        }
-
-        events.push({
-            id: eventDoc.id,
-            title: typeof data.title === "string" ? data.title : "",
-            description:
-                typeof data.description === "string" ? data.description : null,
-            opens_at_iso: opensAt.toISOString(),
-            closes_at_iso: closesAt.toISOString(),
-            is_attended: isAttended,
-        });
-    }
-
-    return events.sort((a, b) => {
-        const aOpen = a.opens_at_iso ? new Date(a.opens_at_iso).getTime() : 0;
-        const bOpen = b.opens_at_iso ? new Date(b.opens_at_iso).getTime() : 0;
-        return bOpen - aOpen;
-    });
+/** Public DTO intentionally excludes attendance passcodes. */
+export async function getOpenAttendanceEvents(): Promise<PublicOpenAttendanceEvent[]> {
+    const response = await fetch("/api/attendance", { cache: "no-store" });
+    const body = (await response.json().catch(() => ({}))) as {
+        events?: PublicOpenAttendanceEvent[];
+        error?: string;
+    };
+    if (!response.ok) throw new Error(body.error ?? "取得點名活動失敗");
+    return body.events ?? [];
 }
 
 export interface ProfileUser extends Pick<
@@ -395,67 +352,14 @@ export interface MyAttendanceItem {
     is_duplicate_attempt: boolean;
 }
 
-export async function getMyAttendanceItems(uid: string): Promise<MyAttendanceItem[]> {
-    const { collectionGroup, getDocs, orderBy, query, where, documentId, collection } =
-        await import("firebase/firestore");
-    const db = await getClientDb();
-
-    const recordsSnap = await getDocs(
-        query(
-            collectionGroup(db, "records"),
-            where("user_uid", "==", uid),
-            orderBy("checked_in_at", "desc"),
-        ),
-    );
-
-    type RecordRow = {
-        id: string;
-        event_id: string;
-        club_id: string;
-        is_duplicate_attempt: boolean;
-        checked_in_at: unknown;
+export async function getMyAttendanceItems(): Promise<MyAttendanceItem[]> {
+    const response = await fetch("/api/profile/attendance", { cache: "no-store" });
+    const body = (await response.json().catch(() => ({}))) as {
+        items?: MyAttendanceItem[];
+        error?: string;
     };
-    const rows: RecordRow[] = recordsSnap.docs.map((d) => {
-        const data = d.data() as Record<string, unknown>;
-        return {
-            id: d.id,
-            event_id: d.ref.parent.parent?.id ?? "",
-            club_id: typeof data.club_id === "string" ? data.club_id : "",
-            is_duplicate_attempt: Boolean(data.is_duplicate_attempt),
-            checked_in_at: data.checked_in_at,
-        };
-    });
-
-    const eventIds = [...new Set(rows.map((r) => r.event_id).filter(Boolean))];
-    const eventTitles = new Map<string, string>();
-    for (let i = 0; i < eventIds.length; i += 10) {
-        const chunk = eventIds.slice(i, i + 10);
-        if (chunk.length === 0) break;
-        const snap = await getDocs(
-            query(collection(db, "attendance_events"), where(documentId(), "in", chunk)),
-        );
-        for (const doc of snap.docs) {
-            const t = (doc.data() as { title?: unknown }).title;
-            if (typeof t === "string") eventTitles.set(doc.id, t);
-        }
-    }
-
-    const clubsSnap = await getDocs(collection(db, "clubs"));
-    const clubNames = new Map<string, string>();
-    for (const c of clubsSnap.docs) {
-        const n = (c.data() as { name?: unknown }).name;
-        if (typeof n === "string") clubNames.set(c.id, n);
-    }
-
-    return rows.map((r) => ({
-        id: r.id,
-        event_id: r.event_id,
-        event_title: eventTitles.get(r.event_id) ?? "(已刪除的點名)",
-        club_id: r.club_id,
-        club_name: clubNames.get(r.club_id) ?? r.club_id,
-        checked_in_at_iso: toDate(r.checked_in_at)?.toISOString() ?? null,
-        is_duplicate_attempt: r.is_duplicate_attempt,
-    }));
+    if (!response.ok) throw new Error(body.error ?? "讀取點名記錄失敗");
+    return body.items ?? [];
 }
 
 export interface MyFormResponseItem {
@@ -467,69 +371,14 @@ export interface MyFormResponseItem {
     editable: boolean;
 }
 
-export async function getMyFormResponseItems(uid: string): Promise<MyFormResponseItem[]> {
-    const { collectionGroup, getDocs, orderBy, query, where, documentId, collection } =
-        await import("firebase/firestore");
-    const db = await getClientDb();
-
-    const responsesSnap = await getDocs(
-        query(
-            collectionGroup(db, "responses"),
-            where("submitted_by_uid", "==", uid),
-            orderBy("submitted_at", "desc"),
-        ),
-    );
-
-    type ResponseRow = {
-        response_id: string;
-        form_id: string;
-        submitted_at: unknown;
+export async function getMyFormResponseItems(): Promise<MyFormResponseItem[]> {
+    const response = await fetch("/api/profile/forms", { cache: "no-store" });
+    const body = (await response.json().catch(() => ({}))) as {
+        items?: MyFormResponseItem[];
+        error?: string;
     };
-    const rows: ResponseRow[] = responsesSnap.docs.map((d) => {
-        const data = d.data() as Record<string, unknown>;
-        return {
-            response_id: d.id,
-            form_id: d.ref.parent.parent?.id ?? "",
-            submitted_at: data.submitted_at,
-        };
-    });
-
-    const formIds = [...new Set(rows.map((r) => r.form_id).filter(Boolean))];
-    const formMeta = new Map<
-        string,
-        { title: string; closes_at: unknown; status: string }
-    >();
-    for (let i = 0; i < formIds.length; i += 10) {
-        const chunk = formIds.slice(i, i + 10);
-        if (chunk.length === 0) break;
-        const snap = await getDocs(
-            query(collection(db, "forms"), where(documentId(), "in", chunk)),
-        );
-        for (const doc of snap.docs) {
-            const data = doc.data() as Record<string, unknown>;
-            formMeta.set(doc.id, {
-                title: typeof data.title === "string" ? data.title : "",
-                closes_at: data.closes_at,
-                status: typeof data.status === "string" ? data.status : "draft",
-            });
-        }
-    }
-
-    const now = new Date();
-    return rows.map((r) => {
-        const meta = formMeta.get(r.form_id);
-        const closesAt = toDate(meta?.closes_at);
-        const closed =
-            meta?.status === "closed" || (closesAt ? closesAt < now : false);
-        return {
-            response_id: r.response_id,
-            form_id: r.form_id,
-            form_title: meta?.title || "(已刪除的表單)",
-            submitted_at_iso: toDate(r.submitted_at)?.toISOString() ?? null,
-            closes_at_iso: closesAt?.toISOString() ?? null,
-            editable: !closed,
-        };
-    });
+    if (!response.ok) throw new Error(body.error ?? "讀取表單記錄失敗");
+    return body.items ?? [];
 }
 
 // ─────────────────────────────────────────────
