@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { createLoginHref } from "@/lib/login-redirect";
+import { getVisibleFormFields } from "@/lib/form-response-validation";
 import { ClubSearchSelect } from "@/components/shared/club-search-select";
 import { AppSelect } from "@/components/ui/app-select";
 import type { FormField } from "@/types";
@@ -331,38 +332,14 @@ export function FormClient({
     [],
   );
 
-  // 依條件邏輯判斷是否顯示欄位
+  // 與伺服器共用條件邏輯，隱藏欄位的舊答案不再控制後續欄位。
+  const visibleFieldIds = useMemo(
+    () => new Set(getVisibleFormFields(fields, answers).map((field) => field.id)),
+    [fields, answers],
+  );
   const shouldShow = useCallback(
-    (field: FormField): boolean => {
-      if (!field.depends_on) return true;
-      const depVal = answers[field.depends_on.field_id];
-      const { operator, value, action } = field.depends_on;
-
-      let match = false;
-      switch (operator) {
-        case "equals":
-          match = depVal === value;
-          break;
-        case "not_equals":
-          match = depVal !== value;
-          break;
-        case "contains":
-          match =
-            typeof depVal === "string" &&
-            typeof value === "string" &&
-            depVal.includes(value);
-          break;
-        case "is_empty":
-          match = depVal === "" || depVal == null;
-          break;
-        case "is_not_empty":
-          match = depVal !== "" && depVal != null;
-          break;
-      }
-
-      return action === "show" ? match : !match;
-    },
-    [answers],
+    (field: FormField): boolean => visibleFieldIds.has(field.id),
+    [visibleFieldIds],
   );
 
   // 驗證
@@ -409,13 +386,6 @@ export function FormClient({
     setSubmitting(true);
 
     try {
-      // 取得 club_id：如果有 club_picker 欄位就用它的值，否則用使用者的 club_id
-      let clubId = user.club_id || "none";
-      const clubField = fields.find((f) => f.type === "club_picker");
-      if (clubField && answers[clubField.id]) {
-        clubId = (answers[clubField.id] as string) || "none";
-      }
-
       const res = isEditMode
         ? await fetch(`/api/forms/${formId}/responses/${responseId}`, {
             method: "PATCH",
@@ -425,10 +395,7 @@ export function FormClient({
         : await fetch(`/api/forms/${formId}/submit`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              club_id: clubId,
-              answers,
-            }),
+            body: JSON.stringify({ answers }),
           });
 
       const data = await res.json();

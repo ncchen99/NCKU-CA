@@ -1,7 +1,15 @@
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldPath, FieldValue } from "firebase-admin/firestore";
 import { unstable_cache } from "next/cache";
-import { extractCustomClubName, isUnresolvedClubId } from "@/lib/club-name";
+import { findClubNameField, NO_CLUB_ID } from "@/lib/club-name";
+import { anyTimestampToDate } from "@/lib/datetime";
+import {
+  getSubmittedClubIds,
+  getVisibleFormFields,
+  InvalidFormAnswersError,
+  resolveSubmissionClub,
+  validateAndSanitizeFormAnswers,
+} from "@/lib/form-response-validation";
 import type { Form, FormResponse } from "@/types";
 
 const COLLECTION = "forms";
@@ -25,6 +33,57 @@ export class DuplicateFormSubmissionError extends Error {
   constructor(message = "此社團已提交過此表單") {
     super(message);
     this.name = "DuplicateFormSubmissionError";
+  }
+}
+
+export class InvalidClubSubmissionError extends Error {
+  constructor(message = "所選社團無效或已停用") {
+    super(message);
+    this.name = "InvalidClubSubmissionError";
+  }
+}
+
+export class FormNotOpenError extends Error {
+  constructor(message = "此表單尚未開放或已截止") {
+    super(message);
+    this.name = "FormNotOpenError";
+  }
+}
+
+export class FormResponseNotFoundError extends Error {
+  constructor(message = "查無此回覆") {
+    super(message);
+    this.name = "FormResponseNotFoundError";
+  }
+}
+
+export class ForbiddenFormResponseUpdateError extends Error {
+  constructor(message = "無權修改此回覆") {
+    super(message);
+    this.name = "ForbiddenFormResponseUpdateError";
+  }
+}
+
+async function assertActiveClubs(
+  tx: FirebaseFirestore.Transaction,
+  clubIds: string[],
+): Promise<void> {
+  if (clubIds.length === 0) return;
+  // Firestore accepts path aliases and nested paths; club IDs must be single segments.
+  if (clubIds.some((clubId) => clubId.includes("/"))) {
+    throw new InvalidClubSubmissionError();
+  }
+  const db = getAdminDb();
+  const snapshots = await tx.getAll(
+    ...clubIds.map((clubId) => db.collection("clubs").doc(clubId)),
+  );
+  if (
+    snapshots.some(
+      (snapshot) =>
+        !snapshot.exists || snapshot.data()?.is_active !== true,
+    )
+  ) {
+    throw new InvalidClubSubmissionError();
   }
 }
 
@@ -280,54 +339,102 @@ export async function getFormResponseById(
 export async function updateFormResponse(
   formId: string,
   responseId: string,
-  answers: Record<string, unknown>,
-  options?: {
-    /** 表單欄位定義，用於解析使用者自填的社團名稱 */
-    formFields?: Form["fields"];
-    /** 回覆既有的 club_id，用於判斷是否需要改用自填名稱 */
-    clubId?: string;
-  },
+  rawAnswers: unknown,
+  submittedByUid: string,
 ): Promise<void> {
   try {
     const db = getAdminDb();
-    const update: Record<string, unknown> = {
-      answers,
-      updated_at: FieldValue.serverTimestamp(),
-    };
+    const formRef = db.collection(COLLECTION).doc(formId);
+    const responseRef = formRef.collection(RESPONSES_SUB).doc(responseId);
 
-    // 系統帶不出社團時，自填的「社團名稱」欄位就是社團名稱來源，
-    // 使用者改動該欄位時需一併更新回覆與綁定的保證金紀錄。
-    const needsCustomName = isUnresolvedClubId(options?.clubId);
-    const customClubName = needsCustomName
-      ? extractCustomClubName(options?.formFields, answers)
-      : undefined;
+    await db.runTransaction(async (tx) => {
+      const [formSnapshot, responseSnapshot] = await Promise.all([
+        tx.get(formRef),
+        tx.get(responseRef),
+      ]);
+      if (!formSnapshot.exists) {
+        throw new FormResponseNotFoundError("查無此表單");
+      }
+      if (!responseSnapshot.exists) throw new FormResponseNotFoundError();
 
-    // 只在解析得到名稱時覆寫；解析不到就保留既有值，
-    // 避免舊回覆（自填欄位尚未存在）被編輯時把回填的名稱清掉。
-    if (needsCustomName && customClubName) {
-      update.club_name_custom = customClubName;
-    }
+      const response = responseSnapshot.data() as FormResponse;
+      if (response.submitted_by_uid !== submittedByUid) {
+        throw new ForbiddenFormResponseUpdateError();
+      }
 
-    await db
-      .collection(COLLECTION)
-      .doc(formId)
-      .collection(RESPONSES_SUB)
-      .doc(responseId)
-      .update(update);
+      const form = formSnapshot.data() as Form;
+      const closesAt = anyTimestampToDate(form.closes_at);
+      if (
+        form.status !== "open" ||
+        (closesAt !== null && closesAt < new Date())
+      ) {
+        throw new FormNotOpenError("此表單尚未開放或已截止，無法修改");
+      }
 
-    if (needsCustomName && customClubName) {
-      const linkedDeposits = await db
-        .collection("deposit_records")
-        .where("form_response_id", "==", responseId)
-        .get();
-
-      await Promise.all(
-        linkedDeposits.docs.map((doc) =>
-          doc.ref.update({ club_name_custom: customClubName }),
-        ),
+      const fields = form.fields ?? [];
+      const answers = validateAndSanitizeFormAnswers(fields, rawAnswers);
+      const { clubId, customClubName } = resolveSubmissionClub(
+        fields,
+        answers,
+        response.club_id,
+        response.club_id === NO_CLUB_ID ? response.club_name_custom : undefined,
       );
-    }
+      await assertActiveClubs(
+        tx,
+        getSubmittedClubIds(fields, answers, clubId),
+      );
+
+      const duplicateQuery = clubId === NO_CLUB_ID
+        ? formRef
+            .collection(RESPONSES_SUB)
+            .where("submitted_by_uid", "==", submittedByUid)
+        : formRef.collection(RESPONSES_SUB).where("club_id", "==", clubId);
+      const duplicateSnapshot = await tx.get(duplicateQuery);
+      if (duplicateSnapshot.docs.some((doc) => doc.id !== responseId)) {
+        throw new DuplicateFormSubmissionError();
+      }
+
+      // Independent and legacy unspecified deposits are maintained by admins.
+      const linkedDeposits = form.deposit_policy?.binding_mode === "linked_to_response"
+        ? await tx.get(
+            db
+              .collection("deposit_records")
+              .where("form_response_id", "==", responseId),
+          )
+        : null;
+      // Without a visible name input, each legacy record keeps its own stored name.
+      const clubNameUpdate = clubId === NO_CLUB_ID &&
+        !findClubNameField(getVisibleFormFields(fields, answers))
+        ? {}
+        : { club_name_custom: customClubName ?? FieldValue.delete() };
+
+      tx.update(responseRef, {
+        answers,
+        club_id: clubId,
+        ...clubNameUpdate,
+        updated_at: FieldValue.serverTimestamp(),
+      });
+      for (const deposit of linkedDeposits?.docs ?? []) {
+        const linkedFormId = deposit.data().form_id;
+        // A response ID alone cannot identify a legacy deposit's source form.
+        if (linkedFormId !== formId) continue;
+        tx.update(deposit.ref, {
+          club_id: clubId,
+          ...clubNameUpdate,
+        });
+      }
+    });
   } catch (error) {
+    if (
+      error instanceof DuplicateFormSubmissionError ||
+      error instanceof ForbiddenFormResponseUpdateError ||
+      error instanceof FormNotOpenError ||
+      error instanceof FormResponseNotFoundError ||
+      error instanceof InvalidClubSubmissionError ||
+      error instanceof InvalidFormAnswersError
+    ) {
+      throw error;
+    }
     throw new Error(
       `Failed to update response "${responseId}" for form "${formId}": ${error instanceof Error ? error.message : error}`,
     );
@@ -361,9 +468,6 @@ export async function submitFormResponse(
   formId: string,
   data: Omit<FormResponse, "id" | "submitted_at" | "is_duplicate_attempt">,
   options?: {
-    depositPolicy?: Form["deposit_policy"];
-    /** 表單欄位定義，用於解析使用者自填的社團名稱 */
-    formFields?: Form["fields"];
     updatedByUid?: string;
   },
 ): Promise<string> {
@@ -376,9 +480,32 @@ export async function submitFormResponse(
     const depositsRef = db.collection("deposit_records");
 
     return await db.runTransaction(async (tx) => {
-      const checkQuery = data.club_id === "none"
+      const formSnapshot = await tx.get(db.collection(COLLECTION).doc(formId));
+      if (!formSnapshot.exists) throw new FormNotOpenError();
+      const formData = formSnapshot.data() as Form;
+      const closesAt = anyTimestampToDate(formData.closes_at);
+      if (
+        formData.status !== "open" ||
+        (closesAt !== null && closesAt < new Date())
+      ) {
+        throw new FormNotOpenError();
+      }
+
+      const fields = formData.fields ?? [];
+      const answers = validateAndSanitizeFormAnswers(fields, data.answers);
+      const { clubId, customClubName } = resolveSubmissionClub(
+        fields,
+        answers,
+        data.club_id,
+      );
+      await assertActiveClubs(
+        tx,
+        getSubmittedClubIds(fields, answers, clubId),
+      );
+
+      const checkQuery = clubId === NO_CLUB_ID
         ? responsesRef.where("submitted_by_uid", "==", data.submitted_by_uid).limit(1)
-        : responsesRef.where("club_id", "==", data.club_id).limit(1);
+        : responsesRef.where("club_id", "==", clubId).limit(1);
 
       const existing = await tx.get(checkQuery);
 
@@ -386,23 +513,21 @@ export async function submitFormResponse(
         throw new DuplicateFormSubmissionError();
       }
 
-      // 系統帶不出社團（不在 clubs 名單內的試辦社團／學生組織）時，
-      // 以使用者自填的「社團名稱」欄位作為社團名稱來源。
-      const customClubName = isUnresolvedClubId(data.club_id)
-        ? extractCustomClubName(options?.formFields, data.answers)
-        : undefined;
-
       const newRef = responsesRef.doc();
       tx.set(newRef, {
         ...data,
+        form_id: formId,
+        submitted_by_uid: data.submitted_by_uid,
+        answers,
+        club_id: clubId,
         ...(customClubName ? { club_name_custom: customClubName } : {}),
         submitted_at: FieldValue.serverTimestamp(),
         is_duplicate_attempt: false,
       });
 
-      const depositAmount = options?.depositPolicy?.amount;
+      const depositAmount = formData.deposit_policy?.amount;
       const requiresDeposit =
-        options?.depositPolicy?.required === true &&
+        formData.deposit_policy?.required === true &&
         typeof depositAmount === "number" &&
         Number.isFinite(depositAmount) &&
         depositAmount > 0;
@@ -412,7 +537,7 @@ export async function submitFormResponse(
         // 綁定資訊兩種 binding_mode 都寫入：紀錄本來就是由送出表單自動建立的，
         // 少了 form_id 會讓同一社團的多筆保證金在後台無法分辨來源。
         const depositPayload: Record<string, unknown> = {
-          club_id: data.club_id,
+          club_id: clubId,
           ...(customClubName ? { club_name_custom: customClubName } : {}),
           form_id: formId,
           form_response_id: newRef.id,
@@ -428,7 +553,12 @@ export async function submitFormResponse(
       return newRef.id;
     });
   } catch (error) {
-    if (error instanceof DuplicateFormSubmissionError) {
+    if (
+      error instanceof DuplicateFormSubmissionError ||
+      error instanceof InvalidClubSubmissionError ||
+      error instanceof FormNotOpenError ||
+      error instanceof InvalidFormAnswersError
+    ) {
       throw error;
     }
     throw new Error(
