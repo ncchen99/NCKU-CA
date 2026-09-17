@@ -62,10 +62,20 @@ async function t(name, fn) {
 
 console.log(`\n=== Form response rules: ${rulesFile} ===\n`);
 
-await testEnv.clearFirestore();
+for (let attempt = 1; ; attempt++) {
+  try {
+    await testEnv.clearFirestore();
+    break;
+  } catch (error) {
+    if (attempt >= 3) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
 await testEnv.withSecurityRulesDisabled(async (context) => {
   const db = context.firestore();
   await setDoc(doc(db, "forms", "open-form"), { status: "open" });
+  // isAdmin() 需要 Custom Claim 與 users 文件角色一致
+  await setDoc(doc(db, "users", "admin-uid"), { uid: "admin-uid", role: "admin" });
   await setDoc(
     doc(db, "forms", "open-form", "responses", "server-created"),
     responsePayload(),
