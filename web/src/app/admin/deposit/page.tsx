@@ -307,7 +307,7 @@ export default function DepositPage() {
             String(rowB.getValue("club")),
           ),
         cell: ({ row }) => (
-          <span className="font-medium text-neutral-950">
+          <span className="block min-w-[7rem] font-medium text-neutral-950">
             {row.original.club_name ?? row.original.club_id}
           </span>
         ),
@@ -322,6 +322,7 @@ export default function DepositPage() {
             ${row.original.amount.toLocaleString()}
           </span>
         ),
+        meta: { tdClassName: "px-3 whitespace-nowrap" },
       },
       {
         id: "binding",
@@ -341,7 +342,11 @@ export default function DepositPage() {
 
           const label = dep.form_title ?? "已綁定（表單名稱未知）";
 
-          return <span className="truncate text-neutral-700">{label}</span>;
+          return (
+            <span className="block max-w-[220px] truncate text-neutral-700" title={label}>
+              {label}
+            </span>
+          );
         },
       },
       {
@@ -366,6 +371,7 @@ export default function DepositPage() {
             )}
           </span>
         ),
+        meta: { tdClassName: "px-3 whitespace-nowrap" },
       },
       {
         id: "paid_at",
@@ -379,6 +385,7 @@ export default function DepositPage() {
             )}
           </span>
         ),
+        meta: { tdClassName: "px-3 whitespace-nowrap" },
       },
       {
         id: "returned_at",
@@ -394,6 +401,7 @@ export default function DepositPage() {
             )}
           </span>
         ),
+        meta: { tdClassName: "px-3 whitespace-nowrap" },
       },
       {
         id: "notes",
@@ -434,7 +442,7 @@ export default function DepositPage() {
               {dep.status === "pending_payment" && (
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
                   onClick={() =>
                     setConfirmTarget({
                       id: dep.id,
@@ -449,7 +457,7 @@ export default function DepositPage() {
               {dep.status === "paid" && (
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary hover:text-white"
                   onClick={() =>
                     setConfirmTarget({
                       id: dep.id,
@@ -458,13 +466,16 @@ export default function DepositPage() {
                     })
                   }
                 >
-                  退還保證金
+                  標記退還
                 </button>
               )}
             </div>
           );
         },
-        meta: { thClassName: "px-5 text-right", tdClassName: "px-5 text-right" },
+        meta: {
+          thClassName: "px-5 text-right",
+          tdClassName: "px-5 text-right whitespace-nowrap",
+        },
       },
     ],
     [
@@ -552,13 +563,16 @@ export default function DepositPage() {
         ) : error ? (
           <AdminErrorState message={error} onRetry={fetchDeposits} />
         ) : (
-          <AdminDataTable
-            data={filtered}
-            columns={depositColumns}
-            getRowId={(row) => row.id}
-            emptyMessage="沒有找到符合條件的保證金紀錄"
-            emptyColSpan={10}
-          />
+          <div className="overflow-x-auto">
+            <AdminDataTable
+              data={filtered}
+              columns={depositColumns}
+              getRowId={(row) => row.id}
+              emptyMessage="沒有找到符合條件的保證金紀錄"
+              emptyColSpan={10}
+              classNames={{ th: "h-10 font-medium whitespace-nowrap" }}
+            />
+          </div>
         )}
       </Card>
 
