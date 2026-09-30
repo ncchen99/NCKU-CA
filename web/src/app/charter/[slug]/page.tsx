@@ -6,6 +6,7 @@ import { CmsMarkdownWithToc } from "@/components/public/cms-markdown-with-toc";
 import { getSiteContent } from "@/lib/firestore/site-content";
 import {
   CHARTER_DOCUMENTS,
+  CHARTER_NAV_LABEL,
   type CharterDocumentSlug,
 } from "@/lib/charter-documents";
 import { buildOgImageUrl } from "@/lib/seo";
@@ -25,7 +26,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  if (!isCharterSlug(slug)) return { title: "組織章程" };
+  if (!isCharterSlug(slug)) return { title: CHARTER_NAV_LABEL };
 
   const canonicalPath = `/charter/${slug}`;
   const doc = CHARTER_DOCUMENTS.find((d) => d.slug === slug)!;
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pageTitle = content?.title ?? doc.title;
   const ogImage = buildOgImageUrl({
     title: pageTitle,
-    subtitle: "組織章程",
+    subtitle: CHARTER_NAV_LABEL,
     path: canonicalPath,
   });
 

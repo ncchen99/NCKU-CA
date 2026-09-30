@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/lib/auth-context";
 import { createLoginHref } from "@/lib/login-redirect";
-import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
+import { CHARTER_DOCUMENTS, CHARTER_NAV_LABEL } from "@/lib/charter-documents";
 
 const NAV_LINKS = [
   { label: "關於我們", href: "/about" },
@@ -101,7 +101,7 @@ export function Navbar() {
               aria-expanded={charterOpen}
               aria-haspopup="true"
             >
-              組織章程
+              {CHARTER_NAV_LABEL}
             </button>
             {charterOpen && (
               <div className="absolute left-0 top-full z-50 mt-1 w-max min-w-[140px] rounded-xl bg-white py-1 shadow-lg ring-1 ring-neutral-950/8">
@@ -246,7 +246,7 @@ export function Navbar() {
               onClick={() => setMobileCharterOpen((v) => !v)}
               className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-[13px] font-[450] text-neutral-600"
             >
-              組織章程
+              {CHARTER_NAV_LABEL}
             </button>
             {mobileCharterOpen && (
               <div className="ml-2 flex flex-col border-l border-border pl-3">

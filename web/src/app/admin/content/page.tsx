@@ -14,6 +14,7 @@ import {
 } from "@/components/admin/shared";
 import { formatTimestamp, adminFetch } from "@/lib/admin-utils";
 import { getAdminSiteContent } from "@/lib/client-firestore";
+import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
 import { toast } from "@/components/ui/use-toast";
 
 interface SiteContent {
@@ -24,6 +25,25 @@ interface SiteContent {
   updated_at: unknown;
   updated_by: string;
   updated_by_display_name?: string;
+  /** 法規頁面尚未於 Firestore 建立，儲存後才會建立文件 */
+  is_placeholder?: boolean;
+}
+
+// 法規列表的頁面即使尚未建立文件，也列出空白項目供管理員直接編輯
+function withCharterPlaceholders(pages: SiteContent[]): SiteContent[] {
+  const existingIds = new Set(pages.map((page) => page.id));
+  const placeholders: SiteContent[] = CHARTER_DOCUMENTS.filter(
+    (doc) => !existingIds.has(doc.slug),
+  ).map((doc) => ({
+    id: doc.slug,
+    title: doc.title,
+    content_markdown: "",
+    metadata: { description: doc.description },
+    updated_at: null,
+    updated_by: "",
+    is_placeholder: true,
+  }));
+  return [...pages, ...placeholders];
 }
 
 function getDescription(page: SiteContent): string {
@@ -55,7 +75,7 @@ export default function ContentPage() {
     if (!background) setError(null);
     try {
       const data = await getAdminSiteContent();
-      setPages(data as unknown as SiteContent[]);
+      setPages(withCharterPlaceholders(data as unknown as SiteContent[]));
     } catch (err) {
       if (!background) {
         setError(err instanceof Error ? err.message : "無法載入內容資料");
@@ -155,6 +175,11 @@ export default function ContentPage() {
                     <h3 className="text-sm font-semibold text-neutral-950">
                       {page.title}
                     </h3>
+                    {page.is_placeholder && (
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-500">
+                        尚未建立
+                      </span>
+                    )}
                     {successId === page.id && (
                       <span className="rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-600">
                         已儲存
@@ -165,18 +190,20 @@ export default function ContentPage() {
                     {getDescription(page)}
                   </p>
                 </div>
-                <div className="hidden text-right sm:block">
-                  <p className="text-[12px] text-neutral-400">
-                    更新於{" "}
-                    {formatTimestamp(
-                      page.updated_at as Parameters<typeof formatTimestamp>[0],
-                    )}
-                  </p>
-                  <p className="text-[12px] text-neutral-400">
-                    由{" "}
-                    {page.updated_by_display_name ?? page.updated_by}
-                  </p>
-                </div>
+                {!page.is_placeholder && (
+                  <div className="hidden text-right sm:block">
+                    <p className="text-[12px] text-neutral-400">
+                      更新於{" "}
+                      {formatTimestamp(
+                        page.updated_at as Parameters<typeof formatTimestamp>[0],
+                      )}
+                    </p>
+                    <p className="text-[12px] text-neutral-400">
+                      由{" "}
+                      {page.updated_by_display_name ?? page.updated_by}
+                    </p>
+                  </div>
+                )}
                 <button
                   onClick={() => openEdit(page)}
                   className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
