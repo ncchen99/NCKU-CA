@@ -1,3 +1,10 @@
+> [!WARNING]
+> **This branch is archived and will not be merged into `main` for now (noted 2026-10-09).**
+>
+> It is an experiment with locale-prefixed path routing (`/[locale]/...`) for i18n. This design turned out to prevent pages from being rendered with ISR (Incremental Static Regeneration), so they fall back to dynamic rendering on every request and put noticeably more load on the backend. It was therefore not merged.
+>
+> The branch is kept for reference. Reviving i18n would first need an approach that keeps ISR, plus a rebase onto the latest `main`.
+
 # NCKU-CA
 
 NCKU-CA is an open-source CMS platform built on Firebase and Next.js.
