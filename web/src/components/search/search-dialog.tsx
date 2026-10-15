@@ -175,7 +175,7 @@ function SearchDialogPanel({ onClose }: { onClose: () => void }) {
             maxLength={100}
             placeholder="搜尋公告、活動、法規條文…"
             onKeyDown={handleKeyDown}
-            className="h-14 min-w-0 flex-1 bg-transparent text-[16px] text-neutral-950 outline-none placeholder:text-neutral-400 [&::-webkit-search-cancel-button]:hidden"
+            className="h-16 min-w-0 flex-1 bg-transparent text-[16px] sm:h-14 text-neutral-950 outline-none placeholder:text-neutral-400 [&::-webkit-search-cancel-button]:hidden"
           />
           {value ? (
             <button
@@ -193,7 +193,7 @@ function SearchDialogPanel({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md px-2 py-1 text-[12px] text-neutral-500 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 sm:hidden"
+            className="flex h-9 shrink-0 items-center rounded-full px-3 text-[13px] text-neutral-600 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 sm:hidden"
           >
             取消
           </button>
@@ -347,11 +347,6 @@ function EmptyQueryState({
           ))}
         </div>
       </section>
-
-      <p className="text-[12px] leading-[20px] text-neutral-500">
-        可搜尋最新消息、活動回顧、法規條文與開放中的表單。支援繁簡體互通（例如「选举」可找到「選舉」），
-        條號可輸入「第17條」或「第十七條」。
-      </p>
     </div>
   );
 }

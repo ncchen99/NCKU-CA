@@ -104,12 +104,7 @@ export function SearchPageClient({ initialQuery }: { initialQuery: string }) {
       </form>
 
       <div className="mt-8" aria-live="polite">
-        {!trimmedQuery ? (
-          <p className="text-[14px] leading-[26px] text-neutral-600">
-            輸入關鍵字搜尋最新消息、活動回顧、法規條文與開放中的表單。
-            支援繁簡體互通，多個關鍵字請用空格分隔，條號可輸入「第17條」或「第十七條」。
-          </p>
-        ) : status === "error" ? (
+        {!trimmedQuery ? null : status === "error" ? (
           <div className="rounded-xl border border-border bg-neutral-50 py-12 text-center">
             <p className="text-[14px] text-neutral-600">搜尋暫時無法使用，請稍後再試。</p>
             <button
