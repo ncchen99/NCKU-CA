@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -12,7 +12,9 @@ import {
   UserCircleIcon,
   ClipboardDocumentCheckIcon,
   DocumentTextIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import { SearchDialog, prefetchSiteSearch } from "@/components/search/search-dialog";
 import { useAuth } from "@/lib/auth-context";
 import { createLoginHref } from "@/lib/login-redirect";
 import { CHARTER_DOCUMENTS, CHARTER_NAV_LABEL } from "@/lib/charter-documents";
@@ -24,6 +26,10 @@ const NAV_LINKS = [
   { label: "活動回顧", href: "/activities" },
 ];
 
+const subscribeNoop = () => () => {};
+const getShortcutLabel = () => (/Mac|iPhone|iPad|iPod/i.test(navigator.userAgent) ? "⌘K" : "Ctrl K");
+const getServerShortcutLabel = () => null;
+
 export function Navbar() {
   const { user, firebaseUser, loading, signOut } = useAuth();
   const router = useRouter();
@@ -33,6 +39,8 @@ export function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [charterOpen, setCharterOpen] = useState(false);
   const [mobileCharterOpen, setMobileCharterOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const shortcutLabel = useSyncExternalStore(subscribeNoop, getShortcutLabel, getServerShortcutLabel);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const charterRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +68,11 @@ export function Navbar() {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
+
+  const openSearch = () => {
+    setMobileOpen(false);
+    setSearchOpen(true);
+  };
 
   const handleSignOut = async () => {
     setUserMenuOpen(false);
@@ -132,6 +145,24 @@ export function Navbar() {
 
         {/* Desktop right section */}
         <div className="hidden items-center gap-2 lg:flex">
+          <button
+            type="button"
+            onClick={openSearch}
+            onMouseEnter={prefetchSiteSearch}
+            onFocus={prefetchSiteSearch}
+            className="flex h-8 items-center gap-1.5 rounded-full pl-2.5 pr-2 text-[13px] text-neutral-500 ring-1 ring-neutral-950/8 transition-colors hover:bg-neutral-50 hover:text-neutral-950"
+            aria-label="搜尋全站"
+            aria-keyshortcuts="Meta+K Control+K"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4" />
+            <span>搜尋</span>
+            {shortcutLabel ? (
+              <kbd className="ml-1 hidden rounded px-1 font-mono text-[10px] text-neutral-400 ring-1 ring-neutral-950/8 xl:inline">
+                {shortcutLabel}
+              </kbd>
+            ) : null}
+          </button>
+
           {loading ? (
             <div className="h-8 w-20 animate-pulse rounded-full bg-neutral-100" />
           ) : isLoggedIn ? (
@@ -214,19 +245,32 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8 lg:hidden"
-          aria-label={mobileOpen ? "關閉選單" : "開啟選單"}
-        >
-          {mobileOpen ? (
-            <XMarkIcon className="h-5 w-5 text-neutral-700" />
-          ) : (
-            <Bars3Icon className="h-5 w-5 text-neutral-700" />
-          )}
-        </button>
+        {/* Mobile search + hamburger */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={openSearch}
+            onTouchStart={prefetchSiteSearch}
+            className="flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8"
+            aria-label="搜尋全站"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5 text-neutral-700" />
+          </button>
+          <button
+            onClick={() => setMobileOpen((v) => !v)}
+            className="flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-neutral-950/8"
+            aria-label={mobileOpen ? "關閉選單" : "開啟選單"}
+          >
+            {mobileOpen ? (
+              <XMarkIcon className="h-5 w-5 text-neutral-700" />
+            ) : (
+              <Bars3Icon className="h-5 w-5 text-neutral-700" />
+            )}
+          </button>
+        </div>
       </nav>
+
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Mobile menu panel */}
       {mobileOpen && (

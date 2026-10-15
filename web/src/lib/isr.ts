@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CHARTER_DOCUMENTS } from "@/lib/charter-documents";
+import { SEARCH_INDEX_CACHE_TAG } from "@/lib/search/load-index";
 import type { Post } from "@/types";
 
 const CHARTER_SLUGS = new Set<string>(CHARTER_DOCUMENTS.map((doc) => doc.slug));
@@ -13,6 +14,11 @@ function revalidatePaths(paths: Iterable<string>) {
     for (const path of new Set(paths)) {
         revalidatePath(path);
     }
+}
+
+/** 全站搜尋索引立即失效，讓下一次搜尋就能找到剛發布或修改的內容 */
+function revalidateSearchIndex(): void {
+    revalidateTag(SEARCH_INDEX_CACHE_TAG, { expire: 0 });
 }
 
 export function revalidateSiteContentPaths(pageId: string): void {
@@ -31,6 +37,7 @@ export function revalidateSiteContentPaths(pageId: string): void {
     }
 
     revalidatePaths(paths);
+    revalidateSearchIndex();
 }
 
 type PostSnapshot = Pick<Post, "slug" | "category"> | null | undefined;
@@ -87,6 +94,7 @@ export function revalidatePostPaths(previousPost?: PostSnapshot, nextPost?: Post
     for (const tag of tags) {
         revalidateTag(tag, "max");
     }
+    revalidateSearchIndex();
 }
 
 export function revalidateFormPaths(formId?: string): void {
@@ -98,6 +106,7 @@ export function revalidateFormPaths(formId?: string): void {
     }
 
     revalidatePaths(paths);
+    revalidateSearchIndex();
 }
 
 export function revalidateAttendancePaths(): void {
